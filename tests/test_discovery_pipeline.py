@@ -53,7 +53,9 @@ def test_offline_transcript_pipeline_emits_signals_and_preserves_provenance() ->
     assert result.review_candidates == ()
     assert result.rejected == ()
     assert result.document_count == 2
-    assert all(signal.subject == "CEO" for signal in result.signals)
+    assert all(signal.subject is None for signal in result.signals)
+    assert all(signal.speaker == "CEO" for signal in result.signals)
+    assert all(signal.speaker_title == "Chief Executive Officer" for signal in result.signals)
     assert all(signal.classification.industry == "Electrical Equipment" for signal in result.signals)
 
 
