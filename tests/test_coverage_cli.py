@@ -17,20 +17,29 @@ def test_cli_writes_summary_without_api_key_or_transcript_text(
 ) -> None:
     monkeypatch.setenv("ALPHA_VANTAGE_API_KEY", "secret-test-key")
 
-    def fake_evaluate(source, *, tickers, quarter, max_requests):
+    def fake_evaluate(
+        source,
+        *,
+        tickers,
+        quarter,
+        max_requests,
+        min_interval_seconds,
+    ):
         assert source.api_key == "secret-test-key"
         assert max_requests == 5
+        assert min_interval_seconds == 1.1
         return CoverageSummary(
             requested=5,
             available=3,
             missing=1,
-            errors=1,
+            rate_limited=1,
+            errors=0,
             results=(
                 CoverageResult("AAPL", quarter, "available", turn_count=25),
                 CoverageResult("MSFT", quarter, "available", turn_count=31),
                 CoverageResult("ETN", quarter, "available", turn_count=18),
                 CoverageResult("POWL", quarter, "missing"),
-                CoverageResult("NVT", quarter, "error", error="rate limited"),
+                CoverageResult("NVT", quarter, "rate_limited", error="rate limited"),
             ),
         )
 
@@ -43,6 +52,7 @@ def test_cli_writes_summary_without_api_key_or_transcript_text(
     assert payload["requested"] == 5
     assert payload["available"] == 3
     assert payload["availability_rate"] == 0.6
+    assert payload["rate_limited"] == 1
     assert "secret-test-key" not in text
     assert "transcript" not in text.casefold()
 
