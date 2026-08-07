@@ -33,6 +33,9 @@ class SourceDocument:
     text: str
     classification: Classification = field(default_factory=Classification)
     source_url: str | None = None
+    speaker: str | None = None
+    speaker_title: str | None = None
+    source_section: str | None = None
 
 
 @dataclass(frozen=True)
