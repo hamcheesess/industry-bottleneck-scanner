@@ -12,16 +12,14 @@ class SignalPattern:
     phrases: tuple[str, ...]
     direction: SignalDirection
     base_confidence: float = 0.75
+    regex_patterns: tuple[str, ...] = ()
 
 
-# Phase 1 vocabulary is intentionally explicit and auditable.  The categories are
+# Phase 1 vocabulary is intentionally explicit and auditable. The categories are
 # logical dimensions; one sentence can emit several metrics when it contains
-# independent evidence (for example record backlog + elevated lead times).
+# independent evidence. Regex patterns complement exact phrases for common
+# inflection and word-order variation without requiring an LLM.
 DEFAULT_PATTERNS: tuple[SignalPattern, ...] = (
-    # ------------------------------------------------------------------
-    # CAPEX — focus on revisions / concrete expansion actions, not merely
-    # the existence of large capital expenditure.
-    # ------------------------------------------------------------------
     SignalPattern(
         scanner="capex",
         metric="capex_revision_up",
@@ -70,10 +68,6 @@ DEFAULT_PATTERNS: tuple[SignalPattern, ...] = (
         ),
         direction="strengthening",
     ),
-    # ------------------------------------------------------------------
-    # DEMAND — separate backlog, bookings, book-to-bill and forward
-    # capacity commitments so acceleration can be inspected by metric.
-    # ------------------------------------------------------------------
     SignalPattern(
         scanner="demand",
         metric="backlog_strength",
@@ -84,6 +78,10 @@ DEFAULT_PATTERNS: tuple[SignalPattern, ...] = (
             "backlog growth",
             "backlog remains strong",
             "backlog remains elevated",
+        ),
+        regex_patterns=(
+            r"\bbacklog\b.{0,45}\b(?:record|strong|elevated|increas\w*|grew|growth)\b",
+            r"\b(?:record|strong|elevated)\b.{0,30}\bbacklog\b",
         ),
         direction="strengthening",
         base_confidence=0.85,
@@ -96,6 +94,9 @@ DEFAULT_PATTERNS: tuple[SignalPattern, ...] = (
             "backlog declined",
             "backlog contracted",
             "backlog normalization",
+        ),
+        regex_patterns=(
+            r"\bbacklog\b.{0,35}\b(?:decreas\w*|declin\w*|contract\w*|normaliz\w*)\b",
         ),
         direction="weakening",
         base_confidence=0.85,
@@ -145,9 +146,6 @@ DEFAULT_PATTERNS: tuple[SignalPattern, ...] = (
         direction="strengthening",
         base_confidence=0.8,
     ),
-    # ------------------------------------------------------------------
-    # SCARCITY — distinguish the physical mechanism of the bottleneck.
-    # ------------------------------------------------------------------
     SignalPattern(
         scanner="scarcity",
         metric="lead_time_pressure",
@@ -174,6 +172,10 @@ DEFAULT_PATTERNS: tuple[SignalPattern, ...] = (
             "capacity limitations",
             "capacity remains tight",
             "unable to meet demand",
+        ),
+        regex_patterns=(
+            r"\b(?:demand|requirements?)\b.{0,55}\b(?:exceed\w*|outpace\w*)\b.{0,55}\b(?:capacity|output|supply)\b",
+            r"\b(?:capacity|output|supply)\b.{0,45}\b(?:constrain\w*|limit\w*|insufficient|tight)\b",
         ),
         direction="strengthening",
         base_confidence=0.9,
@@ -232,9 +234,6 @@ DEFAULT_PATTERNS: tuple[SignalPattern, ...] = (
         direction="strengthening",
         base_confidence=0.75,
     ),
-    # ------------------------------------------------------------------
-    # PRICING — evidence that demand/scarcity is translating into economics.
-    # ------------------------------------------------------------------
     SignalPattern(
         scanner="pricing",
         metric="pricing_power",
