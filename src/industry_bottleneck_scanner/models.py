@@ -7,6 +7,13 @@ from typing import Literal
 ScannerCategory = Literal["capex", "demand", "scarcity", "pricing"]
 SignalDirection = Literal["strengthening", "weakening", "stable", "unclear"]
 SignalMagnitude = Literal["low", "medium", "high", "unknown"]
+ComparisonBasis = Literal[
+    "prior_period",
+    "prior_guidance_or_plan",
+    "threshold",
+    "forward_commitment",
+    "unspecified",
+]
 
 
 @dataclass(frozen=True)
@@ -48,6 +55,8 @@ class AtomicSignal:
     resolved: bool
     extraction_method: str
     confidence: float
+    matched_phrase: str | None = None
+    comparison_basis: ComparisonBasis = "unspecified"
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.confidence <= 1.0:
