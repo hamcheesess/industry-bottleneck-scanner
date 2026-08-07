@@ -23,6 +23,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--transcript-root", type=Path, default=Path("var/transcripts"))
     parser.add_argument("--review-queue", type=Path, default=Path("var/review/semantic.json"))
     parser.add_argument("--max-companies", type=int, default=50)
+    parser.add_argument(
+        "--aggregation-level",
+        choices=("sector", "industry", "subindustry"),
+        default="industry",
+        help="Classification level used for cross-company breadth; Phase 1 defaults to industry",
+    )
     parser.add_argument("--output", type=Path, default=Path("var/experiments/phase1-batch.json"))
     parser.add_argument(
         "--artifact-root",
@@ -50,6 +56,7 @@ def main(argv: list[str] | None = None) -> int:
         transcript_store=store,
         review_queue=review_queue,
         max_companies=args.max_companies,
+        aggregation_level=args.aggregation_level,
     )
     current = experiment.current
     baseline = experiment.baseline
@@ -64,6 +71,7 @@ def main(argv: list[str] | None = None) -> int:
 
     payload = {
         "provider": args.provider,
+        "aggregation_level": args.aggregation_level,
         "cohort": asdict(experiment.diagnostics),
         "artifacts": {
             "current_signals_jsonl": str(current_signal_path),
@@ -93,6 +101,7 @@ def main(argv: list[str] | None = None) -> int:
     triggered = sum(item.triggered for item in acceleration)
     confirmed = sum(item.confirmed for item in acceleration)
     print(
+        f"aggregation_level={args.aggregation_level} "
         f"eligible_companies={experiment.diagnostics.eligible_companies} "
         f"current_signals={len(current.signals)} baseline_signals={len(baseline.signals)} "
         f"clusters={len(acceleration)} triggered={triggered} confirmed={confirmed}"
