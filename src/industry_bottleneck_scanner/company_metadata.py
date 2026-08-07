@@ -16,6 +16,7 @@ class CompanyPeriodMetadata:
     quarter: str
     published_at: datetime
     classification: Classification
+    published_at_source_url: str | None = None
 
 
 def _parse_datetime(value: str) -> datetime:
@@ -33,7 +34,8 @@ def load_company_period_metadata_csv(text: str) -> tuple[CompanyPeriodMetadata, 
 
     The manifest deliberately requires a real publication/call timestamp. Fiscal-quarter
     labels are not converted into dates because doing so would contaminate acceleration
-    windows for companies with non-calendar fiscal years.
+    windows for companies with non-calendar fiscal years. When available, the source URL
+    used to establish the event time is preserved for auditability.
     """
 
     reader = csv.DictReader(StringIO(text))
@@ -70,6 +72,7 @@ def load_company_period_metadata_csv(text: str) -> tuple[CompanyPeriodMetadata, 
                     industry=row.get("industry", "").strip() or None,
                     subindustry=row.get("subindustry", "").strip() or None,
                 ),
+                published_at_source_url=row.get("published_at_source_url", "").strip() or None,
             )
         )
 
