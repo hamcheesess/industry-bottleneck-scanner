@@ -42,6 +42,7 @@ def test_batch_cli_writes_cache_only_experiment_summary(tmp_path) -> None:
     _save(store, "2026Q2")
     _save(store, "2026Q1")
     output = tmp_path / "result.json"
+    artifact_root = tmp_path / "artifacts"
 
     assert (
         batch_cli.main(
@@ -58,6 +59,8 @@ def test_batch_cli_writes_cache_only_experiment_summary(tmp_path) -> None:
                 str(tmp_path / "review.json"),
                 "--output",
                 str(output),
+                "--artifact-root",
+                str(artifact_root),
             ]
         )
         == 0
@@ -71,3 +74,8 @@ def test_batch_cli_writes_cache_only_experiment_summary(tmp_path) -> None:
     assert payload["acceleration"][0]["bucket"] == "Electrical Equipment"
     assert payload["current"]["diagnostics"]["distinct_companies"] == 1
     assert payload["current"]["diagnostics"]["top_company_share"] == 1.0
+    assert (artifact_root / "current_signals.jsonl").exists()
+    assert (artifact_root / "baseline_signals.jsonl").exists()
+    assert payload["artifacts"]["current_signals_jsonl"] == str(
+        artifact_root / "current_signals.jsonl"
+    )
