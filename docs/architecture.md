@@ -16,19 +16,17 @@ The system should answer, in order:
 
 ## Canonical discovery universe
 
-Repo A uses the **Russell 3000 membership universe** as its broad US-listed discovery universe.
-
-The universe is stored as a dated snapshot with separate issuer and security identities:
+Repo A uses the **Russell 3000 membership universe** as its broad US-listed discovery universe. Membership is represented as a dated snapshot with separate issuer and security identities rather than a hard-coded constituent list.
 
 ```text
 Russell 3000 membership snapshot
   -> normalize tickers / share classes
   -> preserve issuer_id + security_id
-  -> resolve SEC CIK
-  -> incremental SEC document ingestion
+  -> resolve source identities such as SEC CIK
+  -> incremental disclosure collection
 ```
 
-The scanner must not silently drop members whose CIK is unresolved. Those names remain in an explicit unresolved queue until identity enrichment succeeds.
+Unresolved identifiers stay explicit rather than being silently dropped.
 
 ## Two-engine boundary
 
@@ -39,13 +37,13 @@ Discovery engine only.
 ```text
 Russell 3000 universe
   -> issuer/security registry
-  -> documents
-  -> signal extraction
-  -> atomic signals
-  -> company/industry aggregation
+  -> transcript/disclosure sources
+  -> local phenomenon retrieval
+  -> AtomicSignal
+  -> cross-company industry aggregation
   -> signal acceleration
-  -> cluster trigger
-  -> later: public-data validation
+  -> research trigger
+  -> later: physical/public-data validation
   -> later: customer/supplier triangulation
   -> later: industry/value-chain mapping
   -> later: bottleneck/economic-capture analysis
@@ -66,73 +64,130 @@ Candidate manifest
   -> final company report
 ```
 
-Repo A must not calculate DCF or produce final investment reports. Repo B should not rediscover or rescore industries.
+Repo A must not calculate DCF or produce final investment reports. Repo B should not rediscover industries already surfaced upstream.
 
-## Phase 1 boundary
+## Phase 1: discovery proof
 
-Phase 1 is intentionally narrow and local-first.
+Phase 1 is intentionally local-first and stops at abnormal industry-cluster discovery. It does not yet perform value-chain mapping or candidate-company ranking.
 
-### Inputs
+### Primary source path
 
-1. a dated normalized `UniverseSnapshot` targeting Russell 3000 membership
-2. normalized `SourceDocument` records supplied by fixtures or future ingestion adapters
+Earnings calls are the primary Phase-1 operating-language source, with earnings releases and SEC disclosures available as later corroborating/fallback adapters.
 
-### Processing
+```text
+explicit issuer + fiscal-quarter request
+  -> provider adapter
+  -> normalized transcript cache
+  -> turn-level documents
+  -> prepared / Q&A provenance
+  -> lexical + regex retrieval
+  -> optional local semantic retrieval
+  -> deterministic adjudication
+  -> AtomicSignal OR semantic review queue
+```
 
-1. normalize and validate the discovery universe
-2. preserve issuer/security identity and SEC-resolution status
-3. match industry-independent phenomenon vocabulary
-4. normalize matches into `AtomicSignal`
-5. reject/discount obvious negation and resolved conditions
-6. aggregate by company and classification bucket
-7. compare current vs baseline windows
-8. calculate signal acceleration
-9. emit research-trigger clusters
+Raw transcripts are not sent to an LLM.
+
+### Comparable-window experiment
+
+Signal acceleration must compare like with like:
+
+```text
+current metadata manifest -----+
+                               +-> matched issuer cohort
+baseline metadata manifest ----+
+                               -> require cached transcript in both windows
+                               -> scan both windows
+                               -> industry aggregation
+                               -> breadth acceleration
+```
+
+Provider coverage gaps are not negative signals and cannot inflate apparent acceleration.
+
+### Aggregation level
+
+The Phase-1 default is **industry-level** aggregation. Sector and subindustry are explicit configurable views. The system must not silently use the finest available classification because that can fragment related issuers and destroy the independent-company breadth signal.
+
+### Retrieval learning loop
+
+Medium-confidence semantic-only candidates remain outside production aggregation. Pending review candidates can be clustered locally across independent issuers to surface repeated novel management language.
+
+```text
+semantic-only review queue
+  -> repeated cross-company expression cluster
+  -> vocabulary-development candidate
+  -> review
+  -> optional future taxonomy/vocabulary update
+```
+
+There is no automatic feedback from an embedding cluster into production vocabulary or accepted signals.
+
+### Quality diagnostics
+
+Phase-1 experiment artifacts expose data-quality checks alongside research triggers, including:
+
+- matched/eligible issuer counts
+- missing and unresolved transcript pairs
+- speaker/title label coverage
+- Q&A detection rate
+- unclassified-signal count
+- issuer concentration of active signals
+- metric/extraction-method distributions
+- prepared-vs-Q&A signal counts
 
 ### Outputs
 
-- immutable universe snapshot
-- unresolved-identifier queue
-- atomic signal JSONL
+- immutable universe snapshot contract
+- normalized cached transcripts
+- persistent semantic review queue
+- current/baseline `AtomicSignal` JSONL
 - aggregate snapshots
-- research-trigger cluster JSON
+- acceleration/trigger JSON
+- transcript/provider quality diagnostics
+- novel-language review candidates
 
 ### Explicitly out of scope for Phase 1
 
-- live Russell constituent acquisition
-- live SEC crawling
-- paid transcript integrations
-- LLM/API extraction
+- live acquisition of an unlicensed Russell constituent list
+- universe-scale transcript backfill before pilot validation
+- raw-transcript LLM analysis
 - physical KPI integrations
 - value-chain mapping
+- bottleneck/economic-capture scoring
 - candidate-company ranking
-- cross-repository handoff
+- Repo B handoff
+
+## Current bounded pilot
+
+The repository contains a matched power/electrical-infrastructure pilot using consecutive issuer-specific fiscal quarters and explicit event timestamps. The pilot includes several Electrical Equipment issuers plus an Electronic Components control. It is deliberately small enough to stay within a bounded provider-request budget and large enough to test independent-company industry breadth.
+
+`ibs-phase1-pilot` runs collection, cache validation, transcript-structure diagnostics, matched scanning, industry aggregation, acceleration, artifact persistence, and novel-language review in one bounded workflow.
 
 ## Design principles
 
 ### Phenomenon-first
 
-Industry names are metadata for aggregation, not the initial query.
+Industry names are metadata for aggregation, not the initial search query.
 
 ### Broad discovery before financial filtering
 
-The Russell 3000 universe remains broad at the discovery stage. Financial quality filters belong downstream so a structurally important bottleneck beneficiary is not excluded before the phenomenon scan.
+Financial quality filters belong downstream so structurally important bottleneck beneficiaries are not excluded before phenomenon discovery.
 
 ### Independent-company breadth over mention count
 
-Ten separate companies mentioning a constraint is stronger evidence than one company repeating it ten times.
+Ten independent issuers mentioning a constraint is stronger evidence than one issuer repeating it ten times.
 
-### Direction matters
+### Direction and counter-evidence matter
 
-`lead times increased` and `lead times normalized` cannot score the same way.
+`lead times increased` and `lead times normalized` cannot score the same way. Weakening/resolution evidence remains visible but does not inflate active breadth.
 
 ### Evidence provenance is mandatory
 
-Every atomic signal keeps the source document, observed text span, dates, and extraction method.
+Every accepted signal keeps source identity, evidence text, real timestamp, extraction method, transcript section, and speaker metadata when available. Economic `subject` is separate from transcript speaker identity.
 
 ### Local-first cost control
 
-Keyword/regex matching, counting, aggregation, acceleration, and thresholding should be deterministic Python by default. Expensive model calls are reserved for later triggered research.
+Keyword/regex matching, local embeddings, adjudication, aggregation, acceleration, diagnostics, and thresholding run locally by default. Paid model calls are reserved for later ambiguous or already-triggered research stages.
 
 ### No silent investment inference
 
