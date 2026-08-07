@@ -111,5 +111,5 @@ class AlphaVantageTranscriptSource:
             ticker=symbol,
             fiscal_quarter=fiscal_quarter,
             turns=tuple(turns),
-            source_url=self.build_url(ticker=symbol, quarter=fiscal_quarter),
+            source_url=None,
         )
