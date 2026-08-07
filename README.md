@@ -8,14 +8,17 @@ The project starts from **phenomena**, not industry names. It scans company disc
 
 The discovery universe is the **Russell 3000 membership universe**, represented as a dated immutable snapshot rather than a hard-coded list.
 
-The registry preserves both issuer-level and security-level identity so SEC filings can be collected by issuer/CIK while index membership and share classes remain reproducible.
+The registry preserves both issuer-level and security-level identity so source collection can remain reproducible across ticker changes, share classes, and SEC identity resolution.
 
 ```text
 Russell 3000 membership snapshot
   -> normalized Universe Registry
-  -> CIK / SEC identity resolution
-  -> incremental SEC documents
-  -> phenomenon scanner
+  -> source adapters
+  -> local candidate retrieval
+  -> AtomicSignal
+  -> cross-company industry aggregation
+  -> signal acceleration
+  -> research-trigger clusters
 ```
 
 See [`docs/universe_contract.md`](docs/universe_contract.md).
@@ -25,36 +28,62 @@ See [`docs/universe_contract.md`](docs/universe_contract.md).
 This repository owns:
 
 - Russell 3000 discovery-universe normalization and provenance
+- transcript/disclosure source adapters and local caches
 - phenomenon-based signal discovery
-- Capex / Demand / Scarcity / Pricing signal normalization
-- cross-company aggregation
-- signal acceleration and cluster detection
+- Capex / Demand / Scarcity / Pricing normalization
+- cross-company aggregation and acceleration
+- semantic-only review queues and repeated novel-language discovery
+- auditable Phase-1 experiment artifacts
 - later: public-data validation, triangulation, value-chain mapping, bottleneck analysis, economic-capture analysis, and candidate discovery
 
-This repository does **not** own:
+This repository does **not** own full company underwriting, financial-risk adjudication, DCF valuation, or final investment reports. Those belong to the downstream `investment-research-automation` repository.
 
-- full company underwriting
-- company financial-risk adjudication
-- DCF valuation
-- final investment reports
+## Phase 1 pipeline
 
-Those belong to the downstream `investment-research-automation` repository.
-
-## Phase 1
-
-Phase 1 deliberately stops at:
+The current Phase-1 path is local-first and transcript-first:
 
 ```text
-Russell 3000 universe snapshot
-  -> normalized issuer/security registry
-  -> source documents
-  -> phenomenon vocabulary matching
-  -> atomic signals
-  -> company / industry aggregation
+explicit ticker/fiscal-quarter requests
+  -> Alpha Vantage transcript adapter
+  -> cache-first bounded collection
+  -> transcript quality diagnostics
+  -> prepared/Q&A turn labeling
+  -> keyword + regex retrieval
+  -> optional local semantic retrieval
+  -> deterministic adjudication
+  -> AtomicSignal / semantic review queue
+  -> matched current-vs-baseline issuer cohort
+  -> industry-level aggregation
   -> signal acceleration
-  -> research-trigger clusters
+  -> trigger / confirmation hierarchy
+  -> AtomicSignal JSONL + experiment JSON
 ```
 
-No live Russell-constituent download, live SEC ingestion, transcript vendor integration, or OpenAI API calls are enabled in the initial foundation.
+Raw full transcripts are not sent to an LLM. The default development path uses no OpenAI API calls.
 
-See [`docs/architecture.md`](docs/architecture.md), [`docs/universe_contract.md`](docs/universe_contract.md), [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md), and [`docs/phase1_signal_contract.md`](docs/phase1_signal_contract.md).
+## Commands
+
+Install the package in editable mode:
+
+```bash
+pip install -e .
+```
+
+Run the bounded real-data Phase-1 pilot after `ALPHA_VANTAGE_API_KEY` is available in the environment:
+
+```bash
+ibs-phase1-pilot
+```
+
+The pilot uses the matched request and dated metadata manifests under `experiments/`, caches successful transcripts under `var/transcripts/`, and writes runtime experiment artifacts under `var/`. Re-running it is cache-first, so successfully collected transcripts do not consume provider requests again.
+
+Lower-level commands remain available for transcript collection, provider diagnostics, cache-only batch scans, and novel-language review:
+
+```text
+ibs-transcript-collect
+ibs-pilot-diagnostics
+ibs-phase1-batch
+ibs-review-language
+```
+
+See [`docs/architecture.md`](docs/architecture.md), [`docs/transcript_source_strategy.md`](docs/transcript_source_strategy.md), [`docs/recall_strategy.md`](docs/recall_strategy.md), [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md), and [`docs/phase1_signal_contract.md`](docs/phase1_signal_contract.md).
