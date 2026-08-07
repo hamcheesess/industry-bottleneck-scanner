@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from dataclasses import dataclass
 
 from .models import AtomicSignal, ComparisonBasis, SourceDocument
 from .vocabulary import DEFAULT_PATTERNS, SignalPattern
@@ -38,6 +39,12 @@ _PRIOR_PERIOD_MARKERS = (
 )
 
 
+@dataclass(frozen=True)
+class PatternMatch:
+    text: str
+    method: str
+
+
 def _sentences(text: str) -> list[str]:
     chunks = re.split(r"(?<=[.!?])\s+|\n+", text)
     return [chunk.strip() for chunk in chunks if chunk.strip()]
@@ -48,11 +55,15 @@ def _signal_id(document_id: str, scanner: str, metric: str, evidence: str) -> st
     return hashlib.sha256(payload).hexdigest()[:24]
 
 
-def _matched_phrase(sentence: str, pattern: SignalPattern) -> str | None:
+def _match_pattern(sentence: str, pattern: SignalPattern) -> PatternMatch | None:
     lowered = sentence.casefold()
     for phrase in pattern.phrases:
         if phrase.casefold() in lowered:
-            return phrase
+            return PatternMatch(text=phrase, method="keyword")
+    for expression in pattern.regex_patterns:
+        match = re.search(expression, sentence, flags=re.IGNORECASE)
+        if match is not None:
+            return PatternMatch(text=match.group(0), method="regex")
     return None
 
 
@@ -88,19 +99,17 @@ def scan_document(
     *,
     patterns: tuple[SignalPattern, ...] = DEFAULT_PATTERNS,
 ) -> list[AtomicSignal]:
-    """Run deterministic phrase matching over one normalized source document.
+    """Run deterministic phrase and regex matching over one source document.
 
-    Phase 1 deliberately keeps extraction auditable.  It identifies logical
-    metrics, direction, the exact matched phrase, and a coarse comparison basis.
-    Later semantic extractors may enrich subject and magnitude without changing
-    the AtomicSignal contract.
+    The regex layer raises recall for common word-order and inflection variants while
+    preserving auditable evidence and avoiding any LLM call.
     """
 
     signals: list[AtomicSignal] = []
     for sentence in _sentences(document.text):
         for pattern in patterns:
-            matched_phrase = _matched_phrase(sentence, pattern)
-            if matched_phrase is None:
+            match = _match_pattern(sentence, pattern)
+            if match is None:
                 continue
 
             negated = _is_negated(sentence)
@@ -126,9 +135,9 @@ def scan_document(
                     evidence_text=sentence,
                     negated=negated,
                     resolved=resolved,
-                    extraction_method="keyword",
+                    extraction_method=match.method,
                     confidence=confidence,
-                    matched_phrase=matched_phrase,
+                    matched_phrase=match.text,
                     comparison_basis=_comparison_basis(sentence, pattern),
                 )
             )
