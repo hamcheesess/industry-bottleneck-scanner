@@ -2,73 +2,67 @@
 
 ## Logical scanner categories
 
-The scanner has four logical categories. They are classification buckets, not necessarily four separate runtime passes.
+The scanner has four logical categories. They are classification dimensions, not necessarily four separate runtime passes.
+
+The detailed metric taxonomy is defined in [`signal_taxonomy.md`](signal_taxonomy.md).
 
 ### Capex
 
-Detect changes in expected investment or capacity expansion, not merely high absolute capex.
+Detect changes in expected investment or concrete capacity expansion, not merely high absolute capex.
 
-Representative concepts:
+Primary metrics:
 
-- capex guidance raised/lowered
-- capital plan increased/decreased
-- capacity expansion
-- greenfield/brownfield project
-- new facility / production line
-- equipment investment
+- `capex_revision_up`
+- `capex_revision_down`
+- `capacity_expansion`
 
 ### Demand
 
 Detect order intake and forward-demand strength.
 
-Representative concepts:
+Primary metrics:
 
-- backlog
-- bookings
-- book-to-bill
-- record orders
-- customer commitments
-- reservations of future capacity
+- `backlog_strength`
+- `backlog_weakness`
+- `bookings_strength`
+- `book_to_bill_above_one`
+- `forward_capacity_commitment`
 
 ### Scarcity
 
-Detect inability of supply to satisfy demand or long replacement/qualification cycles.
+Detect inability of supply to satisfy demand or structural barriers to rapid supply response.
 
-Representative concepts:
+Primary metrics:
 
-- lead times
-- constrained capacity
-- shortage
-- allocation
-- sold out
-- limited availability
-- unable to meet demand
-- qualification duration
+- `lead_time_pressure`
+- `capacity_constraint`
+- `supply_tightness`
+- `allocation`
+- `sold_out_capacity`
+- `qualification_barrier`
 
 ### Pricing
 
-Detect whether scarcity/demand is translating into economics.
+Detect whether scarcity/demand is translating into economic capture.
 
-Representative concepts:
+Primary metrics:
 
-- pricing remains strong
-- price increase
-- favorable price/cost
-- margin expansion attributed to price
-- contract repricing
-- take-or-pay / reservation economics
+- `pricing_power`
+- `contract_repricing`
+- `margin_from_pricing`
+- `pricing_weakness`
 
 ## AtomicSignal
 
 Every extracted observation is normalized to one atomic record.
 
-Required fields:
+Required contract:
 
 ```json
 {
   "signal_id": "stable-id",
   "scanner": "capex|demand|scarcity|pricing",
-  "metric": "lead_time|backlog|book_to_bill|capacity_expansion|pricing|...",
+  "metric": "taxonomy metric",
   "direction": "strengthening|weakening|stable|unclear",
   "magnitude": "low|medium|high|unknown",
   "company_id": "issuer identifier",
@@ -78,18 +72,18 @@ Required fields:
     "industry": "optional",
     "subindustry": "optional"
   },
-  "subject": "what product/capacity/segment the statement refers to",
-  "document": {
-    "document_id": "source identifier",
-    "document_type": "10-K|10-Q|8-K|transcript|release|other",
-    "published_at": "ISO-8601 date/time",
-    "source_url": "optional"
-  },
+  "subject": "what product/capacity/segment the statement refers to, when known",
+  "document_id": "source identifier",
+  "document_type": "10-K|10-Q|8-K|transcript|release|other",
+  "published_at": "ISO-8601 date/time",
+  "source_url": "optional",
   "evidence_text": "minimal supporting span",
   "negated": false,
   "resolved": false,
   "extraction_method": "keyword|regex|rule|model",
-  "confidence": 0.0
+  "confidence": 0.0,
+  "matched_phrase": "exact deterministic phrase when applicable",
+  "comparison_basis": "prior_period|prior_guidance_or_plan|threshold|forward_commitment|unspecified"
 }
 ```
 
@@ -101,58 +95,83 @@ Statements such as `we are no longer capacity constrained` must not be counted a
 
 ### Direction
 
-`lead times increased` is strengthening scarcity.
-`lead times declined` is weakening scarcity.
+Strengthening and weakening observations remain distinct. An explicit weakening taxonomy pattern such as `pricing declined` is not automatically labeled as a resolved historical constraint.
 
 ### Resolution
 
-A historical constraint followed by explicit normalization should be marked `resolved=true` when the text supports it.
+A strengthening constraint phrase followed by explicit normalization can be marked `resolved=true`. Resolved signals remain available as counter-evidence but do not contribute to active opportunity breadth.
 
 ### Subject preservation
 
-Do not collapse `transformers`, `switchgear`, and `cables` into one generic company-level scarcity signal if the text identifies the constrained item.
+Do not collapse `transformers`, `switchgear`, and `cables` into one generic company-level scarcity signal if the text identifies the constrained item. Phase 1 allows `subject=null` until a defensible extractor is implemented.
+
+### Comparison preservation
+
+When the evidence supports it, retain whether the signal is a prior-period change, a guidance/plan revision, a threshold observation, or a forward commitment. Do not invent a comparison when the sentence does not provide one.
 
 ## Aggregation
 
-Primary aggregation should emphasize independent issuers.
+Primary aggregation emphasizes independent issuers and active strengthening evidence.
 
 For each classification bucket and time window record:
 
-- distinct companies with active signals
-- distinct documents
-- weighted signal count
+- distinct companies with active strengthening signals
+- distinct active documents
 - scanner-category breadth
-- direction balance
-- median/mean confidence
-- current-window vs baseline-window company breadth
+- metric breadth
+- source/document-type breadth
+- strengthening signal count
+- weakening/resolution counter-evidence count
+- confidence mean
+- confidence-weighted active signal count
+
+Repeated phrases from one issuer must not be treated as equivalent to broad confirmation across independent companies.
 
 ## Signal acceleration
 
-Phase 1 should keep the scoring formula configurable. The initial implementation should expose components rather than hide them behind one opaque score.
+Phase 1 keeps the trigger components explicit rather than hiding them behind one opaque score.
 
-Recommended components:
+Components include:
 
-- `breadth_current`: distinct companies with strengthening active signal
+- `breadth_current`: distinct companies with active strengthening evidence
 - `breadth_baseline`: comparable baseline breadth
 - `breadth_change`: current minus baseline
 - `breadth_ratio`: guarded current/baseline ratio
 - `category_breadth`: number of Capex/Demand/Scarcity/Pricing categories active
-- `source_breadth`: distinct source/document types
+- `metric_breadth`: number of distinct metrics active
+- `source_type_breadth`: number of distinct source/document types
+- `core_pair_present`: whether both Demand and Scarcity are active
+- `confirmation_count`: number of Capex/Pricing confirmation categories active
 - `confidence_mean`
 
-## Research trigger
+## Research trigger hierarchy
 
-A cluster becomes a research candidate only when configurable minimums are met. Initial defaults should be conservative and easy to change in config.
+### Triggered
 
-Illustrative trigger logic:
+Default Phase 1 logic:
 
 ```text
 minimum independent companies
 AND positive breadth acceleration
-AND at least two scanner categories
+AND Demand + Scarcity core pair
+AND minimum category breadth
 AND minimum confidence
 ```
 
-A stronger trigger can require Demand + Scarcity, with Pricing or Capex acting as confirmation.
+### Confirmed
 
-Phase 1 must emit the evidence and score components so a human can inspect why the trigger fired.
+A triggered cluster becomes confirmed when at least one configurable confirmation category is present. The default confirmation set is:
+
+- Capex
+- Pricing
+
+This produces a useful hierarchy:
+
+```text
+Demand + Scarcity acceleration
+    -> research trigger
+    -> Capex and/or Pricing confirmation
+    -> stronger research candidate
+```
+
+Phase 1 must emit the evidence and every trigger component so a human can inspect why a cluster fired.
