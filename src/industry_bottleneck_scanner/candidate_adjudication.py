@@ -61,7 +61,7 @@ def promote_candidate(
         company_id=document.company_id,
         ticker=document.ticker,
         classification=document.classification,
-        subject=document.speaker,
+        subject=None,
         document_id=document.document_id,
         document_type=document.document_type,
         published_at=document.published_at,
@@ -74,4 +74,6 @@ def promote_candidate(
         matched_phrase=None,
         comparison_basis="unspecified",
         source_section=document.source_section,
+        speaker=document.speaker,
+        speaker_title=document.speaker_title,
     )
