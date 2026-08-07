@@ -9,6 +9,9 @@ description = "Phenomenon-first scanner for emerging industry bottlenecks"
 requires-python = ">=3.11"
 dependencies = []
 
+[project.scripts]
+ibs-transcript-coverage = "industry_bottleneck_scanner.coverage_cli:main"
+
 [project.optional-dependencies]
 dev = [
   "pytest>=8.0",
