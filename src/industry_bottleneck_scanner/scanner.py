@@ -99,11 +99,7 @@ def scan_document(
     *,
     patterns: tuple[SignalPattern, ...] = DEFAULT_PATTERNS,
 ) -> list[AtomicSignal]:
-    """Run deterministic phrase and regex matching over one source document.
-
-    The regex layer raises recall for common word-order and inflection variants while
-    preserving auditable evidence and avoiding any LLM call.
-    """
+    """Run deterministic phrase and regex matching over one source document."""
 
     signals: list[AtomicSignal] = []
     for sentence in _sentences(document.text):
@@ -127,7 +123,7 @@ def scan_document(
                     company_id=document.company_id,
                     ticker=document.ticker,
                     classification=document.classification,
-                    subject=None,
+                    subject=document.speaker,
                     document_id=document.document_id,
                     document_type=document.document_type,
                     published_at=document.published_at,
@@ -139,6 +135,7 @@ def scan_document(
                     confidence=confidence,
                     matched_phrase=match.text,
                     comparison_basis=_comparison_basis(sentence, pattern),
+                    source_section=document.source_section,
                 )
             )
     return signals
