@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime
 
 from .models import AtomicSignal
 
@@ -13,9 +12,12 @@ class ClusterSnapshot:
     distinct_companies: int
     distinct_documents: int
     active_categories: tuple[str, ...]
+    active_metrics: tuple[str, ...]
+    source_types: tuple[str, ...]
     strengthening_signals: int
     weakening_signals: int
     confidence_mean: float
+    weighted_signal_count: float
 
 
 @dataclass(frozen=True)
@@ -26,8 +28,13 @@ class AccelerationSnapshot:
     breadth_change: int
     breadth_ratio: float | None
     category_breadth: int
+    metric_breadth: int
+    source_type_breadth: int
+    core_pair_present: bool
+    confirmation_count: int
     confidence_mean: float
     triggered: bool
+    confirmed: bool
 
 
 def _bucket(signal: AtomicSignal) -> str:
@@ -35,30 +42,53 @@ def _bucket(signal: AtomicSignal) -> str:
     return classification.subindustry or classification.industry or classification.sector or "unclassified"
 
 
+def _is_active_strengthening(signal: AtomicSignal) -> bool:
+    return not signal.negated and not signal.resolved and signal.direction == "strengthening"
+
+
 def summarize(signals: list[AtomicSignal]) -> list[ClusterSnapshot]:
+    """Summarize evidence by classification bucket.
+
+    Breadth and trigger inputs are based only on active strengthening evidence.
+    Weakening/resolution observations remain visible as counter-evidence but do
+    not inflate the opportunity breadth.
+    """
+
     grouped: dict[str, list[AtomicSignal]] = defaultdict(list)
     for signal in signals:
-        if signal.negated or signal.resolved:
-            continue
         grouped[_bucket(signal)].append(signal)
 
     snapshots: list[ClusterSnapshot] = []
     for bucket, items in sorted(grouped.items()):
-        companies = {item.company_id for item in items}
-        documents = {item.document_id for item in items}
-        categories = tuple(sorted({item.scanner for item in items}))
-        strengthening = sum(item.direction == "strengthening" for item in items)
-        weakening = sum(item.direction == "weakening" for item in items)
-        confidence_mean = sum(item.confidence for item in items) / len(items)
+        active = [item for item in items if _is_active_strengthening(item)]
+        weakening = [
+            item
+            for item in items
+            if item.direction == "weakening" or item.negated or item.resolved
+        ]
+
+        companies = {item.company_id for item in active}
+        documents = {item.document_id for item in active}
+        categories = tuple(sorted({item.scanner for item in active}))
+        metrics = tuple(sorted({item.metric for item in active}))
+        source_types = tuple(sorted({item.document_type for item in active}))
+        confidence_mean = (
+            sum(item.confidence for item in active) / len(active) if active else 0.0
+        )
+        weighted_signal_count = sum(item.confidence for item in active)
+
         snapshots.append(
             ClusterSnapshot(
                 bucket=bucket,
                 distinct_companies=len(companies),
                 distinct_documents=len(documents),
                 active_categories=categories,
-                strengthening_signals=strengthening,
-                weakening_signals=weakening,
+                active_metrics=metrics,
+                source_types=source_types,
+                strengthening_signals=len(active),
+                weakening_signals=len(weakening),
                 confidence_mean=confidence_mean,
+                weighted_signal_count=weighted_signal_count,
             )
         )
     return snapshots
@@ -71,7 +101,17 @@ def compare_windows(
     min_companies: int = 3,
     min_categories: int = 2,
     min_confidence: float = 0.65,
+    require_core_pair: bool = True,
+    min_confirmation_categories: int = 1,
 ) -> list[AccelerationSnapshot]:
+    """Compare current and baseline windows and emit auditable trigger components.
+
+    The default research trigger requires simultaneous Demand + Scarcity evidence.
+    Capex and Pricing are treated as confirming categories.  A cluster can be
+    `triggered=True` before confirmation, while `confirmed=True` requires at
+    least one confirming category by default.
+    """
+
     current_by_bucket = {snapshot.bucket: snapshot for snapshot in summarize(current)}
     baseline_by_bucket = {snapshot.bucket: snapshot for snapshot in summarize(baseline)}
     buckets = sorted(set(current_by_bucket) | set(baseline_by_bucket))
@@ -84,14 +124,26 @@ def compare_windows(
         breadth_baseline = base.distinct_companies if base else 0
         breadth_change = breadth_current - breadth_baseline
         breadth_ratio = None if breadth_baseline == 0 else breadth_current / breadth_baseline
-        category_breadth = len(cur.active_categories) if cur else 0
+
+        categories = set(cur.active_categories) if cur else set()
+        category_breadth = len(categories)
+        metric_breadth = len(cur.active_metrics) if cur else 0
+        source_type_breadth = len(cur.source_types) if cur else 0
         confidence_mean = cur.confidence_mean if cur else 0.0
+
+        core_pair_present = {"demand", "scarcity"}.issubset(categories)
+        confirmation_count = len(categories & {"capex", "pricing"})
+        core_requirement_met = core_pair_present or not require_core_pair
+
         triggered = (
             breadth_current >= min_companies
             and breadth_change > 0
             and category_breadth >= min_categories
             and confidence_mean >= min_confidence
+            and core_requirement_met
         )
+        confirmed = triggered and confirmation_count >= min_confirmation_categories
+
         results.append(
             AccelerationSnapshot(
                 bucket=bucket,
@@ -100,8 +152,13 @@ def compare_windows(
                 breadth_change=breadth_change,
                 breadth_ratio=breadth_ratio,
                 category_breadth=category_breadth,
+                metric_breadth=metric_breadth,
+                source_type_breadth=source_type_breadth,
+                core_pair_present=core_pair_present,
+                confirmation_count=confirmation_count,
                 confidence_mean=confidence_mean,
                 triggered=triggered,
+                confirmed=confirmed,
             )
         )
     return results
