@@ -28,6 +28,18 @@ def _starts_qa(turn: TranscriptTurn) -> bool:
     return _is_analyst(turn) or any(marker in text for marker in _QA_MARKERS)
 
 
+def infer_turn_sections(transcript: EarningsCallTranscript) -> tuple[str, ...]:
+    """Label each provider turn as prepared or Q&A without requiring event dates."""
+
+    sections: list[str] = []
+    in_qa = False
+    for turn in transcript.turns:
+        if not in_qa and _starts_qa(turn):
+            in_qa = True
+        sections.append("qa" if in_qa else "prepared")
+    return tuple(sections)
+
+
 def transcript_to_documents(
     transcript: EarningsCallTranscript,
     *,
@@ -44,14 +56,12 @@ def transcript_to_documents(
 
     bucket = classification or Classification()
     documents: list[SourceDocument] = []
-    in_qa = False
+    sections = infer_turn_sections(transcript)
 
-    for index, turn in enumerate(transcript.turns, start=1):
+    for index, (turn, source_section) in enumerate(zip(transcript.turns, sections), start=1):
         text = turn.text.strip()
         if not text:
             continue
-        if not in_qa and _starts_qa(turn):
-            in_qa = True
         document_id = (
             f"{transcript.provider}:{transcript.ticker}:"
             f"{transcript.fiscal_quarter}:turn:{index:04d}"
@@ -68,7 +78,7 @@ def transcript_to_documents(
                 source_url=transcript.source_url,
                 speaker=turn.speaker,
                 speaker_title=turn.title,
-                source_section="qa" if in_qa else "prepared",
+                source_section=source_section,
             )
         )
 
