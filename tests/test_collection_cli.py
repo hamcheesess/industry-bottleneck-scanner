@@ -15,7 +15,16 @@ class FakeSource:
             provider=self.provider_name,
             ticker=ticker,
             fiscal_quarter=quarter,
-            turns=(TranscriptTurn(speaker="CEO", title="CEO", text="Pricing remains strong."),),
+            turns=(
+                TranscriptTurn(speaker="CEO", title="CEO", text="Prepared remarks."),
+                TranscriptTurn(
+                    speaker="Operator",
+                    title=None,
+                    text="We will now begin the question-and-answer session.",
+                ),
+                TranscriptTurn(speaker="Analyst", title="Analyst", text="Question."),
+                TranscriptTurn(speaker="CEO", title="CEO", text="Pricing remains strong."),
+            ),
         )
 
 
@@ -46,4 +55,8 @@ def test_collection_cli_embeds_pilot_readiness(monkeypatch, tmp_path) -> None:
     assert payload["fetched"] == 6
     assert payload["pilot_diagnostics"]["fully_available_companies"] == 3
     assert payload["pilot_diagnostics"]["ready_for_matched_experiment"] is True
+    quality = payload["pilot_diagnostics"]["transcript_quality"]
+    assert quality["transcript_count"] == 6
+    assert quality["qa_detection_rate"] == 1.0
+    assert quality["speaker_label_rate"] == 1.0
     assert "test-key" not in output.read_text(encoding="utf-8")
