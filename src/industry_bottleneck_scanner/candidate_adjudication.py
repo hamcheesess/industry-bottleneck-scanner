@@ -18,12 +18,7 @@ def adjudicate_candidate(
     candidate: RetrievalCandidate,
     document: SourceDocument,
 ) -> AdjudicationResult:
-    """Apply cheap deterministic guardrails before promoting a retrieval candidate.
-
-    Lexical/regex-backed candidates are accepted because their evidence has already passed
-    the scanner's explicit phrase/pattern checks. Semantic-only candidates remain review
-    unless they are in the high tier. This function intentionally does not call an LLM.
-    """
+    """Apply cheap deterministic guardrails before promoting a retrieval candidate."""
 
     if candidate.document_id != document.document_id:
         return AdjudicationResult(candidate, "rejected", "document_id_mismatch")
@@ -78,4 +73,5 @@ def promote_candidate(
         confidence=confidence,
         matched_phrase=None,
         comparison_basis="unspecified",
+        source_section=document.source_section,
     )
