@@ -15,6 +15,7 @@ def _signal(
     document_type: str = "10-Q",
     direction: str = "strengthening",
     resolved: bool = False,
+    source_section: str | None = None,
 ) -> AtomicSignal:
     return AtomicSignal(
         signal_id=signal_id,
@@ -35,6 +36,7 @@ def _signal(
         resolved=resolved,
         extraction_method="rule",
         confidence=confidence,
+        source_section=source_section,
     )
 
 
@@ -54,6 +56,20 @@ def test_summary_prioritizes_distinct_company_breadth() -> None:
         "capacity_constraint",
         "pricing_power",
     }
+
+
+def test_summary_reports_prepared_and_qa_evidence_separately() -> None:
+    summary = summarize(
+        [
+            _signal("1", "a", "demand", source_section="prepared"),
+            _signal("2", "b", "scarcity", source_section="qa"),
+            _signal("3", "c", "pricing", source_section="qa"),
+        ]
+    )[0]
+
+    assert summary.source_sections == ("prepared", "qa")
+    assert summary.prepared_signals == 1
+    assert summary.qa_signals == 2
 
 
 def test_weakening_evidence_does_not_inflate_active_breadth() -> None:
