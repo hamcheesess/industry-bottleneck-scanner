@@ -60,6 +60,7 @@ class AtomicSignal:
     confidence: float
     matched_phrase: str | None = None
     comparison_basis: ComparisonBasis = "unspecified"
+    source_section: str | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.confidence <= 1.0:
