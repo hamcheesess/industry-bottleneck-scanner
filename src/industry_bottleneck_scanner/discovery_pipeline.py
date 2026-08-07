@@ -6,6 +6,7 @@ from datetime import datetime
 from .candidate_adjudication import AdjudicationResult, adjudicate_candidate, promote_candidate
 from .candidate_retrieval import RetrievalCandidate, retrieve_candidates
 from .models import AtomicSignal, Classification
+from .review_queue import FileReviewQueue, ReviewRecord
 from .semantic_retrieval import LocalSemanticRetriever
 from .transcript_pipeline import transcript_to_documents
 from .transcripts import EarningsCallTranscript
@@ -18,6 +19,7 @@ class TranscriptScanResult:
     rejected: tuple[AdjudicationResult, ...]
     document_count: int
     candidate_count: int
+    queued_reviews: int = 0
 
 
 def scan_earnings_call(
@@ -27,8 +29,14 @@ def scan_earnings_call(
     published_at: datetime,
     classification: Classification = Classification(),
     semantic_retriever: LocalSemanticRetriever | None = None,
+    review_queue: FileReviewQueue | None = None,
 ) -> TranscriptScanResult:
-    """Run the local, no-LLM Phase-1 pipeline over one normalized earnings call."""
+    """Run the local, no-LLM Phase-1 pipeline over one normalized earnings call.
+
+    Review-tier semantic candidates remain separate from accepted AtomicSignals. When a
+    review queue is supplied they are persisted with the minimum source provenance needed
+    for later reprocessing; no raw full-call transcript is written to the review queue.
+    """
 
     documents = transcript_to_documents(
         transcript,
@@ -38,6 +46,7 @@ def scan_earnings_call(
     )
     signals: list[AtomicSignal] = []
     review: list[RetrievalCandidate] = []
+    review_records: list[ReviewRecord] = []
     rejected: list[AdjudicationResult] = []
     candidate_count = 0
 
@@ -48,6 +57,8 @@ def scan_earnings_call(
             decision = adjudicate_candidate(candidate, document)
             if decision.status == "review":
                 review.append(candidate)
+                if review_queue is not None:
+                    review_records.append(ReviewRecord.from_candidate(candidate, document))
                 continue
             if decision.status == "rejected":
                 rejected.append(decision)
@@ -56,10 +67,15 @@ def scan_earnings_call(
             if signal is not None:
                 signals.append(signal)
 
+    queued_reviews = 0
+    if review_queue is not None and review_records:
+        queued_reviews = review_queue.enqueue(tuple(review_records))
+
     return TranscriptScanResult(
         signals=tuple(signals),
         review_candidates=tuple(review),
         rejected=tuple(rejected),
         document_count=len(documents),
         candidate_count=candidate_count,
+        queued_reviews=queued_reviews,
     )
