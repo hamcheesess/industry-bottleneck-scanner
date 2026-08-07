@@ -2,21 +2,39 @@ from __future__ import annotations
 
 import hashlib
 import re
-from dataclasses import replace
 
-from .models import AtomicSignal, SourceDocument
+from .models import AtomicSignal, ComparisonBasis, SourceDocument
 from .vocabulary import DEFAULT_PATTERNS, SignalPattern
 
 _NEGATION_MARKERS = (
     "no longer",
     "not constrained",
     "not capacity constrained",
+    "not supply constrained",
+    "isn't constrained",
+    "is not constrained",
+)
+
+_RESOLUTION_MARKERS = (
     "normalized",
     "normalised",
-    "improved",
-    "declined",
+    "conditions improved",
+    "constraints eased",
+    "constraint eased",
+    "supply improved",
+    "availability improved",
+)
+
+_PRIOR_PERIOD_MARKERS = (
+    "increased",
+    "grew",
+    "growth",
     "decreased",
-    "eased",
+    "declined",
+    "contracted",
+    "year over year",
+    "year-over-year",
+    "sequentially",
 )
 
 
@@ -30,18 +48,39 @@ def _signal_id(document_id: str, scanner: str, metric: str, evidence: str) -> st
     return hashlib.sha256(payload).hexdigest()[:24]
 
 
-def _contains_phrase(sentence: str, phrase: str) -> bool:
-    return phrase.casefold() in sentence.casefold()
-
-
-def _is_negated_or_resolved(sentence: str) -> tuple[bool, bool]:
+def _matched_phrase(sentence: str, pattern: SignalPattern) -> str | None:
     lowered = sentence.casefold()
-    negated = any(marker in lowered for marker in ("no longer", "not constrained", "not capacity constrained"))
-    resolved = negated or any(
-        marker in lowered
-        for marker in ("normalized", "normalised", "improved", "declined", "decreased", "eased")
-    )
-    return negated, resolved
+    for phrase in pattern.phrases:
+        if phrase.casefold() in lowered:
+            return phrase
+    return None
+
+
+def _is_negated(sentence: str) -> bool:
+    lowered = sentence.casefold()
+    return any(marker in lowered for marker in _NEGATION_MARKERS)
+
+
+def _is_resolved(sentence: str, pattern: SignalPattern) -> bool:
+    if pattern.direction != "strengthening":
+        return False
+    lowered = sentence.casefold()
+    return _is_negated(sentence) or any(marker in lowered for marker in _RESOLUTION_MARKERS)
+
+
+def _comparison_basis(sentence: str, pattern: SignalPattern) -> ComparisonBasis:
+    metric = pattern.metric
+    lowered = sentence.casefold()
+
+    if metric.startswith("capex_revision_"):
+        return "prior_guidance_or_plan"
+    if metric == "book_to_bill_above_one":
+        return "threshold"
+    if metric in {"forward_capacity_commitment", "sold_out_capacity"}:
+        return "forward_commitment"
+    if any(marker in lowered for marker in _PRIOR_PERIOD_MARKERS):
+        return "prior_period"
+    return "unspecified"
 
 
 def scan_document(
@@ -51,19 +90,24 @@ def scan_document(
 ) -> list[AtomicSignal]:
     """Run deterministic phrase matching over one normalized source document.
 
-    Phase 1 deliberately keeps extraction simple and auditable. A later extractor may
-    enrich subject, magnitude, and semantic direction without changing the output contract.
+    Phase 1 deliberately keeps extraction auditable.  It identifies logical
+    metrics, direction, the exact matched phrase, and a coarse comparison basis.
+    Later semantic extractors may enrich subject and magnitude without changing
+    the AtomicSignal contract.
     """
 
     signals: list[AtomicSignal] = []
     for sentence in _sentences(document.text):
-        negated, resolved = _is_negated_or_resolved(sentence)
         for pattern in patterns:
-            if not any(_contains_phrase(sentence, phrase) for phrase in pattern.phrases):
+            matched_phrase = _matched_phrase(sentence, pattern)
+            if matched_phrase is None:
                 continue
 
+            negated = _is_negated(sentence)
+            resolved = _is_resolved(sentence, pattern)
             direction = "weakening" if resolved else pattern.direction
-            confidence = 0.55 if resolved else 0.75
+            confidence = max(0.0, pattern.base_confidence - (0.2 if resolved else 0.0))
+
             signals.append(
                 AtomicSignal(
                     signal_id=_signal_id(document.document_id, pattern.scanner, pattern.metric, sentence),
@@ -84,6 +128,8 @@ def scan_document(
                     resolved=resolved,
                     extraction_method="keyword",
                     confidence=confidence,
+                    matched_phrase=matched_phrase,
+                    comparison_basis=_comparison_basis(sentence, pattern),
                 )
             )
     return signals
