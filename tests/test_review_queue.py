@@ -49,7 +49,9 @@ def test_accepting_review_promotes_atomic_signal(tmp_path) -> None:
     assert signal is not None
     assert signal.metric == "capacity_constraint"
     assert signal.company_id == "issuer-1"
-    assert signal.subject == "CEO"
+    assert signal.subject is None
+    assert signal.speaker == "CEO"
+    assert signal.speaker_title == "Chief Executive Officer"
     assert queue.pending() == ()
 
 
