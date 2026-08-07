@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .pilot_diagnostics import diagnose_pilot, load_collection_items
 from .transcript_collection import TranscriptRequest
+from .transcript_quality import evaluate_transcript_quality
 from .transcript_store import FileTranscriptStore
 
 
@@ -38,22 +39,42 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     provider, items = load_collection_items(args.collection)
+    requests = _load_requests(args.requests)
+    store = FileTranscriptStore(args.transcript_root)
     diagnostics = diagnose_pilot(
         provider=provider,
-        requests=_load_requests(args.requests),
+        requests=requests,
         items=items,
-        transcript_store=FileTranscriptStore(args.transcript_root),
+        transcript_store=store,
         min_paired_companies=args.min_paired_companies,
     )
+
+    cached_transcripts = tuple(
+        transcript
+        for request in requests
+        if (
+            transcript := store.load(
+                provider=provider,
+                ticker=request.ticker,
+                quarter=request.quarter,
+            )
+        )
+        is not None
+    )
+    quality = evaluate_transcript_quality(cached_transcripts)
+
     payload = asdict(diagnostics)
     payload["resolved_rate"] = diagnostics.resolved_rate
     payload["availability_rate"] = diagnostics.availability_rate
+    payload["transcript_quality"] = asdict(quality)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(
         f"provider={provider} pairs={diagnostics.requested_pairs} "
         f"available={diagnostics.available_pairs} missing={diagnostics.missing_pairs} "
         f"unresolved={len(diagnostics.unresolved_pairs)} paired_companies={diagnostics.fully_available_companies} "
+        f"qa_detection_rate={quality.qa_detection_rate:.1%} "
+        f"speaker_label_rate={quality.speaker_label_rate:.1%} "
         f"ready={str(diagnostics.ready_for_matched_experiment).lower()}"
     )
     print(f"wrote {args.output}")
