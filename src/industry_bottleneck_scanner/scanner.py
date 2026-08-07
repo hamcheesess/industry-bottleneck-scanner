@@ -123,7 +123,7 @@ def scan_document(
                     company_id=document.company_id,
                     ticker=document.ticker,
                     classification=document.classification,
-                    subject=document.speaker,
+                    subject=None,
                     document_id=document.document_id,
                     document_type=document.document_type,
                     published_at=document.published_at,
@@ -136,6 +136,8 @@ def scan_document(
                     matched_phrase=match.text,
                     comparison_basis=_comparison_basis(sentence, pattern),
                     source_section=document.source_section,
+                    speaker=document.speaker,
+                    speaker_title=document.speaker_title,
                 )
             )
     return signals
