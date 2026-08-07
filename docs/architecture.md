@@ -14,6 +14,22 @@ The system should answer, in order:
 6. Who captures the economics?
 7. Which listed companies should be handed to downstream underwriting?
 
+## Canonical discovery universe
+
+Repo A uses the **Russell 3000 membership universe** as its broad US-listed discovery universe.
+
+The universe is stored as a dated snapshot with separate issuer and security identities:
+
+```text
+Russell 3000 membership snapshot
+  -> normalize tickers / share classes
+  -> preserve issuer_id + security_id
+  -> resolve SEC CIK
+  -> incremental SEC document ingestion
+```
+
+The scanner must not silently drop members whose CIK is unresolved. Those names remain in an explicit unresolved queue until identity enrichment succeeds.
+
 ## Two-engine boundary
 
 ### Repo A: industry-bottleneck-scanner
@@ -21,7 +37,9 @@ The system should answer, in order:
 Discovery engine only.
 
 ```text
-Documents
+Russell 3000 universe
+  -> issuer/security registry
+  -> documents
   -> signal extraction
   -> atomic signals
   -> company/industry aggregation
@@ -56,26 +74,32 @@ Phase 1 is intentionally narrow and local-first.
 
 ### Inputs
 
-A normalized `SourceDocument` record supplied by fixtures or future ingestion adapters.
+1. a dated normalized `UniverseSnapshot` targeting Russell 3000 membership
+2. normalized `SourceDocument` records supplied by fixtures or future ingestion adapters
 
 ### Processing
 
-1. match industry-independent phenomenon vocabulary
-2. normalize matches into `AtomicSignal`
-3. reject/discount obvious negation and resolved conditions
-4. aggregate by company and classification bucket
-5. compare current vs baseline windows
-6. calculate signal acceleration
-7. emit research-trigger clusters
+1. normalize and validate the discovery universe
+2. preserve issuer/security identity and SEC-resolution status
+3. match industry-independent phenomenon vocabulary
+4. normalize matches into `AtomicSignal`
+5. reject/discount obvious negation and resolved conditions
+6. aggregate by company and classification bucket
+7. compare current vs baseline windows
+8. calculate signal acceleration
+9. emit research-trigger clusters
 
 ### Outputs
 
+- immutable universe snapshot
+- unresolved-identifier queue
 - atomic signal JSONL
 - aggregate snapshots
 - research-trigger cluster JSON
 
 ### Explicitly out of scope for Phase 1
 
+- live Russell constituent acquisition
 - live SEC crawling
 - paid transcript integrations
 - LLM/API extraction
@@ -89,6 +113,10 @@ A normalized `SourceDocument` record supplied by fixtures or future ingestion ad
 ### Phenomenon-first
 
 Industry names are metadata for aggregation, not the initial query.
+
+### Broad discovery before financial filtering
+
+The Russell 3000 universe remains broad at the discovery stage. Financial quality filters belong downstream so a structurally important bottleneck beneficiary is not excluded before the phenomenon scan.
 
 ### Independent-company breadth over mention count
 
