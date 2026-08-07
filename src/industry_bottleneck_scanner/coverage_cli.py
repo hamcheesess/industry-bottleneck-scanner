@@ -51,6 +51,12 @@ def _parser() -> argparse.ArgumentParser:
         help="Optional ticker sample. Defaults to a mixed large/mid/smaller-cap sample.",
     )
     parser.add_argument(
+        "--interval-seconds",
+        type=float,
+        default=1.1,
+        help="Delay between provider requests. Default 1.1 seconds for Alpha Vantage free keys.",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("coverage-results.json"),
@@ -64,6 +70,8 @@ def main(argv: list[str] | None = None) -> int:
     api_key = os.environ.get("ALPHA_VANTAGE_API_KEY", "").strip()
     if not api_key:
         raise SystemExit("ALPHA_VANTAGE_API_KEY environment variable is required")
+    if args.interval_seconds < 0:
+        raise SystemExit("--interval-seconds must be non-negative")
 
     tickers = tuple(args.tickers or DEFAULT_SAMPLE)
     if args.limit > len(tickers):
@@ -78,6 +86,7 @@ def main(argv: list[str] | None = None) -> int:
         tickers=tickers,
         quarter=args.quarter,
         max_requests=args.limit,
+        min_interval_seconds=args.interval_seconds,
     )
 
     payload = {
@@ -86,8 +95,11 @@ def main(argv: list[str] | None = None) -> int:
         "requested": summary.requested,
         "available": summary.available,
         "missing": summary.missing,
+        "rate_limited": summary.rate_limited,
         "errors": summary.errors,
         "availability_rate": summary.availability_rate,
+        "resolved_rate": summary.resolved_rate,
+        "interval_seconds": args.interval_seconds,
         "results": [asdict(result) for result in summary.results],
     }
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -95,8 +107,9 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"provider={source.provider_name} quarter={args.quarter.upper()} "
         f"requested={summary.requested} available={summary.available} "
-        f"missing={summary.missing} errors={summary.errors} "
-        f"availability_rate={summary.availability_rate:.1%}"
+        f"missing={summary.missing} rate_limited={summary.rate_limited} "
+        f"errors={summary.errors} availability_rate={summary.availability_rate:.1%} "
+        f"resolved_rate={summary.resolved_rate:.1%}"
     )
     print(f"wrote {args.output}")
     return 0
