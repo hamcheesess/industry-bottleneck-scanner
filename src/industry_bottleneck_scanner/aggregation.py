@@ -14,6 +14,9 @@ class ClusterSnapshot:
     active_categories: tuple[str, ...]
     active_metrics: tuple[str, ...]
     source_types: tuple[str, ...]
+    source_sections: tuple[str, ...]
+    prepared_signals: int
+    qa_signals: int
     strengthening_signals: int
     weakening_signals: int
     confidence_mean: float
@@ -47,12 +50,7 @@ def _is_active_strengthening(signal: AtomicSignal) -> bool:
 
 
 def summarize(signals: list[AtomicSignal]) -> list[ClusterSnapshot]:
-    """Summarize evidence by classification bucket.
-
-    Breadth and trigger inputs are based only on active strengthening evidence.
-    Weakening/resolution observations remain visible as counter-evidence but do
-    not inflate the opportunity breadth.
-    """
+    """Summarize active and counter-evidence by classification bucket."""
 
     grouped: dict[str, list[AtomicSignal]] = defaultdict(list)
     for signal in signals:
@@ -72,6 +70,9 @@ def summarize(signals: list[AtomicSignal]) -> list[ClusterSnapshot]:
         categories = tuple(sorted({item.scanner for item in active}))
         metrics = tuple(sorted({item.metric for item in active}))
         source_types = tuple(sorted({item.document_type for item in active}))
+        source_sections = tuple(sorted({item.source_section for item in active if item.source_section}))
+        prepared_signals = sum(item.source_section == "prepared" for item in active)
+        qa_signals = sum(item.source_section == "qa" for item in active)
         confidence_mean = (
             sum(item.confidence for item in active) / len(active) if active else 0.0
         )
@@ -85,6 +86,9 @@ def summarize(signals: list[AtomicSignal]) -> list[ClusterSnapshot]:
                 active_categories=categories,
                 active_metrics=metrics,
                 source_types=source_types,
+                source_sections=source_sections,
+                prepared_signals=prepared_signals,
+                qa_signals=qa_signals,
                 strengthening_signals=len(active),
                 weakening_signals=len(weakening),
                 confidence_mean=confidence_mean,
@@ -104,13 +108,7 @@ def compare_windows(
     require_core_pair: bool = True,
     min_confirmation_categories: int = 1,
 ) -> list[AccelerationSnapshot]:
-    """Compare current and baseline windows and emit auditable trigger components.
-
-    The default research trigger requires simultaneous Demand + Scarcity evidence.
-    Capex and Pricing are treated as confirming categories.  A cluster can be
-    `triggered=True` before confirmation, while `confirmed=True` requires at
-    least one confirming category by default.
-    """
+    """Compare current and baseline windows and emit auditable trigger components."""
 
     current_by_bucket = {snapshot.bucket: snapshot for snapshot in summarize(current)}
     baseline_by_bucket = {snapshot.bucket: snapshot for snapshot in summarize(baseline)}
