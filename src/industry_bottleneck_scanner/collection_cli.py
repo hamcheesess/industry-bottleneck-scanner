@@ -10,6 +10,7 @@ from pathlib import Path
 from .alpha_vantage import AlphaVantageTranscriptSource
 from .pilot_diagnostics import diagnose_pilot
 from .transcript_collection import TranscriptRequest, collect_requested_transcripts
+from .transcript_quality import evaluate_transcript_quality
 from .transcript_store import FileTranscriptStore
 
 
@@ -75,10 +76,24 @@ def main(argv: list[str] | None = None) -> int:
         transcript_store=store,
         min_paired_companies=args.min_paired_companies,
     )
+    cached_transcripts = tuple(
+        transcript
+        for request in requests
+        if (
+            transcript := store.load(
+                provider=source.provider_name,
+                ticker=request.ticker,
+                quarter=request.quarter,
+            )
+        )
+        is not None
+    )
+    quality = evaluate_transcript_quality(cached_transcripts)
 
     diagnostic_payload = asdict(diagnostics)
     diagnostic_payload["resolved_rate"] = diagnostics.resolved_rate
     diagnostic_payload["availability_rate"] = diagnostics.availability_rate
+    diagnostic_payload["transcript_quality"] = asdict(quality)
     payload = {
         "provider": source.provider_name,
         "requested": summary.requested,
@@ -100,6 +115,8 @@ def main(argv: list[str] | None = None) -> int:
         f"rate_limited={summary.rate_limited} errors={summary.errors} "
         f"provider_requests={summary.provider_requests} "
         f"paired_companies={diagnostics.fully_available_companies} "
+        f"qa_detection_rate={quality.qa_detection_rate:.1%} "
+        f"speaker_label_rate={quality.speaker_label_rate:.1%} "
         f"ready={str(diagnostics.ready_for_matched_experiment).lower()}"
     )
     print(f"wrote {args.output}")
