@@ -12,6 +12,7 @@ dependencies = []
 [project.scripts]
 ibs-transcript-coverage = "industry_bottleneck_scanner.coverage_cli:main"
 ibs-transcript-collect = "industry_bottleneck_scanner.collection_cli:main"
+ibs-pilot-diagnostics = "industry_bottleneck_scanner.pilot_diagnostics_cli:main"
 ibs-phase1-batch = "industry_bottleneck_scanner.batch_cli:main"
 
 [project.optional-dependencies]
