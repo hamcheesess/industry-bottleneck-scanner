@@ -11,6 +11,7 @@ def _signal(
     *,
     metric: str = "metric",
     industry: str = "Electrical Equipment",
+    subindustry: str | None = None,
     confidence: float = 0.8,
     document_type: str = "10-Q",
     direction: str = "strengthening",
@@ -25,7 +26,7 @@ def _signal(
         magnitude="unknown",
         company_id=company_id,
         ticker=None,
-        classification=Classification(industry=industry),
+        classification=Classification(industry=industry, subindustry=subindustry),
         subject=None,
         document_id=f"doc-{signal_id}",
         document_type=document_type,
@@ -48,6 +49,7 @@ def test_summary_prioritizes_distinct_company_breadth() -> None:
     ]
 
     summary = summarize(signals)[0]
+    assert summary.aggregation_level == "industry"
     assert summary.distinct_companies == 2
     assert summary.distinct_documents == 3
     assert set(summary.active_categories) == {"scarcity", "pricing"}
@@ -56,6 +58,23 @@ def test_summary_prioritizes_distinct_company_breadth() -> None:
         "capacity_constraint",
         "pricing_power",
     }
+
+
+def test_industry_default_does_not_fragment_related_subindustries() -> None:
+    signals = [
+        _signal("1", "a", "demand", subindustry="Power Management"),
+        _signal("2", "b", "scarcity", subindustry="Connection & Protection"),
+        _signal("3", "c", "pricing", subindustry="Utility Solutions"),
+    ]
+
+    industry = summarize(signals)
+    subindustry = summarize(signals, aggregation_level="subindustry")
+
+    assert len(industry) == 1
+    assert industry[0].bucket == "Electrical Equipment"
+    assert industry[0].distinct_companies == 3
+    assert len(subindustry) == 3
+    assert {item.aggregation_level for item in subindustry} == {"subindustry"}
 
 
 def test_summary_reports_prepared_and_qa_evidence_separately() -> None:
@@ -93,6 +112,7 @@ def test_research_trigger_requires_demand_and_scarcity_core_pair() -> None:
     ]
 
     result = compare_windows(current, baseline)[0]
+    assert result.aggregation_level == "industry"
     assert result.breadth_current == 3
     assert result.breadth_change == 2
     assert result.core_pair_present is False
