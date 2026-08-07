@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .aggregation import AccelerationSnapshot, summarize
+from .aggregation import AccelerationSnapshot, AggregationLevel, summarize
 from .batch_orchestration import BatchScanResult, compare_cached_batches, scan_cached_batch
 from .company_metadata import CompanyPeriodMetadata
 from .review_queue import FileReviewQueue
@@ -39,15 +39,21 @@ def _index_unique(records: tuple[CompanyPeriodMetadata, ...], window: str) -> di
     return indexed
 
 
-def _filter_batch(result: BatchScanResult, eligible: set[str]) -> BatchScanResult:
+def _filter_batch(
+    result: BatchScanResult,
+    eligible: set[str],
+    *,
+    aggregation_level: AggregationLevel,
+) -> BatchScanResult:
     signals = tuple(signal for signal in result.signals if signal.company_id in eligible)
     companies = tuple(company for company in result.companies if company.company_id in eligible)
     return BatchScanResult(
         signals=signals,
         companies=companies,
-        clusters=tuple(summarize(list(signals))),
+        clusters=tuple(summarize(list(signals), aggregation_level=aggregation_level)),
         missing_transcripts=0,
         review_candidates=sum(company.review_count for company in companies),
+        aggregation_level=aggregation_level,
     )
 
 
@@ -60,6 +66,7 @@ def run_comparable_cached_experiment(
     semantic_retriever: LocalSemanticRetriever | None = None,
     review_queue: FileReviewQueue | None = None,
     max_companies: int | None = None,
+    aggregation_level: AggregationLevel = "industry",
 ) -> ComparableExperimentResult:
     """Run a cache-only current-vs-baseline experiment on a matched issuer cohort.
 
@@ -90,6 +97,7 @@ def run_comparable_cached_experiment(
         transcript_store=transcript_store,
         semantic_retriever=semantic_retriever,
         review_queue=review_queue,
+        aggregation_level=aggregation_level,
     )
     baseline_raw = scan_cached_batch(
         baseline_selected,
@@ -97,15 +105,20 @@ def run_comparable_cached_experiment(
         transcript_store=transcript_store,
         semantic_retriever=semantic_retriever,
         review_queue=review_queue,
+        aggregation_level=aggregation_level,
     )
 
     current_scanned = {item.company_id for item in current_raw.companies if item.status == "scanned"}
     baseline_scanned = {item.company_id for item in baseline_raw.companies if item.status == "scanned"}
     eligible = current_scanned & baseline_scanned
 
-    current = _filter_batch(current_raw, eligible)
-    baseline = _filter_batch(baseline_raw, eligible)
-    acceleration = compare_cached_batches(current, baseline)
+    current = _filter_batch(current_raw, eligible, aggregation_level=aggregation_level)
+    baseline = _filter_batch(baseline_raw, eligible, aggregation_level=aggregation_level)
+    acceleration = compare_cached_batches(
+        current,
+        baseline,
+        aggregation_level=aggregation_level,
+    )
 
     diagnostics = CohortDiagnostics(
         requested_current=len(current_records),
