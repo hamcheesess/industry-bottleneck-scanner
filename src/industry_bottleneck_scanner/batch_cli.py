@@ -5,15 +5,15 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from .batch_orchestration import compare_cached_batches, scan_cached_batch
 from .company_metadata import load_company_period_metadata_csv
+from .experiment import run_comparable_cached_experiment
 from .review_queue import FileReviewQueue
 from .transcript_store import FileTranscriptStore
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Scan cached earnings-call transcripts and compare current vs baseline windows."
+        description="Scan cached earnings-call transcripts and compare matched current vs baseline windows."
     )
     parser.add_argument("--current", type=Path, required=True, help="Current-window metadata CSV")
     parser.add_argument("--baseline", type=Path, required=True, help="Baseline-window metadata CSV")
@@ -35,24 +35,21 @@ def main(argv: list[str] | None = None) -> int:
     store = FileTranscriptStore(args.transcript_root)
     review_queue = FileReviewQueue(args.review_queue)
 
-    current = scan_cached_batch(
+    experiment = run_comparable_cached_experiment(
         current_records,
-        provider=args.provider,
-        transcript_store=store,
-        review_queue=review_queue,
-        max_companies=args.max_companies,
-    )
-    baseline = scan_cached_batch(
         baseline_records,
         provider=args.provider,
         transcript_store=store,
         review_queue=review_queue,
         max_companies=args.max_companies,
     )
-    acceleration = compare_cached_batches(current, baseline)
+    current = experiment.current
+    baseline = experiment.baseline
+    acceleration = experiment.acceleration
 
     payload = {
         "provider": args.provider,
+        "cohort": asdict(experiment.diagnostics),
         "current": {
             "companies": [asdict(item) for item in current.companies],
             "signal_count": len(current.signals),
@@ -75,6 +72,7 @@ def main(argv: list[str] | None = None) -> int:
     triggered = sum(item.triggered for item in acceleration)
     confirmed = sum(item.confirmed for item in acceleration)
     print(
+        f"eligible_companies={experiment.diagnostics.eligible_companies} "
         f"current_signals={len(current.signals)} baseline_signals={len(baseline.signals)} "
         f"clusters={len(acceleration)} triggered={triggered} confirmed={confirmed}"
     )
