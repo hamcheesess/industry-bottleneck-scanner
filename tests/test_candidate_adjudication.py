@@ -50,7 +50,9 @@ def test_high_semantic_candidate_can_be_promoted_with_speaker_provenance() -> No
 
     assert result.status == "accepted"
     assert signal is not None
-    assert signal.subject == "CEO"
+    assert signal.subject is None
+    assert signal.speaker == "CEO"
+    assert signal.speaker_title == "Chief Executive Officer"
     assert signal.extraction_method == "semantic_local"
     assert signal.confidence == 0.93
 
