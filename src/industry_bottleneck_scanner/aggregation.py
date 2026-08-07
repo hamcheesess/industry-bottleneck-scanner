@@ -2,13 +2,17 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
+from typing import Literal
 
 from .models import AtomicSignal
+
+AggregationLevel = Literal["sector", "industry", "subindustry"]
 
 
 @dataclass(frozen=True)
 class ClusterSnapshot:
     bucket: str
+    aggregation_level: AggregationLevel
     distinct_companies: int
     distinct_documents: int
     active_categories: tuple[str, ...]
@@ -26,6 +30,7 @@ class ClusterSnapshot:
 @dataclass(frozen=True)
 class AccelerationSnapshot:
     bucket: str
+    aggregation_level: AggregationLevel
     breadth_current: int
     breadth_baseline: int
     breadth_change: int
@@ -40,21 +45,34 @@ class AccelerationSnapshot:
     confirmed: bool
 
 
-def _bucket(signal: AtomicSignal) -> str:
+def _bucket(signal: AtomicSignal, aggregation_level: AggregationLevel) -> str:
     classification = signal.classification
-    return classification.subindustry or classification.industry or classification.sector or "unclassified"
+    if aggregation_level == "sector":
+        return classification.sector or classification.industry or classification.subindustry or "unclassified"
+    if aggregation_level == "subindustry":
+        return classification.subindustry or classification.industry or classification.sector or "unclassified"
+    return classification.industry or classification.subindustry or classification.sector or "unclassified"
 
 
 def _is_active_strengthening(signal: AtomicSignal) -> bool:
     return not signal.negated and not signal.resolved and signal.direction == "strengthening"
 
 
-def summarize(signals: list[AtomicSignal]) -> list[ClusterSnapshot]:
-    """Summarize active and counter-evidence by classification bucket."""
+def summarize(
+    signals: list[AtomicSignal],
+    *,
+    aggregation_level: AggregationLevel = "industry",
+) -> list[ClusterSnapshot]:
+    """Summarize active and counter-evidence by an explicit classification level.
+
+    Industry is the Phase-1 default. Subindustry remains available for drill-down, but using
+    the finest available label implicitly would fragment related issuers and suppress
+    cross-company breadth.
+    """
 
     grouped: dict[str, list[AtomicSignal]] = defaultdict(list)
     for signal in signals:
-        grouped[_bucket(signal)].append(signal)
+        grouped[_bucket(signal, aggregation_level)].append(signal)
 
     snapshots: list[ClusterSnapshot] = []
     for bucket, items in sorted(grouped.items()):
@@ -81,6 +99,7 @@ def summarize(signals: list[AtomicSignal]) -> list[ClusterSnapshot]:
         snapshots.append(
             ClusterSnapshot(
                 bucket=bucket,
+                aggregation_level=aggregation_level,
                 distinct_companies=len(companies),
                 distinct_documents=len(documents),
                 active_categories=categories,
@@ -102,6 +121,7 @@ def compare_windows(
     current: list[AtomicSignal],
     baseline: list[AtomicSignal],
     *,
+    aggregation_level: AggregationLevel = "industry",
     min_companies: int = 3,
     min_categories: int = 2,
     min_confidence: float = 0.65,
@@ -110,8 +130,14 @@ def compare_windows(
 ) -> list[AccelerationSnapshot]:
     """Compare current and baseline windows and emit auditable trigger components."""
 
-    current_by_bucket = {snapshot.bucket: snapshot for snapshot in summarize(current)}
-    baseline_by_bucket = {snapshot.bucket: snapshot for snapshot in summarize(baseline)}
+    current_by_bucket = {
+        snapshot.bucket: snapshot
+        for snapshot in summarize(current, aggregation_level=aggregation_level)
+    }
+    baseline_by_bucket = {
+        snapshot.bucket: snapshot
+        for snapshot in summarize(baseline, aggregation_level=aggregation_level)
+    }
     buckets = sorted(set(current_by_bucket) | set(baseline_by_bucket))
 
     results: list[AccelerationSnapshot] = []
@@ -145,6 +171,7 @@ def compare_windows(
         results.append(
             AccelerationSnapshot(
                 bucket=bucket,
+                aggregation_level=aggregation_level,
                 breadth_current=breadth_current,
                 breadth_baseline=breadth_baseline,
                 breadth_change=breadth_change,
