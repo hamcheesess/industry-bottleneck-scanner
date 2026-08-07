@@ -6,6 +6,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .company_metadata import load_company_period_metadata_csv
+from .diagnostics import summarize_signal_diagnostics
 from .experiment import run_comparable_cached_experiment
 from .review_queue import FileReviewQueue
 from .transcript_store import FileTranscriptStore
@@ -46,6 +47,8 @@ def main(argv: list[str] | None = None) -> int:
     current = experiment.current
     baseline = experiment.baseline
     acceleration = experiment.acceleration
+    current_diagnostics = summarize_signal_diagnostics(current.signals)
+    baseline_diagnostics = summarize_signal_diagnostics(baseline.signals)
 
     payload = {
         "provider": args.provider,
@@ -56,6 +59,7 @@ def main(argv: list[str] | None = None) -> int:
             "missing_transcripts": current.missing_transcripts,
             "review_candidates": current.review_candidates,
             "clusters": [asdict(item) for item in current.clusters],
+            "diagnostics": asdict(current_diagnostics),
         },
         "baseline": {
             "companies": [asdict(item) for item in baseline.companies],
@@ -63,6 +67,7 @@ def main(argv: list[str] | None = None) -> int:
             "missing_transcripts": baseline.missing_transcripts,
             "review_candidates": baseline.review_candidates,
             "clusters": [asdict(item) for item in baseline.clusters],
+            "diagnostics": asdict(baseline_diagnostics),
         },
         "acceleration": [asdict(item) for item in acceleration],
     }
