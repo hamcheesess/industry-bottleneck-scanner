@@ -5,6 +5,7 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
+from .artifacts import write_atomic_signals_jsonl
 from .company_metadata import load_company_period_metadata_csv
 from .diagnostics import summarize_signal_diagnostics
 from .experiment import run_comparable_cached_experiment
@@ -23,6 +24,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--review-queue", type=Path, default=Path("var/review/semantic.json"))
     parser.add_argument("--max-companies", type=int, default=50)
     parser.add_argument("--output", type=Path, default=Path("var/experiments/phase1-batch.json"))
+    parser.add_argument(
+        "--artifact-root",
+        type=Path,
+        default=Path("var/experiments/artifacts"),
+        help="Directory for auditable current/baseline AtomicSignal JSONL files",
+    )
     return parser
 
 
@@ -50,9 +57,18 @@ def main(argv: list[str] | None = None) -> int:
     current_diagnostics = summarize_signal_diagnostics(current.signals)
     baseline_diagnostics = summarize_signal_diagnostics(baseline.signals)
 
+    current_signal_path = args.artifact_root / "current_signals.jsonl"
+    baseline_signal_path = args.artifact_root / "baseline_signals.jsonl"
+    write_atomic_signals_jsonl(current_signal_path, current.signals)
+    write_atomic_signals_jsonl(baseline_signal_path, baseline.signals)
+
     payload = {
         "provider": args.provider,
         "cohort": asdict(experiment.diagnostics),
+        "artifacts": {
+            "current_signals_jsonl": str(current_signal_path),
+            "baseline_signals_jsonl": str(baseline_signal_path),
+        },
         "current": {
             "companies": [asdict(item) for item in current.companies],
             "signal_count": len(current.signals),
