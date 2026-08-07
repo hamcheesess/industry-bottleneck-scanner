@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .aggregation import AccelerationSnapshot, ClusterSnapshot, compare_windows, summarize
+from .aggregation import (
+    AccelerationSnapshot,
+    AggregationLevel,
+    ClusterSnapshot,
+    compare_windows,
+    summarize,
+)
 from .company_metadata import CompanyPeriodMetadata
 from .discovery_pipeline import scan_earnings_call
 from .models import AtomicSignal
@@ -28,6 +34,7 @@ class BatchScanResult:
     clusters: tuple[ClusterSnapshot, ...]
     missing_transcripts: int
     review_candidates: int
+    aggregation_level: AggregationLevel = "industry"
 
 
 def scan_cached_batch(
@@ -38,6 +45,7 @@ def scan_cached_batch(
     semantic_retriever: LocalSemanticRetriever | None = None,
     review_queue: FileReviewQueue | None = None,
     max_companies: int | None = None,
+    aggregation_level: AggregationLevel = "industry",
 ) -> BatchScanResult:
     """Scan a bounded batch of already-cached transcripts without provider calls.
 
@@ -97,15 +105,18 @@ def scan_cached_batch(
     return BatchScanResult(
         signals=signals,
         companies=tuple(companies),
-        clusters=tuple(summarize(list(signals))),
+        clusters=tuple(summarize(list(signals), aggregation_level=aggregation_level)),
         missing_transcripts=missing,
         review_candidates=total_review,
+        aggregation_level=aggregation_level,
     )
 
 
 def compare_cached_batches(
     current: BatchScanResult,
     baseline: BatchScanResult,
+    *,
+    aggregation_level: AggregationLevel | None = None,
 ) -> tuple[AccelerationSnapshot, ...]:
     """Compare two already-aligned batches.
 
@@ -113,4 +124,13 @@ def compare_cached_batches(
     layer so changes in transcript coverage cannot masquerade as signal acceleration.
     """
 
-    return tuple(compare_windows(list(current.signals), list(baseline.signals)))
+    level = aggregation_level or current.aggregation_level
+    if baseline.aggregation_level != level:
+        raise ValueError("current and baseline aggregation levels must match")
+    return tuple(
+        compare_windows(
+            list(current.signals),
+            list(baseline.signals),
+            aggregation_level=level,
+        )
+    )
