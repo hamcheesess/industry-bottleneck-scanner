@@ -34,7 +34,7 @@ def _transcript() -> EarningsCallTranscript:
     )
 
 
-def test_transcript_turns_preserve_speaker_provenance() -> None:
+def test_transcript_turns_preserve_speaker_provenance_and_sections() -> None:
     published_at = datetime(2026, 5, 6, 20, 0, tzinfo=timezone.utc)
     documents = transcript_to_documents(
         _transcript(),
@@ -49,6 +49,31 @@ def test_transcript_turns_preserve_speaker_provenance() -> None:
     assert documents[0].speaker_title == "Chief Executive Officer"
     assert documents[0].published_at == published_at
     assert documents[0].classification.industry == "Electrical Equipment"
+    assert [document.source_section for document in documents] == ["prepared", "qa", "qa"]
+
+
+def test_explicit_operator_marker_starts_qa_for_following_company_answers() -> None:
+    transcript = EarningsCallTranscript(
+        provider="fixture",
+        ticker="TEST",
+        fiscal_quarter="2026Q2",
+        turns=(
+            TranscriptTurn(speaker="CEO", title="CEO", text="Prepared remarks."),
+            TranscriptTurn(
+                speaker="Operator",
+                title="Operator",
+                text="We will now begin the question-and-answer session.",
+            ),
+            TranscriptTurn(speaker="CEO", title="CEO", text="Pricing remains strong."),
+        ),
+    )
+    documents = transcript_to_documents(
+        transcript,
+        company_id="issuer-test",
+        published_at=datetime(2026, 5, 6, tzinfo=timezone.utc),
+    )
+
+    assert [document.source_section for document in documents] == ["prepared", "qa", "qa"]
 
 
 def test_scan_transcript_emits_signals_without_sending_full_call_to_an_llm() -> None:
@@ -68,3 +93,6 @@ def test_scan_transcript_emits_signals_without_sending_full_call_to_an_llm() -> 
     backlog = next(signal for signal in signals if signal.metric == "backlog_strength")
     assert backlog.extraction_method == "regex"
     assert "Backlog reached a record" in backlog.matched_phrase
+    assert backlog.source_section == "prepared"
+    pricing = next(signal for signal in signals if signal.metric == "pricing_power")
+    assert pricing.source_section == "qa"
