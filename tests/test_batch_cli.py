@@ -69,3 +69,5 @@ def test_batch_cli_writes_cache_only_experiment_summary(tmp_path) -> None:
     assert payload["current"]["missing_transcripts"] == 0
     assert payload["baseline"]["missing_transcripts"] == 0
     assert payload["acceleration"][0]["bucket"] == "Electrical Equipment"
+    assert payload["current"]["diagnostics"]["distinct_companies"] == 1
+    assert payload["current"]["diagnostics"]["top_company_share"] == 1.0
