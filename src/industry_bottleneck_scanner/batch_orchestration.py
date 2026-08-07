@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 from .aggregation import AccelerationSnapshot, ClusterSnapshot, compare_windows, summarize
 from .company_metadata import CompanyPeriodMetadata
@@ -15,6 +14,7 @@ from .transcript_store import FileTranscriptStore
 @dataclass(frozen=True)
 class BatchCompanyResult:
     ticker: str
+    company_id: str
     quarter: str
     status: str
     signal_count: int = 0
@@ -62,7 +62,14 @@ def scan_cached_batch(
         )
         if transcript is None:
             missing += 1
-            companies.append(BatchCompanyResult(record.ticker, record.quarter, "missing_cache"))
+            companies.append(
+                BatchCompanyResult(
+                    ticker=record.ticker,
+                    company_id=record.company_id,
+                    quarter=record.quarter,
+                    status="missing_cache",
+                )
+            )
             continue
 
         result = scan_earnings_call(
@@ -78,6 +85,7 @@ def scan_cached_batch(
         companies.append(
             BatchCompanyResult(
                 ticker=record.ticker,
+                company_id=record.company_id,
                 quarter=record.quarter,
                 status="scanned",
                 signal_count=len(result.signals),
@@ -99,4 +107,10 @@ def compare_cached_batches(
     current: BatchScanResult,
     baseline: BatchScanResult,
 ) -> tuple[AccelerationSnapshot, ...]:
+    """Compare two already-aligned batches.
+
+    Production experiments should first align cohorts with the experiment orchestration
+    layer so changes in transcript coverage cannot masquerade as signal acceleration.
+    """
+
     return tuple(compare_windows(list(current.signals), list(baseline.signals)))
