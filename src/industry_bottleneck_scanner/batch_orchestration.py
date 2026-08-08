@@ -47,11 +47,7 @@ def scan_cached_batch(
     max_companies: int | None = None,
     aggregation_level: AggregationLevel = "industry",
 ) -> BatchScanResult:
-    """Scan a bounded batch of already-cached transcripts without provider calls.
-
-    This is intentionally cache-only. Data acquisition and signal extraction remain
-    separate operational stages so re-running research never consumes provider quota.
-    """
+    """Scan a bounded batch of already-cached transcripts without provider calls."""
 
     if max_companies is not None and max_companies < 0:
         raise ValueError("max_companies must be non-negative")
@@ -118,19 +114,25 @@ def compare_cached_batches(
     *,
     aggregation_level: AggregationLevel | None = None,
 ) -> tuple[AccelerationSnapshot, ...]:
-    """Compare two already-aligned batches.
-
-    Production experiments should first align cohorts with the experiment orchestration
-    layer so changes in transcript coverage cannot masquerade as signal acceleration.
-    """
+    """Compare two already-aligned batches using their matched scanned-company cohort."""
 
     level = aggregation_level or current.aggregation_level
     if baseline.aggregation_level != level:
         raise ValueError("current and baseline aggregation levels must match")
+
+    current_scanned = {
+        item.company_id for item in current.companies if item.status == "scanned"
+    }
+    baseline_scanned = {
+        item.company_id for item in baseline.companies if item.status == "scanned"
+    }
+    eligible = current_scanned & baseline_scanned
+
     return tuple(
         compare_windows(
             list(current.signals),
             list(baseline.signals),
             aggregation_level=level,
+            eligible_company_ids=eligible,
         )
     )
