@@ -124,6 +124,7 @@ def test_research_trigger_requires_demand_and_scarcity_core_pair() -> None:
     assert result.breadth_change == 2
     assert result.breadth_accelerating is True
     assert result.core_pair_present is False
+    assert result.watchlisted is False
     assert result.triggered is False
 
 
@@ -145,6 +146,7 @@ def test_triggered_cluster_becomes_confirmed_with_pricing_or_capex() -> None:
     assert result.source_type_breadth == 2
     assert result.metric_breadth == 4
     assert result.triggered is True
+    assert result.watchlisted is False
     assert result.confirmed is True
 
 
@@ -192,7 +194,33 @@ def test_flat_breadth_can_accelerate_when_multiple_metrics_spread_across_matched
     assert result.confirmed is True
 
 
-def test_repeated_mentions_do_not_create_prevalence_acceleration() -> None:
+def test_single_metric_gain_is_watchlisted_without_relaxing_trigger() -> None:
+    eligible = ("a", "b", "c", "d")
+    baseline = [
+        _signal("b1", "a", "demand", metric="backlog_strength"),
+        _signal("b2", "b", "scarcity", metric="capacity_constraint"),
+        _signal("b3", "c", "pricing", metric="pricing_power"),
+        _signal("b4", "d", "demand", metric="bookings_strength"),
+    ]
+    current = baseline + [
+        _signal("c1", "b", "demand", metric="backlog_strength"),
+    ]
+
+    result = compare_windows(current, baseline, eligible_company_ids=eligible)[0]
+
+    assert result.breadth_change == 0
+    assert result.metric_prevalence_gains == ("backlog_strength",)
+    backlog = next(item for item in result.metric_prevalence_deltas if item.name == "backlog_strength")
+    assert backlog.current_companies == 2
+    assert backlog.baseline_companies == 1
+    assert backlog.change == 1
+    assert result.prevalence_accelerating is False
+    assert result.watchlisted is True
+    assert "metric_prevalence_gain" in result.watch_reasons
+    assert result.triggered is False
+
+
+def test_repeated_mentions_do_not_create_prevalence_acceleration_or_watchlist() -> None:
     eligible = ("a", "b", "c")
     baseline = [
         _signal("b1", "a", "demand", metric="backlog_strength"),
@@ -211,4 +239,5 @@ def test_repeated_mentions_do_not_create_prevalence_acceleration() -> None:
     assert result.company_metric_intensity_change == 0.0
     assert result.metric_prevalence_gain_count == 0
     assert result.prevalence_accelerating is False
+    assert result.watchlisted is False
     assert result.triggered is False
