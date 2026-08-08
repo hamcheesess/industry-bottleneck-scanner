@@ -52,6 +52,12 @@ def test_summary_prioritizes_distinct_company_breadth() -> None:
     assert summary.aggregation_level == "industry"
     assert summary.distinct_companies == 2
     assert summary.distinct_documents == 3
+    assert summary.company_metric_pairs == 3
+    assert {item.name: item.companies for item in summary.metric_prevalence} == {
+        "capacity_constraint": 1,
+        "lead_time_pressure": 1,
+        "pricing_power": 1,
+    }
     assert set(summary.active_categories) == {"scarcity", "pricing"}
     assert set(summary.active_metrics) == {
         "lead_time_pressure",
@@ -89,6 +95,7 @@ def test_summary_reports_prepared_and_qa_evidence_separately() -> None:
     assert summary.source_sections == ("prepared", "qa")
     assert summary.prepared_signals == 1
     assert summary.qa_signals == 2
+    assert summary.qa_share == 2 / 3
 
 
 def test_weakening_evidence_does_not_inflate_active_breadth() -> None:
@@ -115,6 +122,7 @@ def test_research_trigger_requires_demand_and_scarcity_core_pair() -> None:
     assert result.aggregation_level == "industry"
     assert result.breadth_current == 3
     assert result.breadth_change == 2
+    assert result.breadth_accelerating is True
     assert result.core_pair_present is False
     assert result.triggered is False
 
@@ -151,3 +159,56 @@ def test_core_pair_can_trigger_before_confirmation() -> None:
     result = compare_windows(current, baseline)[0]
     assert result.triggered is True
     assert result.confirmed is False
+
+
+def test_flat_breadth_can_accelerate_when_multiple_metrics_spread_across_matched_companies() -> None:
+    eligible = ("a", "b", "c", "d")
+    baseline = [
+        _signal("b1", "a", "demand", metric="backlog_strength"),
+        _signal("b2", "b", "scarcity", metric="capacity_constraint"),
+        _signal("b3", "c", "pricing", metric="pricing_power"),
+        _signal("b4", "d", "demand", metric="backlog_strength"),
+    ]
+    current = [
+        _signal("c1", "a", "demand", metric="backlog_strength"),
+        _signal("c2", "b", "scarcity", metric="capacity_constraint"),
+        _signal("c3", "c", "pricing", metric="pricing_power"),
+        _signal("c4", "d", "demand", metric="backlog_strength"),
+        _signal("c5", "c", "scarcity", metric="capacity_constraint"),
+        _signal("c6", "d", "scarcity", metric="lead_time_pressure"),
+        _signal("c7", "a", "scarcity", metric="lead_time_pressure"),
+    ]
+
+    result = compare_windows(current, baseline, eligible_company_ids=eligible)[0]
+
+    assert result.breadth_current == 4
+    assert result.breadth_baseline == 4
+    assert result.breadth_change == 0
+    assert result.breadth_accelerating is False
+    assert result.metric_prevalence_gain_count >= 2
+    assert result.company_metric_intensity_change >= 0.25
+    assert result.prevalence_accelerating is True
+    assert result.triggered is True
+    assert result.confirmed is True
+
+
+def test_repeated_mentions_do_not_create_prevalence_acceleration() -> None:
+    eligible = ("a", "b", "c")
+    baseline = [
+        _signal("b1", "a", "demand", metric="backlog_strength"),
+        _signal("b2", "b", "scarcity", metric="capacity_constraint"),
+        _signal("b3", "c", "pricing", metric="pricing_power"),
+    ]
+    current = baseline + [
+        _signal("c1", "a", "demand", metric="backlog_strength"),
+        _signal("c2", "a", "demand", metric="backlog_strength"),
+        _signal("c3", "a", "demand", metric="backlog_strength"),
+    ]
+
+    result = compare_windows(current, baseline, eligible_company_ids=eligible)[0]
+
+    assert result.breadth_change == 0
+    assert result.company_metric_intensity_change == 0.0
+    assert result.metric_prevalence_gain_count == 0
+    assert result.prevalence_accelerating is False
+    assert result.triggered is False
