@@ -39,6 +39,20 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _strongest_acceleration(acceleration):
+    if not acceleration:
+        return None
+    return max(
+        acceleration,
+        key=lambda item: (
+            item.triggered,
+            item.metric_prevalence_gain_count,
+            item.company_metric_intensity_change,
+            item.breadth_change,
+        ),
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.max_companies < 1:
@@ -100,11 +114,23 @@ def main(argv: list[str] | None = None) -> int:
 
     triggered = sum(item.triggered for item in acceleration)
     confirmed = sum(item.confirmed for item in acceleration)
+    strongest = _strongest_acceleration(acceleration)
+    strongest_text = ""
+    if strongest is not None:
+        gains = ",".join(strongest.metric_prevalence_gains) or "none"
+        strongest_text = (
+            f" strongest_bucket={strongest.bucket!r}"
+            f" breadth_delta={strongest.breadth_change:+d}"
+            f" metric_prevalence_gains={strongest.metric_prevalence_gain_count}"
+            f" metric_intensity_delta={strongest.company_metric_intensity_change:+.2f}"
+            f" gain_metrics={gains}"
+        )
     print(
         f"aggregation_level={args.aggregation_level} "
         f"eligible_companies={experiment.diagnostics.eligible_companies} "
         f"current_signals={len(current.signals)} baseline_signals={len(baseline.signals)} "
         f"clusters={len(acceleration)} triggered={triggered} confirmed={confirmed}"
+        f"{strongest_text}"
     )
     print(f"wrote {args.output}")
     return 0
