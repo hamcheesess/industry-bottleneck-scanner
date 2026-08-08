@@ -16,6 +16,14 @@ class PrevalenceSnapshot:
 
 
 @dataclass(frozen=True)
+class PrevalenceDelta:
+    name: str
+    current_companies: int
+    baseline_companies: int
+    change: int
+
+
+@dataclass(frozen=True)
 class ClusterSnapshot:
     bucket: str
     aggregation_level: AggregationLevel
@@ -50,8 +58,10 @@ class AccelerationSnapshot:
     category_breadth: int
     metric_breadth: int
     source_type_breadth: int
+    metric_prevalence_deltas: tuple[PrevalenceDelta, ...]
     metric_prevalence_gains: tuple[str, ...]
     metric_prevalence_gain_count: int
+    category_prevalence_deltas: tuple[PrevalenceDelta, ...]
     category_prevalence_gains: tuple[str, ...]
     category_prevalence_gain_count: int
     new_metrics: tuple[str, ...]
@@ -66,6 +76,8 @@ class AccelerationSnapshot:
     confidence_mean: float
     breadth_accelerating: bool
     prevalence_accelerating: bool
+    watchlisted: bool
+    watch_reasons: tuple[str, ...]
     triggered: bool
     confirmed: bool
 
@@ -167,6 +179,21 @@ def _prevalence_map(items: tuple[PrevalenceSnapshot, ...]) -> dict[str, int]:
     return {item.name: item.companies for item in items}
 
 
+def _prevalence_deltas(
+    current: dict[str, int],
+    baseline: dict[str, int],
+) -> tuple[PrevalenceDelta, ...]:
+    return tuple(
+        PrevalenceDelta(
+            name=name,
+            current_companies=current.get(name, 0),
+            baseline_companies=baseline.get(name, 0),
+            change=current.get(name, 0) - baseline.get(name, 0),
+        )
+        for name in sorted(set(current) | set(baseline))
+    )
+
+
 def compare_windows(
     current: list[AtomicSignal],
     baseline: list[AtomicSignal],
@@ -189,7 +216,8 @@ def compare_windows(
     metrics spread to more companies and whether unique company-metric incidence rises.
 
     Raw mention counts are not used as an acceleration trigger, which avoids rewarding a
-    longer transcript or repeated management phrasing.
+    longer transcript or repeated management phrasing. A separate watchlist state records
+    weaker but auditable changes without relaxing the actual research-trigger threshold.
     """
 
     current_by_bucket = {
@@ -224,25 +252,21 @@ def compare_windows(
 
         current_metric = _prevalence_map(cur.metric_prevalence) if cur else {}
         baseline_metric = _prevalence_map(base.metric_prevalence) if base else {}
+        metric_prevalence_deltas = _prevalence_deltas(current_metric, baseline_metric)
         metric_prevalence_gains = tuple(
-            sorted(
-                metric
-                for metric, companies in current_metric.items()
-                if companies > baseline_metric.get(metric, 0)
-            )
+            item.name for item in metric_prevalence_deltas if item.change > 0
         )
         new_metrics = tuple(
-            sorted(metric for metric in current_metric if baseline_metric.get(metric, 0) == 0)
+            item.name
+            for item in metric_prevalence_deltas
+            if item.current_companies > 0 and item.baseline_companies == 0
         )
 
         current_category = _prevalence_map(cur.category_prevalence) if cur else {}
         baseline_category = _prevalence_map(base.category_prevalence) if base else {}
+        category_prevalence_deltas = _prevalence_deltas(current_category, baseline_category)
         category_prevalence_gains = tuple(
-            sorted(
-                category
-                for category, companies in current_category.items()
-                if companies > baseline_category.get(category, 0)
-            )
+            item.name for item in category_prevalence_deltas if item.change > 0
         )
 
         current_pairs = cur.company_metric_pairs if cur else 0
@@ -277,6 +301,24 @@ def compare_windows(
         )
         confirmed = triggered and confirmation_count >= min_confirmation_categories
 
+        watch_reasons: list[str] = []
+        if breadth_accelerating:
+            watch_reasons.append("breadth_gain")
+        if metric_prevalence_gains:
+            watch_reasons.append("metric_prevalence_gain")
+        if new_metrics:
+            watch_reasons.append("new_metric")
+        if company_metric_intensity_change > 0:
+            watch_reasons.append("company_metric_intensity_gain")
+        watchlisted = (
+            not triggered
+            and breadth_current >= min_companies
+            and category_breadth >= min_categories
+            and confidence_mean >= min_confidence
+            and core_requirement_met
+            and bool(watch_reasons)
+        )
+
         results.append(
             AccelerationSnapshot(
                 bucket=bucket,
@@ -289,8 +331,10 @@ def compare_windows(
                 category_breadth=category_breadth,
                 metric_breadth=metric_breadth,
                 source_type_breadth=source_type_breadth,
+                metric_prevalence_deltas=metric_prevalence_deltas,
                 metric_prevalence_gains=metric_prevalence_gains,
                 metric_prevalence_gain_count=len(metric_prevalence_gains),
+                category_prevalence_deltas=category_prevalence_deltas,
                 category_prevalence_gains=category_prevalence_gains,
                 category_prevalence_gain_count=len(category_prevalence_gains),
                 new_metrics=new_metrics,
@@ -305,6 +349,8 @@ def compare_windows(
                 confidence_mean=confidence_mean,
                 breadth_accelerating=breadth_accelerating,
                 prevalence_accelerating=prevalence_accelerating,
+                watchlisted=watchlisted,
+                watch_reasons=tuple(watch_reasons),
                 triggered=triggered,
                 confirmed=confirmed,
             )
