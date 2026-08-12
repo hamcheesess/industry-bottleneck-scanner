@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import csv
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from io import StringIO
 
 from .universe import normalize_ticker
@@ -53,9 +53,7 @@ def parse_iwv_holdings_csv(text: str, *, source_url: str = IWV_HOLDINGS_URL) -> 
             row = next(csv.reader([line]))
             if len(row) < 2:
                 raise ValueError("IWV holdings as-of row is malformed")
-            as_of = date.fromisoformat(
-                __import__("datetime").datetime.strptime(row[1], "%b %d, %Y").date().isoformat()
-            )
+            as_of = datetime.strptime(row[1], "%b %d, %Y").date()
         if line.startswith("Ticker,Name,Sector,Asset Class,"):
             header_index = index
             break
