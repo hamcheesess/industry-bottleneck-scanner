@@ -9,6 +9,7 @@ from typing import Literal
 from urllib.parse import urlparse
 
 ValidationRole = Literal["positive", "control", "blind"]
+ValidationAggregationLevel = Literal["sector", "industry", "subindustry"]
 
 
 @dataclass(frozen=True)
@@ -16,6 +17,7 @@ class ValidationCase:
     case_id: str
     role: ValidationRole
     result_path: str
+    aggregation_level: ValidationAggregationLevel
     expected_bucket: str | None = None
     expected_metrics: tuple[str, ...] = ()
     label_sources: tuple[str, ...] = ()
@@ -27,6 +29,8 @@ class CaseEvaluation:
     case_id: str
     role: ValidationRole
     result_path: str
+    aggregation_level: ValidationAggregationLevel
+    aggregation_level_matches: bool
     label_sources: tuple[str, ...]
     strongest_bucket: str | None
     strongest_stage: str | None
@@ -45,6 +49,7 @@ class ValidationSummary:
     positive_cases: int
     control_cases: int
     blind_cases: int
+    aggregation_mismatches: int
     positive_recovered: int
     positive_recall: float | None
     controls_false_positive: int
@@ -76,7 +81,7 @@ def _validate_sources(sources: tuple[str, ...], *, row_number: int) -> tuple[str
 
 def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
     reader = csv.DictReader(StringIO(text))
-    required = {"case_id", "role", "result_path"}
+    required = {"case_id", "role", "result_path", "aggregation_level"}
     missing = required - set(reader.fieldnames or ())
     if missing:
         raise ValueError(f"validation manifest missing required columns: {sorted(missing)}")
@@ -87,6 +92,7 @@ def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
         case_id = (row.get("case_id") or "").strip()
         role = (row.get("role") or "").strip().lower()
         result_path = (row.get("result_path") or "").strip()
+        aggregation_level = (row.get("aggregation_level") or "").strip().lower()
         expected_bucket = (row.get("expected_bucket") or "").strip() or None
         notes = (row.get("notes") or "").strip() or None
         if not case_id or not result_path:
@@ -95,6 +101,8 @@ def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
             raise ValueError(f"row {row_number}: duplicate case_id {case_id!r}")
         if role not in {"positive", "control", "blind"}:
             raise ValueError(f"row {row_number}: role must be positive, control, or blind")
+        if aggregation_level not in {"sector", "industry", "subindustry"}:
+            raise ValueError(f"row {row_number}: aggregation_level must be sector, industry, or subindustry")
         if role == "positive" and not expected_bucket:
             raise ValueError(f"row {row_number}: positive cases require expected_bucket")
         if role != "positive" and expected_bucket:
@@ -111,6 +119,7 @@ def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
                 case_id=case_id,
                 role=role,  # type: ignore[arg-type]
                 result_path=result_path,
+                aggregation_level=aggregation_level,  # type: ignore[arg-type]
                 expected_bucket=expected_bucket,
                 expected_metrics=expected_metrics,
                 label_sources=label_sources,
@@ -164,6 +173,8 @@ def evaluate_validation_case(case: ValidationCase, *, base_dir: Path = Path(".")
         result_path = base_dir / result_path
     payload = _load_result(result_path)
     acceleration = [item for item in payload["acceleration"] if isinstance(item, dict)]  # type: ignore[index]
+    result_level = payload.get("aggregation_level")
+    aggregation_level_matches = result_level == case.aggregation_level
 
     strongest = max(
         acceleration,
@@ -200,19 +211,25 @@ def evaluate_validation_case(case: ValidationCase, *, base_dir: Path = Path(".")
     positive_recovered: bool | None = None
     if case.role == "positive":
         positive_recovered = bool(
-            expected
+            aggregation_level_matches
+            and expected
             and _stage_rank(expected_bucket_stage) >= _stage_rank("watchlisted")
             and not metric_misses
         )
 
     control_false_positive: bool | None = None
     if case.role == "control":
-        control_false_positive = any(_stage_rank(_snapshot_stage(item)) >= _stage_rank("triggered") for item in acceleration)
+        control_false_positive = bool(
+            aggregation_level_matches
+            and any(_stage_rank(_snapshot_stage(item)) >= _stage_rank("triggered") for item in acceleration)
+        )
 
     return CaseEvaluation(
         case_id=case.case_id,
         role=case.role,
         result_path=str(result_path),
+        aggregation_level=case.aggregation_level,
+        aggregation_level_matches=aggregation_level_matches,
         label_sources=case.label_sources,
         strongest_bucket=strongest_bucket,
         strongest_stage=strongest_stage,
@@ -245,6 +262,7 @@ def evaluate_validation_manifest(
         positive_cases=len(positives),
         control_cases=len(controls),
         blind_cases=len(blinds),
+        aggregation_mismatches=sum(not item.aggregation_level_matches for item in evaluations),
         positive_recovered=recovered,
         positive_recall=(recovered / len(positives)) if positives else None,
         controls_false_positive=false_positives,
