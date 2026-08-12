@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 from dataclasses import asdict
+from datetime import date
 from pathlib import Path
 
 from .cohort_sampling import load_cohort_candidates_csv, select_neutral_cohort
@@ -14,6 +15,8 @@ def _parser() -> argparse.ArgumentParser:
         description="Select a deterministic industry-neutral Phase-1 cohort and emit paired transcript requests."
     )
     parser.add_argument("--candidates", type=Path, required=True)
+    parser.add_argument("--as-of", required=True, help="Candidate-universe snapshot date in YYYY-MM-DD format")
+    parser.add_argument("--source", required=True, help="Human-readable source/provenance for the candidate universe")
     parser.add_argument("--target-size", type=int, default=10)
     parser.add_argument("--max-per-industry", type=int, default=2)
     parser.add_argument("--seed", default="phase1-neutral-v1")
@@ -31,13 +34,23 @@ def _validate_quarter(value: str, name: str) -> str:
     return quarter
 
 
+def _validate_as_of(value: str) -> str:
+    try:
+        return date.fromisoformat(value.strip()).isoformat()
+    except ValueError as exc:
+        raise SystemExit("--as-of must use YYYY-MM-DD format") from exc
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.target_size < 1:
         raise SystemExit("--target-size must be at least 1")
     if args.max_per_industry < 1:
         raise SystemExit("--max-per-industry must be at least 1")
+    if not args.source.strip():
+        raise SystemExit("--source must not be blank")
 
+    as_of = _validate_as_of(args.as_of)
     current_quarter = _validate_quarter(args.current_quarter, "--current-quarter")
     baseline_quarter = _validate_quarter(args.baseline_quarter, "--baseline-quarter")
     candidates = load_cohort_candidates_csv(args.candidates.read_text(encoding="utf-8"))
@@ -52,6 +65,10 @@ def main(argv: list[str] | None = None) -> int:
     args.selection_output.write_text(
         json.dumps(
             {
+                "universe_provenance": {
+                    "as_of": as_of,
+                    "source": args.source.strip(),
+                },
                 "diagnostics": asdict(selection.diagnostics),
                 "companies": [asdict(item) for item in selection.companies],
                 "current_quarter": current_quarter,
@@ -76,7 +93,8 @@ def main(argv: list[str] | None = None) -> int:
         f"selected={selection.diagnostics.selected_companies} "
         f"sectors={selection.diagnostics.sectors_selected} "
         f"industries={selection.diagnostics.industries_selected} "
-        f"requests={2 * selection.diagnostics.selected_companies}"
+        f"requests={2 * selection.diagnostics.selected_companies} "
+        f"as_of={as_of}"
     )
     print(f"wrote {args.selection_output}")
     print(f"wrote {args.requests_output}")
