@@ -11,12 +11,15 @@ from .alpha_vantage import AlphaVantageTranscriptSource
 from .artifacts import write_atomic_signals_jsonl
 from .company_metadata import load_company_period_metadata_csv
 from .diagnostics import summarize_signal_diagnostics
+from .discovery_score import rank_accelerations
 from .embedding_adapters import HashingNgramEncoder
 from .experiment import run_comparable_cached_experiment
+from .handoff_contract import build_handoff_record, handoff_to_dict
 from .novel_language import cluster_pending_review_language
 from .pilot_diagnostics import diagnose_pilot
 from .review_queue import FileReviewQueue
 from .semantic_retrieval import LocalSemanticRetriever
+from .taxonomy_candidates import build_taxonomy_candidates
 from .transcript_collection import TranscriptRequest, collect_requested_transcripts
 from .transcript_quality import evaluate_transcript_quality
 from .transcript_store import FileTranscriptStore
@@ -192,12 +195,26 @@ def main(argv: list[str] | None = None) -> int:
 
     current_signal_path = args.artifact_root / "current_signals.jsonl"
     baseline_signal_path = args.artifact_root / "baseline_signals.jsonl"
+    handoff_path = args.artifact_root / "handoff_preview.json"
     write_atomic_signals_jsonl(current_signal_path, experiment.current.signals)
     write_atomic_signals_jsonl(baseline_signal_path, experiment.baseline.signals)
     novel_clusters = cluster_pending_review_language(
         review_queue.load(),
         encoder=encoder,
         min_companies=3,
+    )
+    taxonomy_candidates = build_taxonomy_candidates(novel_clusters)
+    scores = rank_accelerations(experiment.acceleration)
+    score_by_bucket = {item.bucket: item for item in scores}
+    handoff_preview = tuple(
+        build_handoff_record(snapshot, experiment.current.signals)
+        for snapshot in experiment.acceleration
+        if snapshot.triggered or snapshot.confirmed
+    )
+    handoff_path.parent.mkdir(parents=True, exist_ok=True)
+    handoff_path.write_text(
+        json.dumps([handoff_to_dict(item) for item in handoff_preview], indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
 
     report.update(
@@ -209,6 +226,7 @@ def main(argv: list[str] | None = None) -> int:
                 "current_signals_jsonl": str(current_signal_path),
                 "baseline_signals_jsonl": str(baseline_signal_path),
                 "review_queue": str(args.review_queue),
+                "handoff_preview_json": str(handoff_path),
             },
             "current": {
                 "companies": [asdict(item) for item in experiment.current.companies],
@@ -222,27 +240,42 @@ def main(argv: list[str] | None = None) -> int:
                 "clusters": [asdict(item) for item in experiment.baseline.clusters],
                 "diagnostics": asdict(summarize_signal_diagnostics(experiment.baseline.signals)),
             },
-            "acceleration": [asdict(item) for item in experiment.acceleration],
+            "acceleration": [
+                asdict(item) | {"discovery_score": asdict(score_by_bucket[item.bucket])}
+                for item in experiment.acceleration
+            ],
             "novel_language_clusters": [
                 asdict(cluster) | {"distinct_companies": cluster.distinct_companies}
                 for cluster in novel_clusters
             ],
+            "taxonomy_candidates": [asdict(item) for item in taxonomy_candidates],
+            "handoff_preview": [handoff_to_dict(item) for item in handoff_preview],
         }
     )
     _write_report(args.output, report)
 
     triggered = sum(item.triggered for item in experiment.acceleration)
     confirmed = sum(item.confirmed for item in experiment.acceleration)
+    watchlisted = sum(item.watchlisted for item in experiment.acceleration)
+    strongest_score = scores[0] if scores else None
     quality = report["pilot_diagnostics"]["transcript_quality"]  # type: ignore[index]
+    ranking_text = (
+        f" strongest_bucket={strongest_score.bucket!r} stage={strongest_score.stage} "
+        f"discovery_score={strongest_score.score:.2f}"
+        if strongest_score is not None
+        else ""
+    )
     print(
         f"status=complete provider={source.provider_name} "
         f"available_pairs={pilot.available_pairs}/{pilot.requested_pairs} "
         f"paired_companies={pilot.fully_available_companies} "
         f"current_signals={len(experiment.current.signals)} "
         f"baseline_signals={len(experiment.baseline.signals)} "
-        f"triggered={triggered} confirmed={confirmed} "
+        f"watchlisted={watchlisted} triggered={triggered} confirmed={confirmed} "
+        f"taxonomy_candidates={len(taxonomy_candidates)} "
         f"qa_detection_rate={quality['qa_detection_rate']:.1%} "  # type: ignore[index]
         f"speaker_label_rate={quality['speaker_label_rate']:.1%}"  # type: ignore[index]
+        f"{ranking_text}"
     )
     print(f"wrote {args.output}")
     return 0
