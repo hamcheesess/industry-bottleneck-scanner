@@ -35,23 +35,29 @@ The default proxy source is the public iShares Russell 3000 ETF (`IWV`) holdings
 
 `ibs-neutral-proxy-iwv` downloads the current public holdings CSV, keeps U.S. equity rows, records the holdings as-of date and source URL, and writes a candidate file for the neutral cohort planner. The generated provenance explicitly sets `canonical_russell_3000=false` and `purpose=phase1_validation_only`.
 
-IWV holdings expose sector but not granular industry classification in the public CSV. The proxy importer therefore writes an explicit `proxy-sector::<sector>` value into the cohort `industry` field. This makes the information limitation machine-visible and makes the per-industry sampling cap conservatively behave as a per-sector cap. It does not pretend that a granular industry taxonomy was available.
+`ibs-phase1-proxy-plan` performs the download and blind-cohort sampling in one command. The plan records the stable seed, the selected groups, the paired current/baseline requests, and the fact that scanner outcomes were not used in selection.
+
+IWV holdings expose sector but not granular industry classification in the public CSV. The proxy importer therefore writes an explicit `proxy-sector::<sector>` value into the cohort `industry` field only to satisfy the generic cohort contract. This is a machine-visible placeholder, not a claim of granular industry knowledge.
+
+Because the public proxy classification is sector-only, the resulting blind proxy experiment must use `aggregation_level=sector`. The plan writes `recommended_aggregation_level=sector`. Production industry-level discovery remains unchanged and must use a source with genuine industry classifications.
 
 Production discovery remains tied to the canonical Russell 3000 universe contract. Passing Phase 1 with the validation proxy does not authorize proxy holdings as the production universe.
 
-## Neutral matched-cohort experiment
+## Trigger-reachable blind cohort
+
+A blind sample must not make the production trigger mathematically impossible. Since the Phase-1 trigger requires at least three independent companies inside one aggregation bucket, a sampler that spreads one or two companies across many industries cannot validate discovery behavior.
+
+The neutral sampler therefore selects classification groups first and then selects enough issuers inside each group. Defaults are three groups with four companies per group. For a fully available two-window experiment this yields 12 issuers and 24 ticker-quarter transcript requests. The extra company above the three-company minimum provides one unit of coverage slack without relaxing the production trigger.
 
 Selection rules:
 
 1. selection may use company identity and classification metadata only;
 2. scanner output, prior signal scores, known bottleneck labels, and investment opinions must not affect sampling;
-3. sample across multiple sectors;
-4. cap representation from any one classification group;
+3. selected groups should span multiple sectors when genuine industry labels are available;
+4. every selected aggregation group must contain at least three issuers;
 5. use a stable seed so the sample is reproducible;
 6. request the same two fiscal-quarter labels for each selected issuer;
 7. align the experiment again after collection so only issuers with both current and baseline transcripts enter acceleration calculations.
-
-The `ibs-neutral-cohort-plan` command implements deterministic sampling and paired request generation. A default target of ten issuers creates twenty ticker-quarter requests, keeping the experiment bounded while materially broadening the original four-company matched pilot.
 
 ## What constitutes Phase 1 success
 
