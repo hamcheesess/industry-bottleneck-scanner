@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlparse
 
 ValidationRole = Literal["positive", "control", "blind"]
 
@@ -17,6 +18,7 @@ class ValidationCase:
     result_path: str
     expected_bucket: str | None = None
     expected_metrics: tuple[str, ...] = ()
+    label_sources: tuple[str, ...] = ()
     notes: str | None = None
 
 
@@ -25,6 +27,7 @@ class CaseEvaluation:
     case_id: str
     role: ValidationRole
     result_path: str
+    label_sources: tuple[str, ...]
     strongest_bucket: str | None
     strongest_stage: str | None
     strongest_score: float | None
@@ -57,10 +60,18 @@ class ValidationReport:
     cases: tuple[CaseEvaluation, ...]
 
 
-def _parse_metrics(value: str | None) -> tuple[str, ...]:
+def _parse_pipe_list(value: str | None) -> tuple[str, ...]:
     if not value:
         return ()
-    return tuple(sorted({item.strip() for item in value.split("|") if item.strip()}))
+    return tuple(dict.fromkeys(item.strip() for item in value.split("|") if item.strip()))
+
+
+def _validate_sources(sources: tuple[str, ...], *, row_number: int) -> tuple[str, ...]:
+    for source in sources:
+        parsed = urlparse(source)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError(f"row {row_number}: label_sources must contain http(s) URLs")
+    return sources
 
 
 def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
@@ -88,6 +99,12 @@ def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
             raise ValueError(f"row {row_number}: positive cases require expected_bucket")
         if role != "positive" and expected_bucket:
             raise ValueError(f"row {row_number}: expected_bucket is only valid for positive cases")
+
+        expected_metrics = _parse_pipe_list(row.get("expected_metrics"))
+        label_sources = _validate_sources(_parse_pipe_list(row.get("label_sources")), row_number=row_number)
+        if role == "positive" and not label_sources:
+            raise ValueError(f"row {row_number}: positive cases require at least one label source URL")
+
         seen.add(case_id)
         cases.append(
             ValidationCase(
@@ -95,7 +112,8 @@ def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
                 role=role,  # type: ignore[arg-type]
                 result_path=result_path,
                 expected_bucket=expected_bucket,
-                expected_metrics=_parse_metrics(row.get("expected_metrics")),
+                expected_metrics=expected_metrics,
+                label_sources=label_sources,
                 notes=notes,
             )
         )
@@ -195,6 +213,7 @@ def evaluate_validation_case(case: ValidationCase, *, base_dir: Path = Path(".")
         case_id=case.case_id,
         role=case.role,
         result_path=str(result_path),
+        label_sources=case.label_sources,
         strongest_bucket=strongest_bucket,
         strongest_stage=strongest_stage,
         strongest_score=strongest_score,
