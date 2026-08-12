@@ -23,6 +23,7 @@ from .taxonomy_candidates import build_taxonomy_candidates
 from .transcript_collection import TranscriptRequest, collect_requested_transcripts
 from .transcript_quality import evaluate_transcript_quality
 from .transcript_store import FileTranscriptStore
+from .viability import assess_phase1_viability
 
 
 def _load_requests(path: Path) -> tuple[TranscriptRequest, ...]:
@@ -105,7 +106,7 @@ def _quality_payload(store: FileTranscriptStore, provider: str, requests: tuple[
     return asdict(evaluate_transcript_quality(transcripts))
 
 
-def _write_report(path: Path, payload: dict[str, object]) -> None:
+def _write_report(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -196,8 +197,11 @@ def main(argv: list[str] | None = None) -> int:
     current_signal_path = args.artifact_root / "current_signals.jsonl"
     baseline_signal_path = args.artifact_root / "baseline_signals.jsonl"
     handoff_path = args.artifact_root / "handoff_preview.json"
+    taxonomy_path = args.artifact_root / "taxonomy_candidates.json"
+    viability_path = args.artifact_root / "phase1_viability.json"
     write_atomic_signals_jsonl(current_signal_path, experiment.current.signals)
     write_atomic_signals_jsonl(baseline_signal_path, experiment.baseline.signals)
+
     novel_clusters = cluster_pending_review_language(
         review_queue.load(),
         encoder=encoder,
@@ -206,27 +210,32 @@ def main(argv: list[str] | None = None) -> int:
     taxonomy_candidates = build_taxonomy_candidates(novel_clusters)
     scores = rank_accelerations(experiment.acceleration)
     score_by_bucket = {item.bucket: item for item in scores}
+    viability = assess_phase1_viability(
+        experiment.acceleration,
+        eligible_companies=experiment.diagnostics.eligible_companies,
+    )
     handoff_preview = tuple(
         build_handoff_record(snapshot, experiment.current.signals)
         for snapshot in experiment.acceleration
         if snapshot.triggered or snapshot.confirmed
     )
-    handoff_path.parent.mkdir(parents=True, exist_ok=True)
-    handoff_path.write_text(
-        json.dumps([handoff_to_dict(item) for item in handoff_preview], indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    _write_report(handoff_path, [handoff_to_dict(item) for item in handoff_preview])
+    _write_report(taxonomy_path, [asdict(item) for item in taxonomy_candidates])
+    _write_report(viability_path, asdict(viability))
 
     report.update(
         {
             "status": "complete",
             "aggregation_level": args.aggregation_level,
             "cohort": asdict(experiment.diagnostics),
+            "phase1_viability": asdict(viability),
             "artifacts": {
                 "current_signals_jsonl": str(current_signal_path),
                 "baseline_signals_jsonl": str(baseline_signal_path),
                 "review_queue": str(args.review_queue),
                 "handoff_preview_json": str(handoff_path),
+                "taxonomy_candidates_json": str(taxonomy_path),
+                "phase1_viability_json": str(viability_path),
             },
             "current": {
                 "companies": [asdict(item) for item in experiment.current.companies],
@@ -273,6 +282,7 @@ def main(argv: list[str] | None = None) -> int:
         f"baseline_signals={len(experiment.baseline.signals)} "
         f"watchlisted={watchlisted} triggered={triggered} confirmed={confirmed} "
         f"taxonomy_candidates={len(taxonomy_candidates)} "
+        f"next_gate={viability.decision} "
         f"qa_detection_rate={quality['qa_detection_rate']:.1%} "  # type: ignore[index]
         f"speaker_label_rate={quality['speaker_label_rate']:.1%}"  # type: ignore[index]
         f"{ranking_text}"
