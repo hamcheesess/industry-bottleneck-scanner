@@ -1,0 +1,4 @@
+case_id,role,result_path,expected_bucket,expected_metrics,notes
+known-positive-01,positive,var/validation/known-positive-01.json,REPLACE_WITH_FROZEN_BUCKET,REPLACE_METRIC_A|REPLACE_METRIC_B,freeze labels before running scanner
+negative-control-01,control,var/validation/negative-control-01.json,,,match source type and period coverage
+blind-01,blind,var/validation/blind-01.json,,,select without scanner outcomes
