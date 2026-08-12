@@ -40,10 +40,13 @@ def test_proxy_plan_emits_trigger_reachable_selection_and_paired_requests(monkey
 
     assert code == 0
     payload = json.loads(selection.read_text(encoding="utf-8"))
-    assert payload["universe_provenance"]["canonical_russell_3000"] is False
-    assert payload["universe_provenance"]["purpose"] == "phase1_validation_only"
-    assert payload["universe_provenance"]["as_of"] == "2026-08-07"
+    provenance = payload["universe_provenance"]
+    assert provenance["canonical_russell_3000"] is False
+    assert provenance["purpose"] == "phase1_validation_only"
+    assert provenance["as_of"] == "2026-08-07"
+    assert provenance["recommended_aggregation_level"] == "sector"
     assert payload["sampling_contract"]["selection_uses_scanner_outcomes"] is False
+    assert payload["sampling_contract"]["proxy_grouping_semantics"] == "proxy industry labels equal sector groups"
     assert payload["diagnostics"]["industries_selected"] == 2
     assert payload["diagnostics"]["companies_per_industry"] == 3
     assert len(payload["companies"]) == 6
