@@ -2,45 +2,80 @@
 
 ## Purpose
 
-Phase 1 is not considered validated merely because transcript collection and signal extraction run successfully. The discovery engine must demonstrate that it can recover known operating bottlenecks, avoid firing on negative controls, and surface plausible clusters in an industry-neutral sample without using the expected outcome during selection.
+Phase 1 is not considered validated merely because transcript collection and signal extraction run successfully. The discovery engine must demonstrate that it can recover known operating bottlenecks, avoid firing on negative controls, and surface plausible clusters in a neutral sample without using the expected outcome during selection.
 
-The validation sequence is deliberately ordered to separate recall, precision, and discovery behavior.
+The validation sequence is deliberately ordered to separate recall, precision, and blind discovery behavior.
+
+## Frozen case contract
+
+Every validation case freezes before execution:
+
+- `case_id`
+- `role`: `positive`, `control`, or `blind`
+- result path
+- aggregation level: `sector`, `industry`, or `subindustry`
+- expected bucket for positive cases
+- expected metrics for positive cases
+- external label-source URLs
+- notes explaining the label/control rationale
+
+Positive cases require at least one HTTP(S) label source. The evaluator also verifies that the result's aggregation level matches the frozen case. An aggregation mismatch blocks a positive recovery and blocks the overall validation pass rather than silently comparing unlike buckets.
+
+The repository's initial frozen case set is `experiments/phase1_validation_cases.csv`.
 
 ## Stage A — known-positive recovery
 
 Use historical periods where a bottleneck or demand/supply imbalance is independently documented outside the scanner.
 
-Each positive case records before the run:
+Labels must be frozen before scanner output is inspected. A positive case is recovered only when:
 
-- a case identifier
-- the expected classification bucket
-- a bounded current/baseline comparison window
-- the expected signal metrics that should be recoverable from management language
-- source notes documenting why the case was labeled positive
-
-Labels must be frozen before scanner output is inspected. A positive case is recovered only when the expected bucket reaches at least `watchlisted` and all predeclared expected metrics are present in the current-window active metrics.
+1. the expected aggregation level matches the result,
+2. the expected bucket reaches at least `watchlisted`, and
+3. every predeclared expected metric is present in the current-window active metrics.
 
 The purpose is to test whether the vocabulary/retrieval stack can recover a real phenomenon, not whether thresholds can be tuned until a selected example fires.
 
+The initial positive set contains:
+
+- the 2021 semiconductor shortage at sector level,
+- the 2021 downstream auto chip shortage at sector level,
+- the existing 2026 electrical-equipment pilot at industry level.
+
+The existing power pilot remains in the validation set even though the current scanner missed the production trigger. Its negative result is not rewritten after the fact.
+
 ## Stage B — negative controls
 
-Controls should be selected from comparable listed companies or industries where the predeclared period does not contain the target bottleneck pattern. Selection should match source type and temporal coverage as closely as practical.
+Controls should match source type, company cohort, and temporal structure as closely as practical while preceding the labeled shock.
+
+The initial controls therefore use pre-shortage 2019 windows for the same semiconductor and auto cohorts rather than unrelated contemporary sectors. This makes the precision test materially harder and reduces the chance that a generic sector difference is mistaken for scanner precision.
 
 A control is counted as a false positive if any cluster reaches `triggered` or `confirmed`. `observing` and `watchlisted` states remain diagnostic and are not counted as production false positives.
 
-## Stage C — blind industry-neutral cohort
+## Stage C — blind validation-only proxy cohort
 
-Blind cases have no expected bucket and do not contribute to label-based pass/fail metrics. They are selected deterministically from identity/classification metadata only, using `ibs-neutral-cohort-plan`, before transcript signals are inspected.
+Blind cases have no expected bucket and do not contribute to label-based pass/fail metrics. Selection must happen before transcript signals are inspected and may use identity/classification metadata only.
 
-The blind cohort is used to inspect:
+For Phase-1 validation only, the approved free broad-U.S. proxy is the public iShares Russell 3000 ETF (`IWV`) holdings CSV. It is explicitly **not** canonical Russell 3000 membership.
 
-- which clusters rank highest without theme preselection
-- stage distribution (`observing`, `watchlisted`, `triggered`, `confirmed`)
-- concentration by sector/industry
-- whether one issuer or one metric dominates a result
-- whether novel-language candidates repeat across independent companies
+The public holdings file exposes sector but not granular industry. Therefore:
 
-Blind outcomes should be reviewed against external evidence only after the scanner output is frozen.
+- the proxy plan records `canonical_russell_3000=false`;
+- it records `purpose=phase1_validation_only`;
+- placeholder `proxy-sector::<sector>` labels are used only to satisfy the generic sampler contract;
+- the resulting experiment must run with `aggregation_level=sector`;
+- passing the proxy validation does not authorize proxy holdings for production discovery.
+
+`ibs-phase1-proxy-plan` downloads the dated holdings file, makes a stable scanner-blind selection, and emits paired transcript requests.
+
+The blind sampler is trigger-reachable by construction. The production trigger needs at least three independent companies in one aggregation bucket, so the default blind plan selects three groups with four companies each: 12 issuers and 24 ticker-quarter requests. The fourth company supplies one unit of coverage slack.
+
+## Transcript collection
+
+Frozen labeled request manifests live under `experiments/validation_*_requests.csv`. The blind request file is generated under `var/cohort/neutral_proxy_requests.csv`.
+
+`ibs-phase1-validation-collect` deduplicates all available labeled and blind requests and applies one global Alpha Vantage provider budget. It is cache-first and safe to re-run on later days. The default budget is 24 provider calls so a free-tier daily ceiling is not intentionally exhausted by the command itself.
+
+Collection status is written to `var/validation/collection-status.json`. Already-cached ticker-quarter pairs consume no provider budget.
 
 ## Validation metrics
 
@@ -51,37 +86,41 @@ Primary metrics:
 - positive recovery recall
 - expected-metric recall
 - control false-positive rate
+- aggregation-level mismatch count
 
 Default viability thresholds are intentionally explicit rather than hidden in a composite score:
 
 - positive recovery recall >= 67%
 - expected-metric recall >= 67%
 - control false-positive rate <= 20%
+- aggregation mismatches = 0
 
 These are development gates, not claims of statistical significance. They should be revisited only after sample size expands; they must not be changed merely to make a failing cohort pass.
 
 ## Manifest format
 
 ```csv
-case_id,role,result_path,expected_bucket,expected_metrics,notes
-power-positive,positive,var/validation/power-positive.json,Electrical Equipment,backlog_strength|capacity_constraint,labels frozen before run
-matched-control,control,var/validation/control.json,,,matched source coverage
-blind-01,blind,var/validation/blind-01.json,,,industry-neutral sample
+case_id,role,result_path,aggregation_level,expected_bucket,expected_metrics,label_sources,notes
+power-positive,positive,var/validation/power-positive.json,industry,Electrical Equipment,backlog_strength|capacity_constraint,https://example.com/source,labels frozen before run
+matched-control,control,var/validation/control.json,sector,,,https://example.com/context,matched pre-event control
+blind-01,blind,var/validation/blind-01.json,sector,,,,scanner-blind proxy sample
 ```
-
-`role` must be one of `positive`, `control`, or `blind`.
 
 ## Execution
 
 ```text
-predeclare labels / controls
-  -> collect bounded paired transcripts
+freeze source-backed labels / pre-event controls
+  -> generate scanner-blind proxy cohort
+  -> collect bounded paired transcripts cache-first
+  -> create dated company-period metadata from real event provenance
   -> run cache-only matched current/baseline experiments
   -> freeze result JSON
   -> evaluate manifest with ibs-phase1-validate
   -> inspect blind results only after freezing
   -> decide whether Phase 1 is viable for Phase 2
 ```
+
+Fiscal-quarter labels must never be converted into fake publication timestamps. Exact or explicitly sourced event metadata remains a separate provenance step before batch scanning.
 
 The validation evaluator never changes scanner vocabulary, trigger thresholds, discovery scores, or result files.
 
@@ -90,8 +129,9 @@ The validation evaluator never changes scanner vocabulary, trigger thresholds, d
 Proceed to public/physical validation and triangulation only after:
 
 1. the labeled validation manifest passes the declared recall/false-positive gates,
-2. at least one blind cohort produces a plausible nontrivial ranking without theme preselection,
-3. evidence concentration and missing-data diagnostics do not explain the result,
-4. the discovery result is reproducible from cached data.
+2. all frozen aggregation levels match their experiment outputs,
+3. at least one blind cohort produces a plausible nontrivial ranking without theme preselection,
+4. evidence concentration and missing-data diagnostics do not explain the result,
+5. the discovery result is reproducible from cached data.
 
 Until then, Repo B remains untouched and no discovery result is treated as an investment candidate.
