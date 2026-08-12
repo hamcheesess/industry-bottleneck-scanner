@@ -39,6 +39,15 @@ class DiscoveryHandoffRecord:
     evidence: tuple[EvidenceReference, ...]
 
 
+def _signal_bucket(signal: AtomicSignal, aggregation_level: str) -> str:
+    classification = signal.classification
+    if aggregation_level == "sector":
+        return classification.sector or classification.industry or classification.subindustry or "unclassified"
+    if aggregation_level == "subindustry":
+        return classification.subindustry or classification.industry or classification.sector or "unclassified"
+    return classification.industry or classification.subindustry or classification.sector or "unclassified"
+
+
 def build_handoff_record(
     snapshot: AccelerationSnapshot,
     current_signals: tuple[AtomicSignal, ...],
@@ -59,7 +68,10 @@ def build_handoff_record(
     relevant = [
         signal
         for signal in current_signals
-        if not signal.negated and not signal.resolved and signal.direction == "strengthening"
+        if _signal_bucket(signal, snapshot.aggregation_level) == snapshot.bucket
+        and not signal.negated
+        and not signal.resolved
+        and signal.direction == "strengthening"
     ]
     relevant.sort(key=lambda item: (-item.confidence, item.company_id, item.signal_id))
     company_ids = tuple(sorted({item.company_id for item in relevant}))
