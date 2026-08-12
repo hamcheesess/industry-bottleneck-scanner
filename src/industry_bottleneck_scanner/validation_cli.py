@@ -48,7 +48,8 @@ def main(argv: list[str] | None = None) -> int:
         summary.expected_metric_recall is not None
         and summary.expected_metric_recall >= args.min_metric_recall
     )
-    ready = positive_ok and control_ok and metric_ok
+    aggregation_ok = summary.aggregation_mismatches == 0
+    ready = positive_ok and control_ok and metric_ok and aggregation_ok
 
     payload = {
         "status": "pass" if ready else "needs_more_validation",
@@ -56,6 +57,7 @@ def main(argv: list[str] | None = None) -> int:
             "min_positive_recall": args.min_positive_recall,
             "max_control_false_positive_rate": args.max_control_fpr,
             "min_expected_metric_recall": args.min_metric_recall,
+            "require_aggregation_match": True,
         },
         "summary": asdict(summary),
         "cases": [asdict(item) for item in report.cases],
@@ -67,7 +69,8 @@ def main(argv: list[str] | None = None) -> int:
         f"status={payload['status']} cases={summary.total_cases} "
         f"positive_recall={_rate_text(summary.positive_recall)} "
         f"control_fpr={_rate_text(summary.control_false_positive_rate)} "
-        f"metric_recall={_rate_text(summary.expected_metric_recall)}"
+        f"metric_recall={_rate_text(summary.expected_metric_recall)} "
+        f"aggregation_mismatches={summary.aggregation_mismatches}"
     )
     print(f"wrote {args.output}")
     return 0 if ready else 2
