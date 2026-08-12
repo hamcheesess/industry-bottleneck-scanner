@@ -8,7 +8,9 @@ from pathlib import Path
 from .artifacts import write_atomic_signals_jsonl
 from .company_metadata import load_company_period_metadata_csv
 from .diagnostics import summarize_signal_diagnostics
+from .discovery_score import rank_accelerations
 from .experiment import run_comparable_cached_experiment
+from .handoff_contract import build_handoff_record, handoff_to_dict
 from .review_queue import FileReviewQueue
 from .transcript_store import FileTranscriptStore
 
@@ -77,13 +79,26 @@ def main(argv: list[str] | None = None) -> int:
     current = experiment.current
     baseline = experiment.baseline
     acceleration = experiment.acceleration
+    scores = rank_accelerations(acceleration)
+    score_by_bucket = {item.bucket: item for item in scores}
+    handoff_preview = tuple(
+        build_handoff_record(snapshot, current.signals)
+        for snapshot in acceleration
+        if snapshot.triggered or snapshot.confirmed
+    )
     current_diagnostics = summarize_signal_diagnostics(current.signals)
     baseline_diagnostics = summarize_signal_diagnostics(baseline.signals)
 
     current_signal_path = args.artifact_root / "current_signals.jsonl"
     baseline_signal_path = args.artifact_root / "baseline_signals.jsonl"
+    handoff_path = args.artifact_root / "handoff_preview.json"
     write_atomic_signals_jsonl(current_signal_path, current.signals)
     write_atomic_signals_jsonl(baseline_signal_path, baseline.signals)
+    handoff_path.parent.mkdir(parents=True, exist_ok=True)
+    handoff_path.write_text(
+        json.dumps([handoff_to_dict(item) for item in handoff_preview], indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
     payload = {
         "provider": args.provider,
@@ -92,6 +107,7 @@ def main(argv: list[str] | None = None) -> int:
         "artifacts": {
             "current_signals_jsonl": str(current_signal_path),
             "baseline_signals_jsonl": str(baseline_signal_path),
+            "handoff_preview_json": str(handoff_path),
         },
         "current": {
             "companies": [asdict(item) for item in current.companies],
@@ -109,7 +125,11 @@ def main(argv: list[str] | None = None) -> int:
             "clusters": [asdict(item) for item in baseline.clusters],
             "diagnostics": asdict(baseline_diagnostics),
         },
-        "acceleration": [asdict(item) for item in acceleration],
+        "acceleration": [
+            asdict(item) | {"discovery_score": asdict(score_by_bucket[item.bucket])}
+            for item in acceleration
+        ],
+        "handoff_preview": [handoff_to_dict(item) for item in handoff_preview],
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -122,8 +142,11 @@ def main(argv: list[str] | None = None) -> int:
     if strongest is not None:
         gains = ",".join(strongest.metric_prevalence_gains) or "none"
         reasons = ",".join(strongest.watch_reasons) or "none"
+        strongest_score = score_by_bucket[strongest.bucket]
         strongest_text = (
             f" strongest_bucket={strongest.bucket!r}"
+            f" stage={strongest_score.stage}"
+            f" discovery_score={strongest_score.score:.2f}"
             f" breadth_delta={strongest.breadth_change:+d}"
             f" metric_prevalence_gains={strongest.metric_prevalence_gain_count}"
             f" metric_intensity_delta={strongest.company_metric_intensity_change:+.2f}"
