@@ -91,6 +91,11 @@ def test_phase1_pilot_runs_collection_quality_scan_and_acceleration(monkeypatch,
     assert electrical["aggregation_level"] == "industry"
     assert electrical["triggered"] is True
     assert electrical["confirmed"] is True
+    assert electrical["discovery_score"]["stage"] == "confirmed"
+    assert payload["phase1_viability"]["decision"] == "phase2_validation"
     assert (artifact_root / "current_signals.jsonl").exists()
     assert (artifact_root / "baseline_signals.jsonl").exists()
+    assert (artifact_root / "handoff_preview.json").exists()
+    assert (artifact_root / "taxonomy_candidates.json").exists()
+    assert (artifact_root / "phase1_viability.json").exists()
     assert "test-key" not in output.read_text(encoding="utf-8")
