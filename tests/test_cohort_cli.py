@@ -20,6 +20,8 @@ def test_cohort_cli_emits_paired_requests(tmp_path) -> None:
     assert cohort_cli.main(
         [
             "--candidates", str(candidates),
+            "--as-of", "2026-06-29",
+            "--source", "dated Russell 3000 membership snapshot",
             "--target-size", "3",
             "--current-quarter", "2026Q2",
             "--baseline-quarter", "2026Q1",
@@ -32,6 +34,8 @@ def test_cohort_cli_emits_paired_requests(tmp_path) -> None:
     assert payload["diagnostics"]["selected_companies"] == 3
     assert payload["current_quarter"] == "2026Q2"
     assert payload["baseline_quarter"] == "2026Q1"
+    assert payload["universe_provenance"]["as_of"] == "2026-06-29"
+    assert payload["universe_provenance"]["source"] == "dated Russell 3000 membership snapshot"
 
     with requests.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
