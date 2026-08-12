@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from industry_bottleneck_scanner.phase1_validation import (
     evaluate_validation_manifest,
     load_validation_cases_csv,
@@ -53,9 +55,9 @@ def test_validation_reports_positive_recovery_and_control_false_positive_rate(tm
         metrics=["capacity_expansion"],
     )
     manifest = load_validation_cases_csv(
-        "case_id,role,result_path,expected_bucket,expected_metrics,notes\n"
-        "known-positive,positive,positive.json,Electrical Equipment,backlog_strength|capacity_constraint,\n"
-        "negative-control,control,control.json,,,\n"
+        "case_id,role,result_path,expected_bucket,expected_metrics,label_sources,notes\n"
+        "known-positive,positive,positive.json,Electrical Equipment,backlog_strength|capacity_constraint,https://example.test/label,\n"
+        "negative-control,control,control.json,,,https://example.test/context,\n"
     )
 
     report = evaluate_validation_manifest(manifest, base_dir=tmp_path)
@@ -64,6 +66,7 @@ def test_validation_reports_positive_recovery_and_control_false_positive_rate(tm
     assert report.summary.control_false_positive_rate == 0.0
     assert report.summary.expected_metric_recall == 1.0
     assert report.cases[0].positive_recovered is True
+    assert report.cases[0].label_sources == ("https://example.test/label",)
     assert report.cases[1].control_false_positive is False
 
 
@@ -76,8 +79,8 @@ def test_positive_requires_watchlist_or_stronger_and_expected_metrics(tmp_path: 
         metrics=["backlog_strength"],
     )
     cases = load_validation_cases_csv(
-        "case_id,role,result_path,expected_bucket,expected_metrics\n"
-        "case-a,positive,result.json,Electrical Equipment,backlog_strength|capacity_constraint\n"
+        "case_id,role,result_path,expected_bucket,expected_metrics,label_sources\n"
+        "case-a,positive,result.json,Electrical Equipment,backlog_strength|capacity_constraint,https://example.test/label\n"
     )
 
     report = evaluate_validation_manifest(cases, base_dir=tmp_path)
@@ -97,8 +100,8 @@ def test_blind_case_has_no_label_based_pass_fail(tmp_path: Path) -> None:
         metrics=["bookings_strength"],
     )
     cases = load_validation_cases_csv(
-        "case_id,role,result_path\n"
-        "blind-a,blind,blind.json\n"
+        "case_id,role,result_path,label_sources\n"
+        "blind-a,blind,blind.json,\n"
     )
 
     report = evaluate_validation_manifest(cases, base_dir=tmp_path)
@@ -107,3 +110,19 @@ def test_blind_case_has_no_label_based_pass_fail(tmp_path: Path) -> None:
     assert report.cases[0].positive_recovered is None
     assert report.cases[0].control_false_positive is None
     assert report.cases[0].strongest_bucket == "Semiconductors"
+
+
+def test_positive_manifest_requires_source_backing() -> None:
+    with pytest.raises(ValueError, match="positive cases require at least one label source URL"):
+        load_validation_cases_csv(
+            "case_id,role,result_path,expected_bucket,expected_metrics,label_sources\n"
+            "case-a,positive,result.json,Semiconductors,capacity_constraint,\n"
+        )
+
+
+def test_label_sources_must_be_http_urls() -> None:
+    with pytest.raises(ValueError, match="label_sources must contain http"):
+        load_validation_cases_csv(
+            "case_id,role,result_path,expected_bucket,expected_metrics,label_sources\n"
+            "case-a,positive,result.json,Semiconductors,capacity_constraint,not-a-url\n"
+        )
