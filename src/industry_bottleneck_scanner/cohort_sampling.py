@@ -24,7 +24,7 @@ class CohortSelectionDiagnostics:
     sectors_available: int
     sectors_selected: int
     industries_selected: int
-    max_per_industry: int
+    companies_per_industry: int
     seed: str
 
 
@@ -81,66 +81,82 @@ def _stable_rank(seed: str, *parts: str) -> str:
 def select_neutral_cohort(
     candidates: tuple[CohortCandidate, ...],
     *,
-    target_size: int = 10,
-    max_per_industry: int = 2,
-    seed: str = "phase1-neutral-v1",
+    industry_count: int = 3,
+    companies_per_industry: int = 4,
+    seed: str = "phase1-neutral-v2",
 ) -> NeutralCohortSelection:
-    """Select a reproducible cross-sector cohort without using signal outcomes.
+    """Select a reproducible blind cohort with enough within-industry breadth to trigger.
 
-    Selection uses only identity/classification metadata. It cycles across sectors and caps
-    any one industry so known bottleneck names or scanner outputs cannot influence the
-    sample. Stable hashing gives deterministic ordering without depending on input order.
+    The previous cross-sector sampler capped each industry below the production trigger's
+    minimum-company requirement, making an industry-level blind discovery impossible by
+    construction. This sampler instead selects industries without using scanner outcomes,
+    then takes a fixed number of issuers inside each selected industry. Industries are
+    spread across sectors when possible and all ordering is stable-hash based.
     """
 
-    if target_size < 1:
-        raise ValueError("target_size must be at least 1")
-    if max_per_industry < 1:
-        raise ValueError("max_per_industry must be at least 1")
+    if industry_count < 1:
+        raise ValueError("industry_count must be at least 1")
+    if companies_per_industry < 3:
+        raise ValueError("companies_per_industry must be at least 3 for Phase-1 industry triggers")
     if not candidates:
         raise ValueError("candidates must not be empty")
 
-    by_sector: dict[str, list[CohortCandidate]] = {}
+    by_industry: dict[tuple[str, str], list[CohortCandidate]] = {}
     for candidate in candidates:
-        by_sector.setdefault(candidate.sector, []).append(candidate)
-    for sector, items in by_sector.items():
-        items.sort(key=lambda item: _stable_rank(seed, sector, item.company_id, item.ticker))
+        by_industry.setdefault((candidate.sector, candidate.industry), []).append(candidate)
+
+    eligible_industries = {
+        key: tuple(
+            sorted(
+                items,
+                key=lambda item: _stable_rank(seed, "company", item.company_id, item.ticker),
+            )
+        )
+        for key, items in by_industry.items()
+        if len(items) >= companies_per_industry
+    }
+    if not eligible_industries:
+        raise ValueError("no industry has enough companies for the requested within-industry breadth")
+
+    by_sector: dict[str, list[tuple[str, str]]] = {}
+    for key in eligible_industries:
+        by_sector.setdefault(key[0], []).append(key)
+    for sector, keys in by_sector.items():
+        keys.sort(key=lambda key: _stable_rank(seed, "industry", sector, key[1]))
 
     sector_order = sorted(by_sector, key=lambda sector: _stable_rank(seed, "sector", sector))
     positions = {sector: 0 for sector in sector_order}
-    industry_counts: dict[str, int] = {}
-    selected: list[CohortCandidate] = []
+    selected_industries: list[tuple[str, str]] = []
 
-    while len(selected) < min(target_size, len(candidates)):
-        added_this_round = False
+    while len(selected_industries) < min(industry_count, len(eligible_industries)):
+        added = False
         for sector in sector_order:
-            items = by_sector[sector]
             position = positions[sector]
-            while position < len(items):
-                candidate = items[position]
-                position += 1
-                positions[sector] = position
-                if industry_counts.get(candidate.industry, 0) >= max_per_industry:
-                    continue
-                selected.append(candidate)
-                industry_counts[candidate.industry] = industry_counts.get(candidate.industry, 0) + 1
-                added_this_round = True
+            keys = by_sector[sector]
+            if position >= len(keys):
+                continue
+            selected_industries.append(keys[position])
+            positions[sector] = position + 1
+            added = True
+            if len(selected_industries) >= industry_count:
                 break
-            if len(selected) >= target_size:
-                break
-        if not added_this_round:
+        if not added:
             break
 
+    selected: list[CohortCandidate] = []
+    for key in selected_industries:
+        selected.extend(eligible_industries[key][:companies_per_industry])
+
     selected_sectors = {item.sector for item in selected}
-    selected_industries = {item.industry for item in selected}
     return NeutralCohortSelection(
         companies=tuple(selected),
         diagnostics=CohortSelectionDiagnostics(
             candidate_companies=len(candidates),
             selected_companies=len(selected),
-            sectors_available=len(by_sector),
+            sectors_available=len({item.sector for item in candidates}),
             sectors_selected=len(selected_sectors),
             industries_selected=len(selected_industries),
-            max_per_industry=max_per_industry,
+            companies_per_industry=companies_per_industry,
             seed=seed,
         ),
     )
