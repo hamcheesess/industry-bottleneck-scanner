@@ -12,14 +12,17 @@ from .cohort_sampling import load_cohort_candidates_csv, select_neutral_cohort
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Select a deterministic industry-neutral Phase-1 cohort and emit paired transcript requests."
+        description=(
+            "Select a deterministic blind Phase-1 cohort with enough issuers inside each "
+            "industry for the unchanged production trigger to be reachable."
+        )
     )
     parser.add_argument("--candidates", type=Path, required=True)
     parser.add_argument("--as-of", required=True, help="Candidate-universe snapshot date in YYYY-MM-DD format")
     parser.add_argument("--source", required=True, help="Human-readable source/provenance for the candidate universe")
-    parser.add_argument("--target-size", type=int, default=10)
-    parser.add_argument("--max-per-industry", type=int, default=2)
-    parser.add_argument("--seed", default="phase1-neutral-v1")
+    parser.add_argument("--industry-count", type=int, default=3)
+    parser.add_argument("--companies-per-industry", type=int, default=4)
+    parser.add_argument("--seed", default="phase1-neutral-v2")
     parser.add_argument("--current-quarter", default="2026Q2")
     parser.add_argument("--baseline-quarter", default="2026Q1")
     parser.add_argument("--selection-output", type=Path, default=Path("var/cohort/neutral_selection.json"))
@@ -43,10 +46,10 @@ def _validate_as_of(value: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    if args.target_size < 1:
-        raise SystemExit("--target-size must be at least 1")
-    if args.max_per_industry < 1:
-        raise SystemExit("--max-per-industry must be at least 1")
+    if args.industry_count < 1:
+        raise SystemExit("--industry-count must be at least 1")
+    if args.companies_per_industry < 3:
+        raise SystemExit("--companies-per-industry must be at least 3")
     if not args.source.strip():
         raise SystemExit("--source must not be blank")
 
@@ -56,8 +59,8 @@ def main(argv: list[str] | None = None) -> int:
     candidates = load_cohort_candidates_csv(args.candidates.read_text(encoding="utf-8"))
     selection = select_neutral_cohort(
         candidates,
-        target_size=args.target_size,
-        max_per_industry=args.max_per_industry,
+        industry_count=args.industry_count,
+        companies_per_industry=args.companies_per_industry,
         seed=args.seed,
     )
 
@@ -68,6 +71,12 @@ def main(argv: list[str] | None = None) -> int:
                 "universe_provenance": {
                     "as_of": as_of,
                     "source": args.source.strip(),
+                },
+                "sampling_contract": {
+                    "industry_count": args.industry_count,
+                    "companies_per_industry": args.companies_per_industry,
+                    "seed": args.seed,
+                    "selection_uses_scanner_outcomes": False,
                 },
                 "diagnostics": asdict(selection.diagnostics),
                 "companies": [asdict(item) for item in selection.companies],
@@ -93,6 +102,7 @@ def main(argv: list[str] | None = None) -> int:
         f"selected={selection.diagnostics.selected_companies} "
         f"sectors={selection.diagnostics.sectors_selected} "
         f"industries={selection.diagnostics.industries_selected} "
+        f"companies_per_industry={selection.diagnostics.companies_per_industry} "
         f"requests={2 * selection.diagnostics.selected_companies} "
         f"as_of={as_of}"
     )
