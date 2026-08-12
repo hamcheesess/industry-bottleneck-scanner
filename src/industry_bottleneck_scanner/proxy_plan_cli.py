@@ -90,12 +90,14 @@ def main(argv: list[str] | None = None) -> int:
                     "source_url": snapshot.source_url,
                     "candidate_count": len(snapshot.candidates),
                     "classification_limit": "sector-only public holdings classification",
+                    "recommended_aggregation_level": "sector",
                 },
                 "sampling_contract": {
                     "industry_count": args.industry_count,
                     "companies_per_industry": args.companies_per_industry,
                     "seed": args.seed,
                     "selection_uses_scanner_outcomes": False,
+                    "proxy_grouping_semantics": "proxy industry labels equal sector groups",
                 },
                 "diagnostics": asdict(selection.diagnostics),
                 "companies": [asdict(item) for item in selection.companies],
@@ -123,7 +125,8 @@ def main(argv: list[str] | None = None) -> int:
         f"sectors={selection.diagnostics.sectors_selected} "
         f"industries={selection.diagnostics.industries_selected} "
         f"companies_per_industry={selection.diagnostics.companies_per_industry} "
-        f"requests={2 * len(selection.companies)} canonical_russell_3000=false"
+        f"requests={2 * len(selection.companies)} aggregation_level=sector "
+        "canonical_russell_3000=false"
     )
     print(f"wrote {args.selection_output}")
     print(f"wrote {args.requests_output}")
