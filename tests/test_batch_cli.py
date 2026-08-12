@@ -72,10 +72,16 @@ def test_batch_cli_writes_cache_only_experiment_summary(tmp_path) -> None:
     assert payload["current"]["missing_transcripts"] == 0
     assert payload["baseline"]["missing_transcripts"] == 0
     assert payload["acceleration"][0]["bucket"] == "Electrical Equipment"
+    assert "discovery_score" in payload["acceleration"][0]
     assert payload["current"]["diagnostics"]["distinct_companies"] == 1
     assert payload["current"]["diagnostics"]["top_company_share"] == 1.0
+    assert payload["phase1_viability"]["decision"] == "expand_neutral_cohort"
+    assert isinstance(payload["taxonomy_candidates"], list)
     assert (artifact_root / "current_signals.jsonl").exists()
     assert (artifact_root / "baseline_signals.jsonl").exists()
+    assert (artifact_root / "handoff_preview.json").exists()
+    assert (artifact_root / "taxonomy_candidates.json").exists()
+    assert (artifact_root / "phase1_viability.json").exists()
     assert payload["artifacts"]["current_signals_jsonl"] == str(
         artifact_root / "current_signals.jsonl"
     )
