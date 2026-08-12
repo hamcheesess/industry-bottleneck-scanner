@@ -20,9 +20,9 @@ def _parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("--url", default=IWV_HOLDINGS_URL)
-    parser.add_argument("--target-size", type=int, default=10)
-    parser.add_argument("--max-per-sector", type=int, default=2)
-    parser.add_argument("--seed", default="phase1-neutral-v1")
+    parser.add_argument("--industry-count", type=int, default=3)
+    parser.add_argument("--companies-per-industry", type=int, default=4)
+    parser.add_argument("--seed", default="phase1-neutral-v2")
     parser.add_argument("--current-quarter", default="2026Q2")
     parser.add_argument("--baseline-quarter", default="2026Q1")
     parser.add_argument(
@@ -53,10 +53,10 @@ def _quarter(value: str, name: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    if args.target_size < 1:
-        raise SystemExit("--target-size must be at least 1")
-    if args.max_per_sector < 1:
-        raise SystemExit("--max-per-sector must be at least 1")
+    if args.industry_count < 1:
+        raise SystemExit("--industry-count must be at least 1")
+    if args.companies_per_industry < 3:
+        raise SystemExit("--companies-per-industry must be at least 3")
     current_quarter = _quarter(args.current_quarter, "--current-quarter")
     baseline_quarter = _quarter(args.baseline_quarter, "--baseline-quarter")
 
@@ -73,8 +73,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     selection = select_neutral_cohort(
         candidates,
-        target_size=args.target_size,
-        max_per_industry=args.max_per_sector,
+        industry_count=args.industry_count,
+        companies_per_industry=args.companies_per_industry,
         seed=args.seed,
     )
 
@@ -90,6 +90,12 @@ def main(argv: list[str] | None = None) -> int:
                     "source_url": snapshot.source_url,
                     "candidate_count": len(snapshot.candidates),
                     "classification_limit": "sector-only public holdings classification",
+                },
+                "sampling_contract": {
+                    "industry_count": args.industry_count,
+                    "companies_per_industry": args.companies_per_industry,
+                    "seed": args.seed,
+                    "selection_uses_scanner_outcomes": False,
                 },
                 "diagnostics": asdict(selection.diagnostics),
                 "companies": [asdict(item) for item in selection.companies],
@@ -114,8 +120,10 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"proxy={PROXY_UNIVERSE_ID} as_of={snapshot.as_of.isoformat()} "
         f"candidate_count={len(snapshot.candidates)} selected={selection.diagnostics.selected_companies} "
-        f"sectors={selection.diagnostics.sectors_selected} requests={2 * len(selection.companies)} "
-        "canonical_russell_3000=false"
+        f"sectors={selection.diagnostics.sectors_selected} "
+        f"industries={selection.diagnostics.industries_selected} "
+        f"companies_per_industry={selection.diagnostics.companies_per_industry} "
+        f"requests={2 * len(selection.companies)} canonical_russell_3000=false"
     )
     print(f"wrote {args.selection_output}")
     print(f"wrote {args.requests_output}")
