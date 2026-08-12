@@ -42,7 +42,14 @@ def _snapshot() -> AccelerationSnapshot:
     )
 
 
-def _signal(signal_id: str, company_id: str, ticker: str, confidence: float) -> AtomicSignal:
+def _signal(
+    signal_id: str,
+    company_id: str,
+    ticker: str,
+    confidence: float,
+    *,
+    industry: str = "Electrical Equipment",
+) -> AtomicSignal:
     return AtomicSignal(
         signal_id=signal_id,
         scanner="scarcity",
@@ -51,7 +58,7 @@ def _signal(signal_id: str, company_id: str, ticker: str, confidence: float) -> 
         magnitude="unknown",
         company_id=company_id,
         ticker=ticker,
-        classification=Classification(industry="Electrical Equipment"),
+        classification=Classification(industry=industry),
         subject=None,
         document_id=f"doc-{signal_id}",
         document_type="earnings_call_turn",
@@ -81,6 +88,21 @@ def test_handoff_contains_discovery_evidence_without_underwriting_fields() -> No
     assert "dcf" not in payload
     assert "valuation" not in payload
     assert "investment_verdict" not in payload
+
+
+def test_handoff_excludes_evidence_from_other_clusters() -> None:
+    record = build_handoff_record(
+        _snapshot(),
+        (
+            _signal("1", "issuer-a", "AAA", 0.9),
+            _signal("2", "issuer-x", "XXX", 0.99, industry="Semiconductors"),
+        ),
+        generated_at=datetime(2026, 8, 12, tzinfo=timezone.utc),
+    )
+
+    assert record.company_ids == ("issuer-a",)
+    assert record.tickers == ("AAA",)
+    assert tuple(item.signal_id for item in record.evidence) == ("1",)
 
 
 def test_handoff_requires_timezone_aware_generation_time() -> None:
