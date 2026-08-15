@@ -71,6 +71,41 @@ def _dedupe(requests: list[TranscriptRequest]) -> tuple[TranscriptRequest, ...]:
     return tuple(unique)
 
 
+def _is_available(
+    store: FileTranscriptStore,
+    *,
+    provider: str,
+    request: TranscriptRequest,
+) -> bool:
+    return store.load(provider=provider, ticker=request.ticker, quarter=request.quarter) is not None
+
+
+def _coverage_for_file(
+    path: Path,
+    *,
+    store: FileTranscriptStore,
+    provider: str,
+) -> dict[str, object]:
+    requests = _dedupe(list(_load_requests(path)))
+    available = [
+        request
+        for request in requests
+        if _is_available(store, provider=provider, request=request)
+    ]
+    missing = [
+        request
+        for request in requests
+        if not _is_available(store, provider=provider, request=request)
+    ]
+    return {
+        "planned": len(requests),
+        "available": len(available),
+        "remaining": len(missing),
+        "complete": not missing,
+        "missing_requests": [asdict(item) for item in missing],
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.max_provider_requests < 1:
@@ -103,31 +138,49 @@ def main(argv: list[str] | None = None) -> int:
         min_interval_seconds=args.interval_seconds,
     )
 
-    available = sum(
-        store.load(provider=source.provider_name, ticker=item.ticker, quarter=item.quarter) is not None
+    available_requests = [
+        item
         for item in planned
-    )
-    remaining = len(planned) - available
+        if _is_available(store, provider=source.provider_name, request=item)
+    ]
+    missing_requests = [
+        item
+        for item in planned
+        if not _is_available(store, provider=source.provider_name, request=item)
+    ]
+    request_file_coverage = {
+        str(path): _coverage_for_file(
+            path,
+            store=store,
+            provider=source.provider_name,
+        )
+        for path in request_files
+    }
+
     payload = {
         "provider": source.provider_name,
         "request_files": [str(path) for path in request_files],
         "blind_requests_included": args.blind_requests in request_files,
         "planned_unique_requests": len(planned),
-        "available_after_run": available,
-        "remaining_after_run": remaining,
+        "available_after_run": len(available_requests),
+        "remaining_after_run": len(missing_requests),
+        "missing_requests": [asdict(item) for item in missing_requests],
+        "request_file_coverage": request_file_coverage,
         "run": asdict(summary),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    status = "complete" if remaining == 0 else ("rate_limited" if summary.rate_limited else "incomplete")
+    status = "complete" if not missing_requests else ("rate_limited" if summary.rate_limited else "incomplete")
+    complete_files = sum(bool(item["complete"]) for item in request_file_coverage.values())
     print(
-        f"status={status} planned={len(planned)} available={available} remaining={remaining} "
+        f"status={status} planned={len(planned)} available={len(available_requests)} "
+        f"remaining={len(missing_requests)} complete_request_files={complete_files}/{len(request_file_coverage)} "
         f"cache_hits={summary.cache_hits} fetched={summary.fetched} "
         f"provider_requests={summary.provider_requests} rate_limited={summary.rate_limited} errors={summary.errors}"
     )
     print(f"wrote {args.output}")
-    return 0 if remaining == 0 else 2
+    return 0 if not missing_requests else 2
 
 
 if __name__ == "__main__":
