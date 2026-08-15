@@ -77,7 +77,9 @@ Frozen labeled request manifests live under `experiments/validation_*_requests.c
 
 Collection status is written to `var/validation/collection-status.json`. Already-cached ticker-quarter pairs consume no provider budget.
 
-## Event-date metadata drafting
+`ibs-phase1-validation-progress` advances every fully cached request file into metadata drafting immediately, while incomplete files remain blocked on provider availability. This allows validation work to continue without waiting for every case to finish collection.
+
+## Event-date metadata drafting and verification
 
 Cached transcripts still do not authorize inventing publication timestamps. Fiscal-quarter labels are period identifiers, not event dates.
 
@@ -85,7 +87,15 @@ Cached transcripts still do not authorize inventing publication timestamps. Fisc
 
 For convenience, the command scans the first transcript turns for unambiguous written calendar dates such as `August 13, 2026`. Those values are emitted only as `published_date_candidate` and `published_date_evidence`; they are not promoted into `published_at`, no time of day is invented, and numeric-only dates are ignored. If multiple distinct written dates appear, no candidate date is selected.
 
-The generic metadata loader ignores these extra research columns, so completed drafts remain compatible with `ibs-phase1-batch` after `published_at` and provenance are filled.
+Verified timestamps are applied with `ibs-phase1-validation-metadata-finalize`. The verifier input must contain an exact ticker+quarter row for every draft row, an ISO-8601 timestamp with timezone offset, and an HTTP(S) provenance URL. Missing rows, extra rows, duplicate keys, naive timestamps, and non-HTTP(S) provenance fail closed. The finalizer never derives a timestamp from a fiscal-quarter label or a date-only hint.
+
+The generic metadata loader ignores the extra research columns, so finalized files remain compatible with `ibs-phase1-batch`.
+
+## Frozen case execution
+
+`ibs-phase1-validation-run` reads the frozen validation manifest and attempts every case independently. A case runs only when both current and baseline metadata files parse with timezone-aware `published_at` values. Otherwise it is recorded as `awaiting_verified_metadata` and skipped without modifying the result path.
+
+For ready cases, the runner passes the manifest's frozen aggregation level directly to `ibs-phase1-batch`, uses case-scoped review/artifact paths, and writes `var/validation/run-status.json`. This prevents metadata readiness from changing the validation labels or aggregation contract.
 
 ## Validation metrics
 
@@ -122,9 +132,10 @@ blind-01,blind,var/validation/blind-01.json,sector,,,,scanner-blind proxy sample
 freeze source-backed labels / pre-event controls
   -> generate scanner-blind proxy cohort
   -> collect bounded paired transcripts cache-first
-  -> create metadata drafts without fabricating timestamps
-  -> verify real event timestamps and provenance
-  -> run cache-only matched current/baseline experiments
+  -> advance fully cached cases into metadata drafts
+  -> verify real timezone-aware event timestamps and provenance
+  -> finalize metadata with exact ticker+quarter matching
+  -> run every ready frozen case cache-only
   -> freeze result JSON
   -> evaluate manifest with ibs-phase1-validate
   -> inspect blind results only after freezing
