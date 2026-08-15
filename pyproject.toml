@@ -21,6 +21,7 @@ ibs-phase1-validation-metadata-draft = "industry_bottleneck_scanner.validation_m
 ibs-phase1-validation-metadata-finalize = "industry_bottleneck_scanner.validation_metadata_finalize_cli:main"
 ibs-phase1-validation-progress = "industry_bottleneck_scanner.validation_progress_cli:main"
 ibs-phase1-validation-run = "industry_bottleneck_scanner.validation_run_cli:main"
+ibs-phase1-validation-advance = "industry_bottleneck_scanner.validation_advance_cli:main"
 ibs-neutral-cohort-plan = "industry_bottleneck_scanner.cohort_cli:main"
 ibs-neutral-proxy-iwv = "industry_bottleneck_scanner.iwv_proxy_cli:main"
 ibs-phase1-proxy-plan = "industry_bottleneck_scanner.proxy_plan_cli:main"
