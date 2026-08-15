@@ -77,6 +77,16 @@ Frozen labeled request manifests live under `experiments/validation_*_requests.c
 
 Collection status is written to `var/validation/collection-status.json`. Already-cached ticker-quarter pairs consume no provider budget.
 
+## Event-date metadata drafting
+
+Cached transcripts still do not authorize inventing publication timestamps. Fiscal-quarter labels are period identifiers, not event dates.
+
+`ibs-phase1-validation-metadata-draft` creates separate current and baseline metadata CSV drafts plus a research checklist. It always leaves `published_at` blank until a real timezone-aware timestamp is independently verified.
+
+For convenience, the command scans the first transcript turns for unambiguous written calendar dates such as `August 13, 2026`. Those values are emitted only as `published_date_candidate` and `published_date_evidence`; they are not promoted into `published_at`, no time of day is invented, and numeric-only dates are ignored. If multiple distinct written dates appear, no candidate date is selected.
+
+The generic metadata loader ignores these extra research columns, so completed drafts remain compatible with `ibs-phase1-batch` after `published_at` and provenance are filled.
+
 ## Validation metrics
 
 `ibs-phase1-validate` evaluates a CSV manifest pointing to completed `ibs-phase1-batch` result JSON files.
@@ -112,7 +122,8 @@ blind-01,blind,var/validation/blind-01.json,sector,,,,scanner-blind proxy sample
 freeze source-backed labels / pre-event controls
   -> generate scanner-blind proxy cohort
   -> collect bounded paired transcripts cache-first
-  -> create dated company-period metadata from real event provenance
+  -> create metadata drafts without fabricating timestamps
+  -> verify real event timestamps and provenance
   -> run cache-only matched current/baseline experiments
   -> freeze result JSON
   -> evaluate manifest with ibs-phase1-validate
