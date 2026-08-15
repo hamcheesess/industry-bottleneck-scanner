@@ -1,0 +1,9 @@
+ticker,quarter,published_at,published_at_source_url
+F,2021Q2,2021-07-28T17:00:00-04:00,https://shareholder.ford.com/events/event-details/2021/Ford-Motor-Company-Second-Quarter-2021-Earnings/default.aspx
+F,2021Q1,2021-04-28T17:00:00-04:00,https://shareholder.ford.com/events/event-details/2021/Ford-Motor-Company-First-Quarter-2021-Earnings/default.aspx
+GM,2021Q2,2021-08-04T10:00:00-04:00,https://investor.gm.com/news-releases/news-release-details/gm-reports-strong-second-quarter-2021-results
+GM,2021Q1,2021-05-05T10:00:00-04:00,https://investor.gm.com/events/event-details/general-motors-company-q1-2021-earnings-conference-call/
+TSLA,2021Q2,2021-07-26T14:30:00-07:00,https://ir.tesla.com/press-release/tesla-announces-date-second-quarter-2021-financial-results-and-webcast
+TSLA,2021Q1,2021-04-26T14:30:00-07:00,https://ir.tesla.com/press-release/tesla-announces-date-first-quarter-2021-financial-results-and-webcast
+LEA,2021Q2,2021-08-06T08:30:00-04:00,https://www.lear.com/de/newsroom/lear-reports-second-quarter-2021-results
+LEA,2021Q1,2021-05-07T08:30:00-04:00,https://ir.lear.com/news-releases/news-release-details/lear-reports-first-quarter-2021-results/
