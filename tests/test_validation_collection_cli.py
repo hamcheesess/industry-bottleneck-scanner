@@ -55,8 +55,13 @@ def test_validation_collection_dedupes_and_resumes_from_cache(monkeypatch, tmp_p
     payload = json.loads(output.read_text(encoding="utf-8"))
     assert payload["planned_unique_requests"] == 3
     assert payload["available_after_run"] == 3
+    assert payload["remaining_after_run"] == 0
+    assert payload["missing_requests"] == []
     assert payload["run"]["provider_requests"] == 3
     assert payload["blind_requests_included"] is False
+    assert payload["request_file_coverage"][str(first)]["complete"] is True
+    assert payload["request_file_coverage"][str(first)]["available"] == 2
+    assert payload["request_file_coverage"][str(second)]["complete"] is True
 
     code = validation_collection_cli.main(
         [
