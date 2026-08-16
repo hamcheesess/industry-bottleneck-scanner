@@ -25,7 +25,7 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
                     "status": "partial_waiting_data",
                     "full_validation_complete": False,
                     "total_frozen_cases": 7,
-                    "ready_case_ids": ["a", "b", "c"],
+                    "ready_case_ids": ["a", "b", "control-a"],
                     "missing_case_ids": [],
                     "stale_case_ids": [],
                     "blocked_input_case_ids": ["e", "f", "g"],
@@ -34,7 +34,7 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
                         "positive_recall": 0.5,
                         "positive_stage_recall": 1.0,
                         "expected_metric_recall": 0.8,
-                        "control_false_positive_rate": 0.0,
+                        "control_false_positive_rate": 1.0,
                     },
                 }
             ),
@@ -46,7 +46,27 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
     def fake_calibration(argv):
         calibration_calls.append(list(argv))
         output = Path(argv[argv.index("--output") + 1])
-        output.write_text(json.dumps({"status": "diagnosed", "freshness_filtered": True}), encoding="utf-8")
+        output.write_text(
+            json.dumps(
+                {
+                    "status": "diagnosed",
+                    "freshness_filtered": True,
+                    "cases": [
+                        {
+                            "case_id": "control-a",
+                            "role": "control",
+                            "triggered_clusters": [{"bucket": "Technology"}],
+                        },
+                        {
+                            "case_id": "a",
+                            "role": "positive",
+                            "triggered_clusters": [{"bucket": "Technology"}],
+                        },
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
         print("noisy calibration output")
         return 0
 
@@ -68,10 +88,12 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
     assert payload["next_gate"] == "data_completion"
     assert payload["run"]["completed_cases"] == 3
     assert payload["calibration"]["freshness_filtered"] is True
+    assert payload["false_positive_control_case_ids"] == ["control-a"]
     assert calibration_calls
     assert calibration_calls[0][calibration_calls[0].index("--ready-state") + 1] == str(ready_output)
     stdout = capsys.readouterr().out
     assert "status=partial_waiting_data next_gate=data_completion fresh=3/7" in stdout
+    assert "false_positive_controls=control-a" in stdout
     assert "blocked_coverage=d" in stdout
     assert "noisy run output" not in stdout
     assert "noisy ready output" not in stdout
