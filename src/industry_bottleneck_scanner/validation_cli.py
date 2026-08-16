@@ -6,18 +6,25 @@ from dataclasses import asdict
 from pathlib import Path
 
 from .phase1_validation import evaluate_validation_manifest, load_validation_cases_csv
+from .validation_policy import (
+    FROZEN_VALIDATION_POLICY_ID,
+    FROZEN_V1_MAX_CONTROL_FALSE_POSITIVE_RATE,
+    FROZEN_V1_MIN_EXPECTED_METRIC_RECALL,
+    FROZEN_V1_MIN_POSITIVE_RECALL,
+    FROZEN_V1_REQUIRE_AGGREGATION_MATCH,
+)
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Evaluate known-positive, control, and blind Phase-1 experiments without changing trigger thresholds."
+        description="Evaluate known-positive, control, and blind Phase-1 experiments under frozen v1 gates."
     )
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--base-dir", type=Path, default=Path("."))
     parser.add_argument("--output", type=Path, default=Path("var/validation/phase1-validation.json"))
-    parser.add_argument("--min-positive-recall", type=float, default=0.67)
-    parser.add_argument("--max-control-fpr", type=float, default=0.20)
-    parser.add_argument("--min-metric-recall", type=float, default=0.67)
+    parser.add_argument("--min-positive-recall", type=float, default=FROZEN_V1_MIN_POSITIVE_RECALL)
+    parser.add_argument("--max-control-fpr", type=float, default=FROZEN_V1_MAX_CONTROL_FALSE_POSITIVE_RATE)
+    parser.add_argument("--min-metric-recall", type=float, default=FROZEN_V1_MIN_EXPECTED_METRIC_RECALL)
     return parser
 
 
@@ -53,11 +60,12 @@ def main(argv: list[str] | None = None) -> int:
 
     payload = {
         "status": "pass" if ready else "needs_more_validation",
+        "validation_policy_id": FROZEN_VALIDATION_POLICY_ID,
         "thresholds": {
             "min_positive_recall": args.min_positive_recall,
             "max_control_false_positive_rate": args.max_control_fpr,
             "min_expected_metric_recall": args.min_metric_recall,
-            "require_aggregation_match": True,
+            "require_aggregation_match": FROZEN_V1_REQUIRE_AGGREGATION_MATCH,
         },
         "summary": asdict(summary),
         "cases": [asdict(item) for item in report.cases],
@@ -66,8 +74,9 @@ def main(argv: list[str] | None = None) -> int:
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(
-        f"status={payload['status']} cases={summary.total_cases} "
-        f"positive_recall={_rate_text(summary.positive_recall)} "
+        f"status={payload['status']} policy={FROZEN_VALIDATION_POLICY_ID} cases={summary.total_cases} "
+        f"strict_positive_recall={_rate_text(summary.positive_recall)} "
+        f"stage_recall={_rate_text(summary.positive_stage_recall)} "
         f"control_fpr={_rate_text(summary.control_false_positive_rate)} "
         f"metric_recall={_rate_text(summary.expected_metric_recall)} "
         f"aggregation_mismatches={summary.aggregation_mismatches}"
