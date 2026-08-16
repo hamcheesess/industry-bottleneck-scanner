@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from .candidate_retrieval import RetrievalCandidate
 from .models import AtomicSignal, SourceDocument
+from .scanner import classify_evidence_semantics
 
 
 @dataclass(frozen=True)
@@ -51,12 +52,20 @@ def promote_candidate(
     signal_id = hashlib.sha256(payload).hexdigest()[:24]
 
     extraction_method = "+".join(candidate.methods)
+    semantics = classify_evidence_semantics(
+        candidate.evidence_text,
+        scanner=candidate.scanner,
+        metric=candidate.metric,
+    )
     confidence = min(0.95, max(0.0, candidate.score))
+    if semantics.resolved and not any(method in {"keyword", "regex"} for method in candidate.methods):
+        confidence = max(0.0, confidence - 0.2)
+
     return AtomicSignal(
         signal_id=signal_id,
         scanner=candidate.scanner,
         metric=candidate.metric,
-        direction="strengthening",
+        direction=semantics.direction,
         magnitude="unknown",
         company_id=document.company_id,
         ticker=document.ticker,
@@ -67,12 +76,12 @@ def promote_candidate(
         published_at=document.published_at,
         source_url=document.source_url,
         evidence_text=candidate.evidence_text,
-        negated=False,
-        resolved=False,
+        negated=semantics.negated,
+        resolved=semantics.resolved,
         extraction_method=extraction_method,
         confidence=confidence,
         matched_phrase=None,
-        comparison_basis="unspecified",
+        comparison_basis=semantics.comparison_basis,
         source_section=document.source_section,
         speaker=document.speaker,
         speaker_title=document.speaker_title,
