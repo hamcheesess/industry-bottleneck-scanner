@@ -43,6 +43,8 @@ The initial positive set contains:
 
 The existing power pilot remains in the validation set even though the current scanner missed the production trigger. Its negative result is not rewritten after the fact.
 
+After the candidate-direction correctness fix, the two newly run 2021 cases remain nontrivial: `semiconductor-shortage-2021` is `confirmed`, while `auto-chip-shortage-2021` is `watchlisted`. Calibration therefore reports triggered positives and watch-or-trigger positives separately rather than treating a watchlisted known-positive as equivalent to an observing miss.
+
 ## Stage B — negative controls
 
 Controls should match source type, company cohort, and temporal structure as closely as practical while preceding the labeled shock.
@@ -51,9 +53,13 @@ The initial controls therefore use pre-shortage 2019 windows for the same semico
 
 A control is counted as a false positive if any cluster reaches `triggered` or `confirmed`. `observing` and `watchlisted` states remain diagnostic and are not counted as production false positives.
 
-The first completed pre-event control, `semiconductor-2019q2-control`, reached `triggered=1` and `confirmed=1`. That is preserved as a provisional false positive. It is not discarded and production thresholds are not relaxed or tightened from the summary line alone.
+The first completed pre-event control, `semiconductor-2019q2-control`, still reaches `triggered` after fixing the candidate-direction bug. It is no longer `confirmed`, but it still fails the production precision gate. The remaining positive prevalence gains are `backlog_strength` and `lead_time_pressure`, so the residual false positive is now an evidence-level Demand/Scarcity question rather than a known weakening-direction corruption.
 
-Before changing any production gate, false positives are decomposed into Demand, Scarcity, and Capex/Pricing prevalence gains. `ibs-phase1-calibration-diagnose` reads the completed local result JSON files, reports the provisional control false-positive rate, and shows whether one or both core dimensions actually accelerated. The command is diagnostic only; it cannot mutate vocabulary or trigger thresholds.
+Before changing any production gate, false positives are decomposed into Demand, Scarcity, and Capex/Pricing prevalence gains. `ibs-phase1-calibration-diagnose` reads completed local result JSON files, reports the provisional control false-positive rate, and shows whether one or both core dimensions actually accelerated. The command is diagnostic only; it cannot mutate vocabulary or trigger thresholds.
+
+`ibs-phase1-evidence-audit` goes one level deeper. It reads the AtomicSignal JSONL artifacts already written by the batch runner and, for each prevalence-gaining metric, records current-versus-baseline supporting companies, newly supporting companies, extraction methods, source sections, speaker provenance, evidence text, document IDs, timestamps, and source URLs. This is the required next step when a control still triggers after a correctness fix. No threshold or vocabulary change is permitted until the evidence itself is inspected.
+
+Watch diagnostics are also separated from observed change diagnostics. `change_reasons` records weak observed changes for every cluster, `watch_reasons` is populated only when a cluster actually qualifies as watchlisted, and `watch_blockers` records structural gates that prevented watchlisting. This avoids outputs where `watchlisted=false` is paired with apparent watch reasons, without changing the watch or trigger thresholds.
 
 ## Stage C — blind validation-only proxy cohort
 
@@ -145,6 +151,7 @@ freeze source-backed labels / pre-event controls
   -> finalize exact-match metadata
   -> run cache-only matched current/baseline experiments
   -> diagnose any control false positive before changing gates
+  -> audit the exact company/evidence support behind residual gains
   -> freeze result JSON
   -> evaluate manifest with ibs-phase1-validate
   -> inspect blind results only after freezing
@@ -153,7 +160,7 @@ freeze source-backed labels / pre-event controls
 
 Fiscal-quarter labels must never be converted into fake publication timestamps. Exact or explicitly sourced event metadata remains a separate provenance step before batch scanning.
 
-The validation evaluator and calibration diagnostics never change scanner vocabulary, trigger thresholds, discovery scores, or result files.
+The validation evaluator, calibration diagnostics, and evidence audit never change scanner vocabulary, trigger thresholds, discovery scores, or result files.
 
 ## Phase 2 gate
 
