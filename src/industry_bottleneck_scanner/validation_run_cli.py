@@ -15,42 +15,24 @@ class CaseRunSpec:
     case_id: str
     aggregation_level: str
     result_path: Path
+    current_metadata_path: Path | None = None
+    baseline_metadata_path: Path | None = None
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run every Phase-1 validation case whose metadata drafts have been fully verified. "
+            "Run every Phase-1 validation case whose metadata is fully verified. "
             "Cases with blank or invalid published_at timestamps are skipped, never guessed."
         )
     )
-    parser.add_argument(
-        "--cases",
-        type=Path,
-        default=Path("experiments/phase1_validation_cases.csv"),
-    )
-    parser.add_argument(
-        "--metadata-root",
-        type=Path,
-        default=Path("var/validation/metadata"),
-    )
+    parser.add_argument("--cases", type=Path, default=Path("experiments/phase1_validation_cases.csv"))
+    parser.add_argument("--metadata-root", type=Path, default=Path("var/validation/metadata"))
     parser.add_argument("--transcript-root", type=Path, default=Path("var/transcripts"))
     parser.add_argument("--provider", default="alpha_vantage")
-    parser.add_argument(
-        "--artifact-root",
-        type=Path,
-        default=Path("var/validation/artifacts"),
-    )
-    parser.add_argument(
-        "--review-root",
-        type=Path,
-        default=Path("var/validation/review"),
-    )
-    parser.add_argument(
-        "--output",
-        type=Path,
-        default=Path("var/validation/run-status.json"),
-    )
+    parser.add_argument("--artifact-root", type=Path, default=Path("var/validation/artifacts"))
+    parser.add_argument("--review-root", type=Path, default=Path("var/validation/review"))
+    parser.add_argument("--output", type=Path, default=Path("var/validation/run-status.json"))
     return parser
 
 
@@ -66,11 +48,25 @@ def _load_cases(path: Path) -> tuple[CaseRunSpec, ...]:
             case_id = (row.get("case_id") or "").strip()
             level = (row.get("aggregation_level") or "").strip()
             result_path = (row.get("result_path") or "").strip()
+            current_metadata = (row.get("current_metadata_path") or "").strip()
+            baseline_metadata = (row.get("baseline_metadata_path") or "").strip()
             if not case_id or not result_path:
                 raise SystemExit(f"{path} row {row_number}: case_id and result_path are required")
             if level not in {"sector", "industry", "subindustry"}:
                 raise SystemExit(f"{path} row {row_number}: invalid aggregation_level {level!r}")
-            specs.append(CaseRunSpec(case_id=case_id, aggregation_level=level, result_path=Path(result_path)))
+            if bool(current_metadata) != bool(baseline_metadata):
+                raise SystemExit(
+                    f"{path} row {row_number}: current_metadata_path and baseline_metadata_path must be supplied together"
+                )
+            specs.append(
+                CaseRunSpec(
+                    case_id=case_id,
+                    aggregation_level=level,
+                    result_path=Path(result_path),
+                    current_metadata_path=Path(current_metadata) if current_metadata else None,
+                    baseline_metadata_path=Path(baseline_metadata) if baseline_metadata else None,
+                )
+            )
     return tuple(specs)
 
 
@@ -89,6 +85,12 @@ def _metadata_state(path: Path) -> tuple[bool, str]:
     return True, "ready"
 
 
+def _metadata_paths(spec: CaseRunSpec, metadata_root: Path) -> tuple[Path, Path]:
+    current = spec.current_metadata_path or metadata_root / f"{spec.case_id}-current.csv"
+    baseline = spec.baseline_metadata_path or metadata_root / f"{spec.case_id}-baseline.csv"
+    return current, baseline
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     specs = _load_cases(args.cases)
@@ -96,8 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     ran = 0
 
     for spec in specs:
-        current = args.metadata_root / f"{spec.case_id}-current.csv"
-        baseline = args.metadata_root / f"{spec.case_id}-baseline.csv"
+        current, baseline = _metadata_paths(spec, args.metadata_root)
         current_ready, current_status = _metadata_state(current)
         baseline_ready, baseline_status = _metadata_state(baseline)
         item: dict[str, object] = {
