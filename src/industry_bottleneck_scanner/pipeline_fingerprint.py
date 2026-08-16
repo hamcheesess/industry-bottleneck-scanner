@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .transcript_store import FileTranscriptStore
 
-RESULT_SCHEMA_VERSION = "phase1-batch-v2"
+RESULT_SCHEMA_VERSION = "phase1-batch-v3"
 
 # Files that can change accepted signals, comparable-window construction, aggregation,
 # ranking, artifacts, or the batch result contract. Validation/reporting-only CLIs are excluded.
@@ -71,17 +71,46 @@ def _metadata_requests(path: Path) -> tuple[tuple[str, str], ...]:
     return tuple(sorted(rows))
 
 
+def missing_experiment_transcripts(
+    *,
+    current_metadata: Path,
+    baseline_metadata: Path,
+    provider: str,
+    transcript_root: Path,
+) -> tuple[str, ...]:
+    """Return frozen metadata requests that are absent from the normalized cache.
+
+    Comparable experiments intentionally shrink to issuers with both windows available so
+    provider gaps cannot masquerade as acceleration. Validation readiness is stricter: an
+    incomplete frozen case must wait for the missing transcript rather than be scored on a
+    smaller cohort.
+    """
+
+    store = FileTranscriptStore(transcript_root)
+    missing: list[str] = []
+    for window, metadata in (("current", current_metadata), ("baseline", baseline_metadata)):
+        for ticker, quarter in _metadata_requests(metadata):
+            path = store.path_for(provider=provider, ticker=ticker, quarter=quarter)
+            if not path.exists():
+                missing.append(f"{window}:{ticker}:{quarter}")
+    return tuple(missing)
+
+
 def compute_experiment_input_fingerprint(
     *,
     current_metadata: Path,
     baseline_metadata: Path,
     provider: str,
     transcript_root: Path,
+    aggregation_level: str = "industry",
+    max_companies: int | None = 50,
 ) -> str:
-    """Hash the exact metadata and normalized transcript-cache inputs used by a batch run."""
+    """Hash exact data inputs plus runtime settings that can change a batch result."""
 
     hasher = hashlib.sha256()
     _feed(hasher, "provider", provider.encode("utf-8"))
+    _feed(hasher, "aggregation_level", aggregation_level.encode("utf-8"))
+    _feed(hasher, "max_companies", str(max_companies).encode("utf-8"))
     for window, metadata in (("current", current_metadata), ("baseline", baseline_metadata)):
         _feed(hasher, f"metadata:{window}", metadata.read_bytes())
 
