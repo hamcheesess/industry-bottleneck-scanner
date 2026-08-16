@@ -73,6 +73,13 @@ def _rate(value: object) -> str:
     return "n/a" if not isinstance(value, (int, float)) else f"{float(value):.1%}"
 
 
+def _status_count(run: dict[str, object], status: str) -> int:
+    items = run.get("items")
+    if not isinstance(items, list):
+        return 0
+    return sum(isinstance(item, dict) and item.get("status") == status for item in items)
+
+
 def _next_action(collection: dict[str, object], cycle: dict[str, object]) -> str:
     next_gate = str(cycle.get("next_gate") or "unknown")
     if next_gate != "data_completion":
@@ -167,13 +174,27 @@ def main(argv: list[str] | None = None) -> int:
     summary = freshness.get("summary")
     if not isinstance(summary, dict):
         summary = {}
+    run = collection.get("run")
+    if not isinstance(run, dict):
+        run = {}
 
     next_action = _next_action(collection, cycle)
+    false_positive_controls = cycle.get("false_positive_control_case_ids")
+    if not isinstance(false_positive_controls, list):
+        false_positive_controls = []
+    collection_stop = {
+        "provider_requests": int(run.get("provider_requests") or 0),
+        "fetched": int(run.get("fetched") or 0),
+        "rate_limited": int(run.get("rate_limited") or 0),
+        "errors": int(run.get("errors") or 0),
+        "budget_exhausted": _status_count(run, "budget_exhausted"),
+    }
     payload = {
         "status": cycle.get("status", "unknown"),
         "next_gate": cycle.get("next_gate", "unknown"),
         "next_action": next_action,
         "collection_exit_code": collection_code,
+        "collection_stop": collection_stop,
         "collection": collection,
         "progress": progress,
         "advance": advance,
@@ -191,11 +212,14 @@ def main(argv: list[str] | None = None) -> int:
         f"status={payload['status']} next_gate={payload['next_gate']} next_action={next_action} "
         f"collection_available={collection.get('available_after_run', '?')}/"
         f"{collection.get('planned_unique_requests', '?')} "
+        f"provider_requests={collection_stop['provider_requests']} fetched={collection_stop['fetched']} "
+        f"rate_limited={collection_stop['rate_limited']} budget_exhausted={collection_stop['budget_exhausted']} "
         f"fresh={len(ready_ids) if isinstance(ready_ids, list) else 0}/"
         f"{freshness.get('total_frozen_cases', '?')} "
         f"stage_recall={_rate(summary.get('positive_stage_recall'))} "
         f"metric_recall={_rate(summary.get('expected_metric_recall'))} "
         f"control_fpr={_rate(summary.get('control_false_positive_rate'))} "
+        f"false_positive_controls={_list_text(false_positive_controls)} "
         f"blocked_inputs={_list_text(freshness.get('blocked_input_case_ids'))} "
         f"blocked_coverage={_list_text(freshness.get('blocked_coverage_case_ids'))}"
     )
