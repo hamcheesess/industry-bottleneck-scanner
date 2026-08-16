@@ -22,7 +22,8 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
         output.write_text(
             json.dumps(
                 {
-                    "status": "partial_gates_not_met",
+                    "status": "partial_waiting_data",
+                    "full_validation_complete": False,
                     "total_frozen_cases": 7,
                     "ready_case_ids": ["a", "b", "c"],
                     "missing_case_ids": [],
@@ -63,13 +64,14 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
     ) == 0
 
     payload = json.loads(cycle_output.read_text(encoding="utf-8"))
-    assert payload["status"] == "partial_gates_not_met"
+    assert payload["status"] == "partial_waiting_data"
+    assert payload["next_gate"] == "data_completion"
     assert payload["run"]["completed_cases"] == 3
     assert payload["calibration"]["freshness_filtered"] is True
     assert calibration_calls
     assert calibration_calls[0][calibration_calls[0].index("--ready-state") + 1] == str(ready_output)
     stdout = capsys.readouterr().out
-    assert "status=partial_gates_not_met fresh=3/7" in stdout
+    assert "status=partial_waiting_data next_gate=data_completion fresh=3/7" in stdout
     assert "blocked_coverage=d" in stdout
     assert "noisy run output" not in stdout
     assert "noisy ready output" not in stdout
