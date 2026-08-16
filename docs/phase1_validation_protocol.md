@@ -53,7 +53,9 @@ The initial controls therefore use pre-shortage 2019 windows for the same semico
 
 A control is counted as a false positive if any cluster reaches `triggered` or `confirmed`. `observing` and `watchlisted` states remain diagnostic and are not counted as production false positives.
 
-The first completed pre-event control, `semiconductor-2019q2-control`, still reaches `triggered` after fixing the candidate-direction bug. It is no longer `confirmed`, but it still fails the production precision gate. The remaining positive prevalence gains are `backlog_strength` and `lead_time_pressure`, so the residual false positive is now an evidence-level Demand/Scarcity question rather than a known weakening-direction corruption.
+The first completed pre-event control, `semiconductor-2019q2-control`, still reached `triggered` after fixing the candidate-direction bug. Evidence audit then showed that its residual `lead_time_pressure` prevalence gain came from an analyst question: "Do you believe it was due to the long lead times you experienced...". That is not issuer evidence. Analyst questions can contain the researcher's hypothesis and therefore must not be promoted into company AtomicSignals.
+
+`scan_transcript` now retains analyst turns as source documents for transcript provenance and Q&A sectioning, but excludes them from AtomicSignal production. Management answers in the same Q&A section remain eligible. This is treated as a provenance correctness fix, not threshold tuning. The remaining 2019 control Demand evidence (`backlog_strength` from AMD management) is left untouched and must be evaluated after re-running the frozen cases.
 
 Before changing any production gate, false positives are decomposed into Demand, Scarcity, and Capex/Pricing prevalence gains. `ibs-phase1-calibration-diagnose` reads completed local result JSON files, reports the provisional control false-positive rate, and shows whether one or both core dimensions actually accelerated. The command is diagnostic only; it cannot mutate vocabulary or trigger thresholds.
 
@@ -152,6 +154,8 @@ freeze source-backed labels / pre-event controls
   -> run cache-only matched current/baseline experiments
   -> diagnose any control false positive before changing gates
   -> audit the exact company/evidence support behind residual gains
+  -> correct provenance/extraction bugs without tuning thresholds
+  -> re-run frozen cases from cache
   -> freeze result JSON
   -> evaluate manifest with ibs-phase1-validate
   -> inspect blind results only after freezing
