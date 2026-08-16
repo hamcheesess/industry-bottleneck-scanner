@@ -88,7 +88,9 @@ def test_scan_transcript_emits_signals_without_sending_full_call_to_an_llm() -> 
     assert "backlog_strength" in metrics
     assert "capacity_constraint" in metrics
     assert "pricing_power" in metrics
+    assert "capacity_expansion" not in metrics
     assert all(signal.document_type == "earnings_call_turn" for signal in signals)
+    assert all("analyst" not in " ".join(filter(None, (signal.speaker, signal.speaker_title))).casefold() for signal in signals)
     assert {signal.extraction_method for signal in signals} <= {"keyword", "regex"}
     backlog = next(signal for signal in signals if signal.metric == "backlog_strength")
     assert backlog.extraction_method == "regex"
@@ -96,3 +98,32 @@ def test_scan_transcript_emits_signals_without_sending_full_call_to_an_llm() -> 
     assert backlog.source_section == "prepared"
     pricing = next(signal for signal in signals if signal.metric == "pricing_power")
     assert pricing.source_section == "qa"
+
+
+def test_analyst_hypothesis_does_not_become_company_scarcity_evidence() -> None:
+    transcript = EarningsCallTranscript(
+        provider="fixture",
+        ticker="TEST",
+        fiscal_quarter="2019Q2",
+        turns=(
+            TranscriptTurn(speaker="Operator", title="Operator", text="Question-and-answer session."),
+            TranscriptTurn(
+                speaker="Research Analyst",
+                title="Senior Equity Research Analyst",
+                text="Was the weakness due to the long lead times you experienced?",
+            ),
+            TranscriptTurn(
+                speaker="CEO",
+                title="Chief Executive Officer",
+                text="No, availability was normal and we did not see a supply constraint.",
+            ),
+        ),
+    )
+
+    signals = scan_transcript(
+        transcript,
+        company_id="issuer-test",
+        published_at=datetime(2019, 7, 30, tzinfo=timezone.utc),
+    )
+
+    assert all(signal.metric != "lead_time_pressure" for signal in signals)
