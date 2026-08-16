@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from industry_bottleneck_scanner import batch_cli
+from industry_bottleneck_scanner.pipeline_fingerprint import RESULT_SCHEMA_VERSION
 from industry_bottleneck_scanner.transcript_store import FileTranscriptStore
 from industry_bottleneck_scanner.transcripts import EarningsCallTranscript, TranscriptTurn
 
@@ -68,6 +69,12 @@ def test_batch_cli_writes_cache_only_experiment_summary(tmp_path) -> None:
 
     payload = json.loads(output.read_text(encoding="utf-8"))
     assert payload["provider"] == "fixture"
+    provenance = payload["result_provenance"]
+    assert provenance["schema_version"] == RESULT_SCHEMA_VERSION
+    assert len(provenance["pipeline_fingerprint"]) == 64
+    assert len(provenance["input_fingerprint"]) == 64
+    assert provenance["current_metadata"] == str(current)
+    assert provenance["baseline_metadata"] == str(baseline)
     assert payload["current"]["signal_count"] >= 2
     assert payload["current"]["missing_transcripts"] == 0
     assert payload["baseline"]["missing_transcripts"] == 0
