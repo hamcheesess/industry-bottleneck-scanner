@@ -16,7 +16,7 @@ from .validation_progress_cli import main as progress_main
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Resume the frozen Phase-1 validation workflow in one bounded pass: collect cache-first, "
+            "Resume the frozen Phase-1 validation workflow in one bounded Alpha Vantage pass: collect cache-first, "
             "draft metadata for newly complete cases, apply committed timestamp provenance where available, "
             "then run the cache-only validation cycle. A provider rate limit is recorded, not retried in a loop."
         )
@@ -98,6 +98,8 @@ def _next_action(collection: dict[str, object], cycle: dict[str, object]) -> str
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.provider != "alpha_vantage":
+        raise SystemExit("ibs-phase1-validation-resume currently supports provider=alpha_vantage only")
     if args.max_provider_requests < 1:
         raise SystemExit("--max-provider-requests must be at least 1")
     if args.interval_seconds < 0:
