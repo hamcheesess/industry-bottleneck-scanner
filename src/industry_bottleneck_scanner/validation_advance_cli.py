@@ -29,6 +29,14 @@ VERIFIED_CASES: tuple[VerifiedCase, ...] = (
         case_id="semiconductor-2019q2-control",
         verified=Path("experiments/verified_timestamps_semiconductor_2019q2_control.csv"),
     ),
+    VerifiedCase(
+        case_id="semiconductor-2019q3-control",
+        verified=Path("experiments/verified_timestamps_semiconductor_2019q3_control.csv"),
+    ),
+    VerifiedCase(
+        case_id="auto-2019q2-control",
+        verified=Path("experiments/verified_timestamps_auto_2019q2_control.csv"),
+    ),
 )
 
 
@@ -162,7 +170,8 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"status=advanced finalized={len(finalized)} "
         f"completed={run_payload.get('completed_cases', 0)} "
-        f"awaiting_verified_metadata={run_payload.get('awaiting_verified_metadata_cases', 0)}"
+        f"awaiting_verified_metadata={run_payload.get('awaiting_verified_metadata_cases', 0)} "
+        f"awaiting_transcripts={run_payload.get('awaiting_transcript_cases', 0)}"
     )
     print(f"wrote {args.output}")
     return 0
