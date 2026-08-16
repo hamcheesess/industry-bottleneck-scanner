@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .candidate_adjudication import AdjudicationResult, adjudicate_candidate, promote_candidate
 from .candidate_retrieval import RetrievalCandidate, retrieve_candidates
-from .models import AtomicSignal, Classification
+from .models import AtomicSignal, Classification, SourceDocument
 from .review_queue import FileReviewQueue, ReviewRecord
 from .semantic_retrieval import LocalSemanticRetriever
 from .transcript_pipeline import transcript_to_documents
@@ -22,6 +22,20 @@ class TranscriptScanResult:
     queued_reviews: int = 0
 
 
+def _is_analyst_document(document: SourceDocument) -> bool:
+    """Return true when a transcript turn is attributable to an analyst.
+
+    Analyst questions remain represented in the turn-level document stream so Q&A
+    section provenance stays intact, but their hypotheses must not become issuer-origin
+    AtomicSignals. Management answers in the same Q&A section remain eligible.
+    """
+
+    haystack = " ".join(
+        value for value in (document.speaker_title, document.speaker) if value
+    ).casefold()
+    return "analyst" in haystack
+
+
 def scan_earnings_call(
     transcript: EarningsCallTranscript,
     *,
@@ -36,6 +50,10 @@ def scan_earnings_call(
     Review-tier semantic candidates remain separate from accepted AtomicSignals. When a
     review queue is supplied they are persisted with the minimum source provenance needed
     for later reprocessing; no raw full-call transcript is written to the review queue.
+
+    Analyst turns are retained in the document count and sectioning provenance but are
+    excluded before candidate retrieval/adjudication so analyst hypotheses cannot be
+    promoted as company evidence. Management Q&A answers remain eligible.
     """
 
     documents = transcript_to_documents(
@@ -51,6 +69,9 @@ def scan_earnings_call(
     candidate_count = 0
 
     for document in documents:
+        if _is_analyst_document(document):
+            continue
+
         batch = retrieve_candidates(document, semantic_retriever=semantic_retriever)
         candidate_count += len(batch.candidates)
         for candidate in batch.candidates:
