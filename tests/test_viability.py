@@ -32,8 +32,10 @@ def _snapshot(**overrides) -> AccelerationSnapshot:
         confidence_mean=0.8,
         breadth_accelerating=False,
         prevalence_accelerating=False,
+        change_reasons=("metric_prevalence_gain",),
+        watch_blockers=(),
         watchlisted=False,
-        watch_reasons=("metric_prevalence_gain",),
+        watch_reasons=(),
         triggered=False,
         confirmed=False,
     )
@@ -52,7 +54,7 @@ def test_observing_small_pilot_expands_neutral_cohort_without_relaxing_threshold
 
 def test_watchlist_only_still_expands_discovery_sample() -> None:
     decision = assess_phase1_viability(
-        (_snapshot(watchlisted=True),),
+        (_snapshot(watchlisted=True, watch_reasons=("metric_prevalence_gain",)),),
         eligible_companies=12,
     )
 
