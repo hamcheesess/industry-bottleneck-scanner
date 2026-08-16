@@ -13,6 +13,11 @@ from .embedding_adapters import HashingNgramEncoder
 from .experiment import run_comparable_cached_experiment
 from .handoff_contract import build_handoff_record, handoff_to_dict
 from .novel_language import cluster_pending_review_language
+from .pipeline_fingerprint import (
+    RESULT_SCHEMA_VERSION,
+    compute_experiment_input_fingerprint,
+    compute_pipeline_fingerprint,
+)
 from .review_queue import FileReviewQueue
 from .semantic_retrieval import LocalSemanticRetriever
 from .taxonomy_candidates import build_taxonomy_candidates
@@ -72,6 +77,14 @@ def main(argv: list[str] | None = None) -> int:
     if args.max_companies < 1:
         raise SystemExit("--max-companies must be at least 1")
 
+    pipeline_fingerprint = compute_pipeline_fingerprint()
+    input_fingerprint = compute_experiment_input_fingerprint(
+        current_metadata=args.current,
+        baseline_metadata=args.baseline,
+        provider=args.provider,
+        transcript_root=args.transcript_root,
+    )
+
     current_records = load_company_period_metadata_csv(args.current.read_text(encoding="utf-8"))
     baseline_records = load_company_period_metadata_csv(args.baseline.read_text(encoding="utf-8"))
     store = FileTranscriptStore(args.transcript_root)
@@ -126,6 +139,14 @@ def main(argv: list[str] | None = None) -> int:
     _write_json(viability_path, asdict(viability))
 
     payload = {
+        "result_provenance": {
+            "schema_version": RESULT_SCHEMA_VERSION,
+            "pipeline_fingerprint": pipeline_fingerprint,
+            "input_fingerprint": input_fingerprint,
+            "provider": args.provider,
+            "current_metadata": str(args.current),
+            "baseline_metadata": str(args.baseline),
+        },
         "provider": args.provider,
         "aggregation_level": args.aggregation_level,
         "cohort": asdict(experiment.diagnostics),
