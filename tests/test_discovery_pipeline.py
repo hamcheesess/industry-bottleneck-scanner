@@ -85,3 +85,37 @@ def test_review_tier_candidates_are_persisted_without_raw_full_call(tmp_path) ->
     assert len(pending) == 1
     assert pending[0].candidate.evidence_text == evidence
     assert pending[0].company_id == "issuer-test"
+
+
+def test_analyst_questions_do_not_become_production_signals_but_management_answers_do() -> None:
+    transcript = EarningsCallTranscript(
+        provider="fixture",
+        ticker="TEST",
+        fiscal_quarter="2019Q2",
+        turns=(
+            TranscriptTurn(
+                speaker="Analyst Name",
+                title="Research Analyst",
+                text="Was the weakness caused by long lead times?",
+            ),
+            TranscriptTurn(
+                speaker="CEO Name",
+                title="Chief Executive Officer",
+                text="Backlog remains strong and we are adding capacity.",
+            ),
+        ),
+    )
+
+    result = scan_earnings_call(
+        transcript,
+        company_id="issuer-test",
+        published_at=datetime(2019, 7, 30, tzinfo=timezone.utc),
+        classification=Classification(sector="Information Technology"),
+    )
+
+    metrics = {signal.metric for signal in result.signals}
+    assert "lead_time_pressure" not in metrics
+    assert "backlog_strength" in metrics
+    assert "capacity_expansion" in metrics
+    assert all("analyst" not in " ".join(filter(None, (signal.speaker_title, signal.speaker))).casefold() for signal in result.signals)
+    assert result.document_count == 2
