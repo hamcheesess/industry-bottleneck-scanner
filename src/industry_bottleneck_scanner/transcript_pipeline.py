@@ -23,6 +23,13 @@ def _is_analyst(turn: TranscriptTurn) -> bool:
     return "analyst" in haystack
 
 
+def _document_is_analyst(document: SourceDocument) -> bool:
+    haystack = " ".join(
+        part for part in (document.speaker_title, document.speaker) if part
+    ).casefold()
+    return "analyst" in haystack
+
+
 def _starts_qa(turn: TranscriptTurn) -> bool:
     text = turn.text.casefold()
     return _is_analyst(turn) or any(marker in text for marker in _QA_MARKERS)
@@ -51,7 +58,9 @@ def transcript_to_documents(
 
     The section boundary is inferred locally and conservatively. Once an explicit Q&A
     marker or analyst turn appears, subsequent turns are labeled ``qa``; earlier turns are
-    labeled ``prepared``. The fiscal quarter is never used as a substitute for call time.
+    labeled ``prepared``. Analyst turns are still retained as documents for transcript
+    provenance and section diagnostics, but they are not treated as issuer evidence by
+    ``scan_transcript``. The fiscal quarter is never used as a substitute for call time.
     """
 
     bucket = classification or Classification()
@@ -92,7 +101,14 @@ def scan_transcript(
     published_at: datetime,
     classification: Classification | None = None,
 ) -> tuple[AtomicSignal, ...]:
-    """Run the deterministic Phase 1 scanner over each transcript turn."""
+    """Run the deterministic Phase 1 scanner over issuer evidence in each transcript.
+
+    Analyst questions are excluded from AtomicSignal production. They often contain a
+    researcher's hypothesis (for example, asking whether long lead times caused a result)
+    rather than a statement by the issuer. Counting those questions as company evidence can
+    manufacture Demand/Scarcity prevalence and is therefore a provenance correctness bug,
+    not a threshold-calibration issue. Management answers in the Q&A section remain eligible.
+    """
 
     signals: list[AtomicSignal] = []
     for document in transcript_to_documents(
@@ -101,5 +117,7 @@ def scan_transcript(
         published_at=published_at,
         classification=classification,
     ):
+        if _document_is_analyst(document):
+            continue
         signals.extend(scan_document(document))
     return tuple(signals)
