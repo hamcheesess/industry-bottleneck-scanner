@@ -10,6 +10,7 @@ from .pipeline_fingerprint import (
     RESULT_SCHEMA_VERSION,
     compute_experiment_input_fingerprint,
     compute_pipeline_fingerprint,
+    missing_experiment_transcripts,
 )
 from .validation_policy import (
     FROZEN_VALIDATION_POLICY_ID,
@@ -23,8 +24,8 @@ from .validation_policy import (
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate only frozen Phase-1 results produced by the current pipeline from the current local inputs. "
-            "Missing or stale results can never contribute to a Phase-1 pass."
+            "Evaluate only frozen Phase-1 results produced by the current pipeline from complete current local inputs. "
+            "Missing, stale, or incomplete-cohort results can never contribute to a Phase-1 pass."
         )
     )
     parser.add_argument("--manifest", type=Path, default=Path("experiments/phase1_validation_cases.csv"))
@@ -32,6 +33,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--metadata-root", type=Path, default=Path("var/validation/metadata"))
     parser.add_argument("--transcript-root", type=Path, default=Path("var/transcripts"))
     parser.add_argument("--provider", default="alpha_vantage")
+    parser.add_argument("--max-companies", type=int, default=50)
     parser.add_argument("--output", type=Path, default=Path("var/validation/ready-validation.json"))
     parser.add_argument("--min-positive-recall", type=float, default=FROZEN_V1_MIN_POSITIVE_RECALL)
     parser.add_argument("--max-control-fpr", type=float, default=FROZEN_V1_MAX_CONTROL_FALSE_POSITIVE_RATE)
@@ -68,8 +70,27 @@ def _freshness(
     metadata_root: Path,
     transcript_root: Path,
     provider: str,
+    max_companies: int,
     pipeline_fingerprint: str,
 ) -> tuple[str, str | None]:
+    current_metadata, baseline_metadata = _metadata_paths(
+        case,
+        base_dir=base_dir,
+        metadata_root=metadata_root,
+    )
+    if not current_metadata.exists() or not baseline_metadata.exists():
+        return "blocked_inputs", "current or baseline metadata is not locally available"
+
+    resolved_transcript_root = _resolve(base_dir, transcript_root)
+    missing_transcripts = missing_experiment_transcripts(
+        current_metadata=current_metadata,
+        baseline_metadata=baseline_metadata,
+        provider=provider,
+        transcript_root=resolved_transcript_root,
+    )
+    if missing_transcripts:
+        return "blocked_coverage", ",".join(missing_transcripts)
+
     result_path = _result_path(case, base_dir)
     if not result_path.exists():
         return "missing_result", None
@@ -87,26 +108,23 @@ def _freshness(
     if provenance.get("pipeline_fingerprint") != pipeline_fingerprint:
         return "stale_pipeline", "pipeline fingerprint differs from current result-affecting code"
 
-    current_metadata, baseline_metadata = _metadata_paths(
-        case,
-        base_dir=base_dir,
-        metadata_root=metadata_root,
-    )
-    if not current_metadata.exists() or not baseline_metadata.exists():
-        return "blocked_inputs", "current or baseline metadata is not locally available"
     expected_input_fingerprint = compute_experiment_input_fingerprint(
         current_metadata=current_metadata,
         baseline_metadata=baseline_metadata,
         provider=provider,
-        transcript_root=_resolve(base_dir, transcript_root),
+        transcript_root=resolved_transcript_root,
+        aggregation_level=case.aggregation_level,
+        max_companies=max_companies,
     )
     if provenance.get("input_fingerprint") != expected_input_fingerprint:
-        return "stale_inputs", "metadata or transcript-cache inputs changed since the result was written"
+        return "stale_inputs", "metadata, transcript cache, or result-affecting runtime settings changed since the result was written"
     return "fresh", None
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.max_companies < 1:
+        raise SystemExit("--max-companies must be at least 1")
     for name, value in (
         ("--min-positive-recall", args.min_positive_recall),
         ("--max-control-fpr", args.max_control_fpr),
@@ -126,6 +144,7 @@ def main(argv: list[str] | None = None) -> int:
             metadata_root=args.metadata_root,
             transcript_root=args.transcript_root,
             provider=args.provider,
+            max_companies=args.max_companies,
             pipeline_fingerprint=pipeline_fingerprint,
         )
         states[case.case_id] = {"state": state, "detail": detail}
@@ -158,6 +177,9 @@ def main(argv: list[str] | None = None) -> int:
         if item["state"] in {"stale_pipeline", "stale_inputs", "invalid_result"}
     ]
     blocked_cases = [case_id for case_id, item in states.items() if item["state"] == "blocked_inputs"]
+    blocked_coverage_cases = [
+        case_id for case_id, item in states.items() if item["state"] == "blocked_coverage"
+    ]
 
     payload = {
         "status": status,
@@ -169,9 +191,11 @@ def main(argv: list[str] | None = None) -> int:
         "missing_case_ids": missing_cases,
         "stale_case_ids": stale_cases,
         "blocked_input_case_ids": blocked_cases,
+        "blocked_coverage_case_ids": blocked_coverage_cases,
         "case_freshness": states,
         "result_schema_version": RESULT_SCHEMA_VERSION,
         "pipeline_fingerprint": pipeline_fingerprint,
+        "max_companies": args.max_companies,
         "thresholds": {
             "min_positive_recall": args.min_positive_recall,
             "max_control_false_positive_rate": args.max_control_fpr,
@@ -181,8 +205,8 @@ def main(argv: list[str] | None = None) -> int:
         "summary": asdict(summary),
         "cases": [asdict(item) for item in report.cases],
         "policy": (
-            "interim diagnostic only; only current-pipeline/current-input results are evaluated, "
-            "and missing or stale frozen cases prevent a Phase-1 pass"
+            "interim diagnostic only; only complete-cohort current-pipeline/current-input results are evaluated, "
+            "and missing, stale, or incomplete frozen cases prevent a Phase-1 pass"
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -196,7 +220,8 @@ def main(argv: list[str] | None = None) -> int:
         f"metric_recall={_rate(summary.expected_metric_recall)} "
         f"aggregation_mismatches={summary.aggregation_mismatches} "
         f"missing={','.join(missing_cases) or 'none'} stale={','.join(stale_cases) or 'none'} "
-        f"blocked_inputs={','.join(blocked_cases) or 'none'}"
+        f"blocked_inputs={','.join(blocked_cases) or 'none'} "
+        f"blocked_coverage={','.join(blocked_coverage_cases) or 'none'}"
     )
     for item in report.cases:
         if item.role == "positive":
