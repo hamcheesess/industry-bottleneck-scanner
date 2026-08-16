@@ -4,7 +4,7 @@ import hashlib
 import re
 from dataclasses import dataclass
 
-from .models import AtomicSignal, ComparisonBasis, SourceDocument
+from .models import AtomicSignal, ComparisonBasis, ScannerCategory, SignalDirection, SourceDocument
 from .vocabulary import DEFAULT_PATTERNS, SignalPattern
 
 _NEGATION_MARKERS = (
@@ -43,6 +43,14 @@ _PRIOR_PERIOD_MARKERS = (
 class PatternMatch:
     text: str
     method: str
+
+
+@dataclass(frozen=True)
+class EvidenceSemantics:
+    direction: SignalDirection
+    negated: bool
+    resolved: bool
+    comparison_basis: ComparisonBasis
 
 
 def _sentences(text: str) -> list[str]:
@@ -94,6 +102,38 @@ def _comparison_basis(sentence: str, pattern: SignalPattern) -> ComparisonBasis:
     return "unspecified"
 
 
+def classify_evidence_semantics(
+    sentence: str,
+    *,
+    scanner: ScannerCategory,
+    metric: str,
+    patterns: tuple[SignalPattern, ...] = DEFAULT_PATTERNS,
+) -> EvidenceSemantics:
+    """Recover direction/negation semantics for a retrieved metric candidate.
+
+    Candidate retrieval intentionally stores a compact identity/evidence record. Promotion
+    must reconstruct the vocabulary semantics instead of assuming every candidate is a
+    strengthening signal. This is especially important for explicit weakening metrics such
+    as backlog/pricing weakness and for negated or resolved scarcity language.
+    """
+
+    pattern = next(
+        (item for item in patterns if item.scanner == scanner and item.metric == metric),
+        None,
+    )
+    if pattern is None:
+        raise ValueError(f"unknown scanner/metric pair: {scanner}/{metric}")
+    negated = _is_negated(sentence)
+    resolved = _is_resolved(sentence, pattern)
+    direction: SignalDirection = "weakening" if resolved else pattern.direction
+    return EvidenceSemantics(
+        direction=direction,
+        negated=negated,
+        resolved=resolved,
+        comparison_basis=_comparison_basis(sentence, pattern),
+    )
+
+
 def scan_document(
     document: SourceDocument,
     *,
@@ -108,17 +148,20 @@ def scan_document(
             if match is None:
                 continue
 
-            negated = _is_negated(sentence)
-            resolved = _is_resolved(sentence, pattern)
-            direction = "weakening" if resolved else pattern.direction
-            confidence = max(0.0, pattern.base_confidence - (0.2 if resolved else 0.0))
+            semantics = classify_evidence_semantics(
+                sentence,
+                scanner=pattern.scanner,
+                metric=pattern.metric,
+                patterns=patterns,
+            )
+            confidence = max(0.0, pattern.base_confidence - (0.2 if semantics.resolved else 0.0))
 
             signals.append(
                 AtomicSignal(
                     signal_id=_signal_id(document.document_id, pattern.scanner, pattern.metric, sentence),
                     scanner=pattern.scanner,
                     metric=pattern.metric,
-                    direction=direction,
+                    direction=semantics.direction,
                     magnitude="unknown",
                     company_id=document.company_id,
                     ticker=document.ticker,
@@ -129,12 +172,12 @@ def scan_document(
                     published_at=document.published_at,
                     source_url=document.source_url,
                     evidence_text=sentence,
-                    negated=negated,
-                    resolved=resolved,
+                    negated=semantics.negated,
+                    resolved=semantics.resolved,
                     extraction_method=match.method,
                     confidence=confidence,
                     matched_phrase=match.text,
-                    comparison_basis=_comparison_basis(sentence, pattern),
+                    comparison_basis=semantics.comparison_basis,
                     source_section=document.source_section,
                     speaker=document.speaker,
                     speaker_title=document.speaker_title,
