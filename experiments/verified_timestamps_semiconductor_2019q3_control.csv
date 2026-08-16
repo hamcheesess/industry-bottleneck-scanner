@@ -1,0 +1,9 @@
+ticker,quarter,published_at,published_at_source_url
+INTC,2019Q3,2019-10-24T14:00:00-07:00,https://www.intc.com/news-events/press-releases/detail/1088/intel-reports-third-quarter-2019-financial-results
+INTC,2019Q2,2019-07-25T14:00:00-07:00,https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-19-000022/q2-2019earningsrelease.htm
+AMD,2019Q3,2019-10-29T14:30:00-07:00,https://ir.amd.com/financial-information/sec-filings/content/0000002488-19-000157/a20191029q319earnings8.htm
+AMD,2019Q2,2019-07-30T14:30:00-07:00,https://ir.amd.com/financial-information/sec-filings/content/0000002488-19-000102/a20190730q219earnings8-k.htm
+TXN,2019Q3,2019-10-22T15:30:00-05:00,https://investor.ti.com/node/29146
+TXN,2019Q2,2019-07-23T15:30:00-05:00,https://investor.ti.com/news-releases/news-release-details/ti-reports-second-quarter-2019-financial-results-and-shareholder
+ON,2019Q3,2019-10-28T09:00:00-04:00,https://investor.onsemi.com/sec-filings/sec-filing/8-k/0001193125-19-275401
+ON,2019Q2,2019-08-05T09:00:00-04:00,https://investor.onsemi.com/static-files/ebb5f0b1-f3ce-40f5-9f56-d3af6d8815f8
