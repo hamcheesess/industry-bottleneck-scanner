@@ -18,7 +18,8 @@ def _parser() -> argparse.ArgumentParser:
         description=(
             "Resume the frozen Phase-1 validation workflow in one bounded Alpha Vantage pass: collect cache-first, "
             "draft metadata for newly complete cases, apply committed timestamp provenance where available, "
-            "then run the cache-only validation cycle. A provider rate limit is recorded, not retried in a loop."
+            "then run the cache-only validation cycle. Provider rate limits and provider-confirmed transcript misses "
+            "are recorded and never retried blindly in a loop."
         )
     )
     parser.add_argument("--provider", default="alpha_vantage")
@@ -73,11 +74,71 @@ def _rate(value: object) -> str:
     return "n/a" if not isinstance(value, (int, float)) else f"{float(value):.1%}"
 
 
-def _status_count(run: dict[str, object], status: str) -> int:
+def _run_dict(collection: dict[str, object]) -> dict[str, object]:
+    run = collection.get("run")
+    return run if isinstance(run, dict) else {}
+
+
+def _status_items(run: dict[str, object], status: str) -> list[dict[str, object]]:
     items = run.get("items")
     if not isinstance(items, list):
-        return 0
-    return sum(isinstance(item, dict) and item.get("status") == status for item in items)
+        return []
+    return [item for item in items if isinstance(item, dict) and item.get("status") == status]
+
+
+def _status_count(run: dict[str, object], status: str) -> int:
+    return len(_status_items(run, status))
+
+
+def _request_text(item: dict[str, object]) -> str | None:
+    ticker = str(item.get("ticker") or "").strip().upper()
+    quarter = str(item.get("quarter") or "").strip().upper()
+    if not ticker or not quarter:
+        return None
+    return f"{ticker}:{quarter}"
+
+
+def _status_requests(run: dict[str, object], status: str) -> list[str]:
+    result: list[str] = []
+    for item in _status_items(run, status):
+        text = _request_text(item)
+        if text:
+            result.append(text)
+    return sorted(set(result))
+
+
+def _remaining_requests(collection: dict[str, object]) -> list[str]:
+    raw = collection.get("missing_requests")
+    if not isinstance(raw, list):
+        return []
+    result: list[str] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        text = _request_text(item)
+        if text:
+            result.append(text)
+    return sorted(set(result))
+
+
+def _provider_missing_only(collection: dict[str, object]) -> bool:
+    """True when every still-uncached request was already attempted and returned no transcript.
+
+    Historical transcript misses are often stable provider-coverage gaps. Reissuing the same
+    requests on every resume invocation creates a pointless provider loop, so the previous
+    collection artifact acts as a stop marker until a source/provider decision is made.
+    """
+
+    remaining = set(_remaining_requests(collection))
+    if not remaining:
+        return False
+    run = _run_dict(collection)
+    if int(run.get("rate_limited") or 0) > 0 or int(run.get("errors") or 0) > 0:
+        return False
+    if _status_count(run, "budget_exhausted") > 0:
+        return False
+    provider_missing = set(_status_requests(run, "missing"))
+    return bool(provider_missing) and remaining == provider_missing
 
 
 def _next_action(collection: dict[str, object], cycle: dict[str, object]) -> str:
@@ -95,8 +156,11 @@ def _next_action(collection: dict[str, object], cycle: dict[str, object]) -> str
                 if blind.get("state") == "blocked_inputs" and "published_at" in detail:
                     return "blind_timestamp_provenance"
 
-    run = collection.get("run")
-    if isinstance(run, dict) and bool(run.get("rate_limited")):
+    if _provider_missing_only(collection):
+        return "provider_missing_transcripts_review"
+
+    run = _run_dict(collection)
+    if bool(run.get("rate_limited")):
         return "provider_quota_resume_later"
     if int(collection.get("remaining_after_run") or 0) > 0:
         return "provider_data_completion"
@@ -114,17 +178,27 @@ def main(argv: list[str] | None = None) -> int:
     if args.max_companies < 1:
         raise SystemExit("--max-companies must be at least 1")
 
-    collection_code, _ = _run_quietly(
-        collection_main,
-        [
-            "--transcript-root", str(args.transcript_root),
-            "--max-provider-requests", str(args.max_provider_requests),
-            "--interval-seconds", str(args.interval_seconds),
-            "--blind-requests", str(args.blind_requests),
-            "--output", str(args.collection_output),
-        ],
-        accepted_codes={0, 2},
+    previous_collection: dict[str, object] | None = None
+    if args.collection_output.exists():
+        previous_collection = _load(args.collection_output)
+
+    reused_terminal_collection = bool(
+        previous_collection is not None and _provider_missing_only(previous_collection)
     )
+    if reused_terminal_collection:
+        collection_code = 2
+    else:
+        collection_code, _ = _run_quietly(
+            collection_main,
+            [
+                "--transcript-root", str(args.transcript_root),
+                "--max-provider-requests", str(args.max_provider_requests),
+                "--interval-seconds", str(args.interval_seconds),
+                "--blind-requests", str(args.blind_requests),
+                "--output", str(args.collection_output),
+            ],
+            accepted_codes={0, 2},
+        )
 
     _run_quietly(
         progress_main,
@@ -174,20 +248,24 @@ def main(argv: list[str] | None = None) -> int:
     summary = freshness.get("summary")
     if not isinstance(summary, dict):
         summary = {}
-    run = collection.get("run")
-    if not isinstance(run, dict):
-        run = {}
+    run = _run_dict(collection)
 
     next_action = _next_action(collection, cycle)
     false_positive_controls = cycle.get("false_positive_control_case_ids")
     if not isinstance(false_positive_controls, list):
         false_positive_controls = []
+    provider_missing = _status_requests(run, "missing")
+    provider_errors = _status_requests(run, "error")
     collection_stop = {
         "provider_requests": int(run.get("provider_requests") or 0),
         "fetched": int(run.get("fetched") or 0),
+        "missing": int(run.get("missing") or 0),
         "rate_limited": int(run.get("rate_limited") or 0),
         "errors": int(run.get("errors") or 0),
         "budget_exhausted": _status_count(run, "budget_exhausted"),
+        "provider_missing_requests": provider_missing,
+        "provider_error_requests": provider_errors,
+        "reused_terminal_collection": reused_terminal_collection,
     }
     payload = {
         "status": cycle.get("status", "unknown"),
@@ -200,8 +278,10 @@ def main(argv: list[str] | None = None) -> int:
         "advance": advance,
         "cycle": cycle,
         "policy": (
-            "one bounded provider pass per invocation; provider rate limits are never retried in a loop; "
-            "scanner vocabulary and trigger thresholds are not mutated"
+            "one bounded provider pass per invocation; rate limits are never retried in a loop; "
+            "when every remaining request has already returned provider-missing, subsequent resume invocations "
+            "reuse that terminal collection state instead of reissuing the same requests; scanner vocabulary "
+            "and trigger thresholds are not mutated"
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -213,7 +293,10 @@ def main(argv: list[str] | None = None) -> int:
         f"collection_available={collection.get('available_after_run', '?')}/"
         f"{collection.get('planned_unique_requests', '?')} "
         f"provider_requests={collection_stop['provider_requests']} fetched={collection_stop['fetched']} "
+        f"missing={collection_stop['missing']} errors={collection_stop['errors']} "
         f"rate_limited={collection_stop['rate_limited']} budget_exhausted={collection_stop['budget_exhausted']} "
+        f"provider_missing={_list_text(provider_missing)} provider_errors={_list_text(provider_errors)} "
+        f"reused_terminal_collection={str(reused_terminal_collection).lower()} "
         f"fresh={len(ready_ids) if isinstance(ready_ids, list) else 0}/"
         f"{freshness.get('total_frozen_cases', '?')} "
         f"stage_recall={_rate(summary.get('positive_stage_recall'))} "
