@@ -38,9 +38,16 @@ def _result(
 def _metadata_pair(tmp_path, case_id: str) -> None:
     root = tmp_path / "metadata"
     root.mkdir(exist_ok=True)
-    text = "ticker,quarter\nAAA,2026Q2\n"
-    (root / f"{case_id}-current.csv").write_text(text, encoding="utf-8")
-    (root / f"{case_id}-baseline.csv").write_text(text, encoding="utf-8")
+    current = (
+        "ticker,company_id,quarter,published_at,sector,industry,subindustry,published_at_source_url\n"
+        "AAA,ticker-AAA,2026Q2,2026-07-31T15:00:00+00:00,Technology,Semiconductors,,https://example.test/q2\n"
+    )
+    baseline = (
+        "ticker,company_id,quarter,published_at,sector,industry,subindustry,published_at_source_url\n"
+        "AAA,ticker-AAA,2026Q1,2026-04-30T15:00:00+00:00,Technology,Semiconductors,,https://example.test/q1\n"
+    )
+    (root / f"{case_id}-current.csv").write_text(current, encoding="utf-8")
+    (root / f"{case_id}-baseline.csv").write_text(baseline, encoding="utf-8")
 
 
 def _complete_cache(monkeypatch) -> None:
@@ -146,7 +153,7 @@ def test_incomplete_transcript_coverage_blocks_result_before_scoring(tmp_path, m
     monkeypatch.setattr(
         validation_ready_cli,
         "missing_experiment_transcripts",
-        lambda **kwargs: ("baseline:AAA:2026Q2",),
+        lambda **kwargs: ("baseline:AAA:2026Q1",),
     )
     output = tmp_path / "ready.json"
 
@@ -162,4 +169,50 @@ def test_incomplete_transcript_coverage_blocks_result_before_scoring(tmp_path, m
     assert payload["status"] == "partial_waiting_data"
     assert payload["blocked_coverage_case_ids"] == ["positive"]
     assert payload["case_freshness"]["positive"]["state"] == "blocked_coverage"
+    assert payload["summary"]["positive_cases"] == 0
+
+
+def test_unverified_timestamp_draft_is_blocked_before_coverage_or_result_scoring(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(validation_ready_cli, "compute_pipeline_fingerprint", lambda: "pipeline-current")
+    root = tmp_path / "metadata"
+    root.mkdir()
+    current = (
+        "ticker,company_id,quarter,published_at,sector,industry,subindustry,published_at_source_url\n"
+        "AAA,ticker-AAA,2026Q2,,Technology,Semiconductors,,,\n"
+    )
+    baseline = (
+        "ticker,company_id,quarter,published_at,sector,industry,subindustry,published_at_source_url\n"
+        "AAA,ticker-AAA,2026Q1,2026-04-30T15:00:00+00:00,Technology,Semiconductors,,https://example.test/q1\n"
+    )
+    (root / "positive-current.csv").write_text(current, encoding="utf-8")
+    (root / "positive-baseline.csv").write_text(baseline, encoding="utf-8")
+    (tmp_path / "positive.json").write_text(
+        json.dumps(_result("Information Technology", "confirmed", ["capacity_constraint"])),
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "cases.csv"
+    manifest.write_text(
+        "case_id,role,result_path,aggregation_level,expected_bucket,expected_metrics,label_sources\n"
+        "positive,positive,positive.json,sector,Information Technology,capacity_constraint,https://example.test/source\n",
+        encoding="utf-8",
+    )
+
+    def fail_coverage(**kwargs):  # pragma: no cover - should not run before metadata validity
+        raise AssertionError("coverage check must not run for invalid metadata")
+
+    monkeypatch.setattr(validation_ready_cli, "missing_experiment_transcripts", fail_coverage)
+    output = tmp_path / "ready.json"
+    assert validation_ready_cli.main(
+        [
+            "--manifest", str(manifest),
+            "--base-dir", str(tmp_path),
+            "--metadata-root", "metadata",
+            "--output", str(output),
+        ]
+    ) == 0
+
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["status"] == "partial_waiting_data"
+    assert payload["blocked_input_case_ids"] == ["positive"]
+    assert "published_at is required" in payload["case_freshness"]["positive"]["detail"]
     assert payload["summary"]["positive_cases"] == 0
