@@ -10,20 +10,40 @@ from .validation_diagnose_cli import diagnose_result
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Diagnose completed Phase-1 validation cases, especially control false positives, without tuning gates."
+        description=(
+            "Diagnose completed Phase-1 validation cases, especially control false positives, without tuning gates. "
+            "When --ready-state is supplied, only freshness-approved complete-cohort cases are included."
+        )
     )
     parser.add_argument("--cases", type=Path, default=Path("experiments/phase1_validation_cases.csv"))
+    parser.add_argument("--ready-state", type=Path)
     parser.add_argument("--output", type=Path, default=Path("var/validation/calibration-diagnostics.json"))
     return parser
 
 
+def _allowed_case_ids(path: Path | None) -> set[str] | None:
+    if path is None:
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise SystemExit(f"{path}: ready-state JSON must be an object")
+    ready = payload.get("ready_case_ids")
+    if not isinstance(ready, list) or not all(isinstance(item, str) for item in ready):
+        raise SystemExit(f"{path}: ready-state JSON must contain ready_case_ids list")
+    return set(ready)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    allowed = _allowed_case_ids(args.ready_state)
     with args.cases.open("r", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
 
     cases: list[dict[str, object]] = []
     for row in rows:
+        case_id = (row.get("case_id") or "").strip()
+        if allowed is not None and case_id not in allowed:
+            continue
         result_path = Path((row.get("result_path") or "").strip())
         if not result_path.exists():
             continue
@@ -36,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
         watch_or_trigger = [item for item in clusters if item.get("triggered") or item.get("watchlisted")]
         cases.append(
             {
-                "case_id": (row.get("case_id") or "").strip(),
+                "case_id": case_id,
                 "role": (row.get("role") or "").strip(),
                 "result_path": str(result_path),
                 "triggered_clusters": triggered,
@@ -51,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
     stage_recovered_positives = [item for item in completed_positives if item["watch_or_trigger_clusters"]]
     payload = {
         "status": "diagnosed",
+        "freshness_filtered": allowed is not None,
+        "eligible_case_ids": sorted(allowed) if allowed is not None else None,
         "completed_cases": len(cases),
         "completed_positive_cases": len(completed_positives),
         "triggered_positive_cases": len(triggered_positives),
@@ -68,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
     fpr = payload["provisional_control_fpr"]
     fpr_text = "n/a" if fpr is None else f"{fpr:.1%}"
     print(
-        f"status=diagnosed completed={len(cases)} "
+        f"status=diagnosed completed={len(cases)} freshness_filtered={allowed is not None} "
         f"positives_triggered={len(triggered_positives)}/{len(completed_positives)} "
         f"positives_watch_or_trigger={len(stage_recovered_positives)}/{len(completed_positives)} "
         f"control_false_positives={len(false_positive_controls)}/{len(completed_controls)} "
