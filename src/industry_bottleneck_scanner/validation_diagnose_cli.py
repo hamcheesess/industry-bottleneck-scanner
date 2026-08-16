@@ -4,9 +4,12 @@ import argparse
 import json
 from pathlib import Path
 
+from .vocabulary import DEFAULT_PATTERNS
+
 
 CORE_SCANNERS = {"demand", "scarcity"}
 CONFIRMERS = {"capex", "pricing"}
+_DIRECTION_BY_METRIC = {item.metric: item.direction for item in DEFAULT_PATTERNS}
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -37,21 +40,9 @@ def _cluster_metrics(payload: dict[str, object], bucket: str, window: str) -> se
 
 
 def _scanner_for_metric(metric: str) -> str:
-    if metric.startswith(("backlog_", "bookings_", "book_to_bill_", "forward_capacity_")):
-        return "demand"
-    if metric in {
-        "lead_time_pressure",
-        "capacity_constraint",
-        "supply_tightness",
-        "allocation",
-        "sold_out_capacity",
-        "qualification_barrier",
-    }:
-        return "scarcity"
-    if metric.startswith("capex_") or metric == "capacity_expansion":
-        return "capex"
-    if metric in {"pricing_power", "contract_repricing", "margin_from_pricing", "pricing_weakness"}:
-        return "pricing"
+    for pattern in DEFAULT_PATTERNS:
+        if pattern.metric == metric:
+            return pattern.scanner
     return "unknown"
 
 
@@ -72,6 +63,9 @@ def diagnose_result(payload: dict[str, object]) -> dict[str, object]:
         positive_demand = [metric for metric in gains if _scanner_for_metric(metric) == "demand"]
         positive_scarcity = [metric for metric in gains if _scanner_for_metric(metric) == "scarcity"]
         positive_confirmers = [metric for metric in gains if _scanner_for_metric(metric) in CONFIRMERS]
+        directional_inconsistencies = [
+            metric for metric in gains if _DIRECTION_BY_METRIC.get(metric) == "weakening"
+        ]
         active_current = _cluster_metrics(payload, bucket, "current")
         active_baseline = _cluster_metrics(payload, bucket, "baseline")
         diagnostics.append(
@@ -90,6 +84,7 @@ def diagnose_result(payload: dict[str, object]) -> dict[str, object]:
                 "positive_confirmer_metric_gains": positive_confirmers,
                 "both_core_dimensions_accelerating": bool(positive_demand and positive_scarcity),
                 "any_core_dimension_accelerating": bool(positive_core),
+                "directional_inconsistencies": directional_inconsistencies,
                 "active_metrics_current": sorted(active_current),
                 "active_metrics_baseline": sorted(active_baseline),
                 "new_active_metrics": sorted(active_current - active_baseline),
@@ -117,7 +112,8 @@ def main(argv: list[str] | None = None) -> int:
             f"both_core_gain={item['both_core_dimensions_accelerating']} "
             f"demand_gains={','.join(item['positive_demand_metric_gains']) or 'none'} "
             f"scarcity_gains={','.join(item['positive_scarcity_metric_gains']) or 'none'} "
-            f"confirmer_gains={','.join(item['positive_confirmer_metric_gains']) or 'none'}"
+            f"confirmer_gains={','.join(item['positive_confirmer_metric_gains']) or 'none'} "
+            f"directional_inconsistencies={','.join(item['directional_inconsistencies']) or 'none'}"
         )
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
