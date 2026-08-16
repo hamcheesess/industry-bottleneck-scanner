@@ -44,7 +44,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Apply committed source-backed event timestamps to any existing Phase-1 metadata "
-            "drafts, then run every validation case that becomes ready."
+            "drafts, then optionally run every validation case that becomes ready."
         )
     )
     parser.add_argument("--metadata-root", type=Path, default=Path("var/validation/metadata"))
@@ -53,6 +53,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--cases", type=Path, default=Path("experiments/phase1_validation_cases.csv"))
     parser.add_argument("--run-output", type=Path, default=Path("var/validation/run-status.json"))
     parser.add_argument("--output", type=Path, default=Path("var/validation/advance-status.json"))
+    parser.add_argument(
+        "--skip-run",
+        action="store_true",
+        help="Finalize matching metadata only; leave batch execution to a later consolidated validation cycle.",
+    )
     return parser
 
 
@@ -147,32 +152,37 @@ def main(argv: list[str] | None = None) -> int:
         else:
             skipped.append({"case_id": spec.case_id, "status": status})
 
-    run_code = run_main(
-        [
-            "--cases", str(args.cases),
-            "--metadata-root", str(args.metadata_root),
-            "--transcript-root", str(args.transcript_root),
-            "--output", str(args.run_output),
-        ]
-    )
-    if run_code != 0:
-        raise RuntimeError(f"validation run failed with exit code {run_code}")
+    run_payload: dict[str, object] | None = None
+    if not args.skip_run:
+        run_code = run_main(
+            [
+                "--cases", str(args.cases),
+                "--metadata-root", str(args.metadata_root),
+                "--transcript-root", str(args.transcript_root),
+                "--output", str(args.run_output),
+            ]
+        )
+        if run_code != 0:
+            raise RuntimeError(f"validation run failed with exit code {run_code}")
+        run_payload = json.loads(args.run_output.read_text(encoding="utf-8"))
 
-    run_payload = json.loads(args.run_output.read_text(encoding="utf-8"))
     payload = {
-        "status": "advanced",
+        "status": "finalized_only" if args.skip_run else "advanced",
         "finalized_cases": finalized,
         "skipped_verified_cases": skipped,
         "run_status": run_payload,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(
-        f"status=advanced finalized={len(finalized)} "
-        f"completed={run_payload.get('completed_cases', 0)} "
-        f"awaiting_verified_metadata={run_payload.get('awaiting_verified_metadata_cases', 0)} "
-        f"awaiting_transcripts={run_payload.get('awaiting_transcript_cases', 0)}"
-    )
+    if run_payload is None:
+        print(f"status=finalized_only finalized={len(finalized)} skipped={len(skipped)}")
+    else:
+        print(
+            f"status=advanced finalized={len(finalized)} "
+            f"completed={run_payload.get('completed_cases', 0)} "
+            f"awaiting_verified_metadata={run_payload.get('awaiting_verified_metadata_cases', 0)} "
+            f"awaiting_transcripts={run_payload.get('awaiting_transcript_cases', 0)}"
+        )
     print(f"wrote {args.output}")
     return 0
 
