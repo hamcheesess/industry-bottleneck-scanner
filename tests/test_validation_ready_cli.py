@@ -47,7 +47,7 @@ def _complete_cache(monkeypatch) -> None:
     monkeypatch.setattr(validation_ready_cli, "missing_experiment_transcripts", lambda **kwargs: ())
 
 
-def test_ready_validation_uses_only_fresh_results_without_claiming_full_pass(tmp_path, capsys, monkeypatch) -> None:
+def test_ready_validation_reports_partial_metrics_without_partial_gate_judgment(tmp_path, capsys, monkeypatch) -> None:
     monkeypatch.setattr(validation_ready_cli, "compute_pipeline_fingerprint", lambda: "pipeline-current")
     monkeypatch.setattr(
         validation_ready_cli,
@@ -86,9 +86,10 @@ def test_ready_validation_uses_only_fresh_results_without_claiming_full_pass(tmp
     ) == 0
 
     payload = json.loads(output.read_text(encoding="utf-8"))
-    assert payload["status"] == "partial_gates_ok"
+    assert payload["status"] == "partial_waiting_data"
     assert payload["full_validation_complete"] is False
-    assert payload["provisional_gate_ok"] is True
+    assert payload["provisional_gate_ok"] is None
+    assert payload["partial_diagnostic_gate_ok"] is True
     assert payload["ready_case_ids"] == ["positive", "control"]
     assert payload["blocked_input_case_ids"] == ["blind"]
     assert payload["summary"]["positive_stage_recall"] == 1.0
@@ -122,7 +123,8 @@ def test_unversioned_existing_result_is_stale_not_ready(tmp_path, monkeypatch) -
         ]
     ) == 0
     payload = json.loads(output.read_text(encoding="utf-8"))
-    assert payload["status"] == "partial_no_fresh_results"
+    assert payload["status"] == "partial_waiting_data"
+    assert payload["provisional_gate_ok"] is None
     assert payload["ready_case_ids"] == []
     assert payload["stale_case_ids"] == ["positive"]
     assert payload["case_freshness"]["positive"]["state"] == "stale_pipeline"
@@ -157,7 +159,7 @@ def test_incomplete_transcript_coverage_blocks_result_before_scoring(tmp_path, m
         ]
     ) == 0
     payload = json.loads(output.read_text(encoding="utf-8"))
-    assert payload["status"] == "partial_no_fresh_results"
+    assert payload["status"] == "partial_waiting_data"
     assert payload["blocked_coverage_case_ids"] == ["positive"]
     assert payload["case_freshness"]["positive"]["state"] == "blocked_coverage"
     assert payload["summary"]["positive_cases"] == 0
