@@ -23,6 +23,7 @@ ibs-phase1-validation-progress = "industry_bottleneck_scanner.validation_progres
 ibs-phase1-validation-run = "industry_bottleneck_scanner.validation_run_cli:main"
 ibs-phase1-validation-advance = "industry_bottleneck_scanner.validation_advance_cli:main"
 ibs-phase1-validation-diagnose = "industry_bottleneck_scanner.validation_diagnose_cli:main"
+ibs-phase1-calibration-diagnose = "industry_bottleneck_scanner.validation_calibration_cli:main"
 ibs-neutral-cohort-plan = "industry_bottleneck_scanner.cohort_cli:main"
 ibs-neutral-proxy-iwv = "industry_bottleneck_scanner.iwv_proxy_cli:main"
 ibs-phase1-proxy-plan = "industry_bottleneck_scanner.proxy_plan_cli:main"
