@@ -5,6 +5,7 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
+from .company_metadata import load_company_period_metadata_csv
 from .phase1_validation import ValidationCase, evaluate_validation_manifest, load_validation_cases_csv
 from .pipeline_fingerprint import (
     RESULT_SCHEMA_VERSION,
@@ -25,7 +26,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Evaluate only frozen Phase-1 results produced by the current pipeline from complete current local inputs. "
-            "Missing, stale, or incomplete-cohort results can never contribute to a Phase-1 pass."
+            "Missing, unverified, stale, or incomplete-cohort results can never contribute to a Phase-1 pass."
         )
     )
     parser.add_argument("--manifest", type=Path, default=Path("experiments/phase1_validation_cases.csv"))
@@ -63,6 +64,16 @@ def _metadata_paths(case: ValidationCase, *, base_dir: Path, metadata_root: Path
     return root / f"{case.case_id}-current.csv", root / f"{case.case_id}-baseline.csv"
 
 
+def _metadata_validity(path: Path) -> tuple[bool, str | None]:
+    try:
+        records = load_company_period_metadata_csv(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return False, str(exc)
+    if not records:
+        return False, "metadata CSV is empty"
+    return True, None
+
+
 def _freshness(
     case: ValidationCase,
     *,
@@ -80,6 +91,11 @@ def _freshness(
     )
     if not current_metadata.exists() or not baseline_metadata.exists():
         return "blocked_inputs", "current or baseline metadata is not locally available"
+
+    for window, metadata in (("current", current_metadata), ("baseline", baseline_metadata)):
+        valid, detail = _metadata_validity(metadata)
+        if not valid:
+            return "blocked_inputs", f"{window} metadata is not validation-ready: {detail}"
 
     resolved_transcript_root = _resolve(base_dir, transcript_root)
     missing_transcripts = missing_experiment_transcripts(
@@ -207,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
         "cases": [asdict(item) for item in report.cases],
         "policy": (
             "partial metrics are diagnostics only; no gate pass/fail is assigned until every frozen case is "
-            "complete-cohort, current-pipeline, current-input, and freshness-approved"
+            "complete-cohort, timestamp-verified, current-pipeline, current-input, and freshness-approved"
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
