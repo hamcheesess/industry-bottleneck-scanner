@@ -51,6 +51,10 @@ The initial controls therefore use pre-shortage 2019 windows for the same semico
 
 A control is counted as a false positive if any cluster reaches `triggered` or `confirmed`. `observing` and `watchlisted` states remain diagnostic and are not counted as production false positives.
 
+The first completed pre-event control, `semiconductor-2019q2-control`, reached `triggered=1` and `confirmed=1`. That is preserved as a provisional false positive. It is not discarded and production thresholds are not relaxed or tightened from the summary line alone.
+
+Before changing any production gate, false positives are decomposed into Demand, Scarcity, and Capex/Pricing prevalence gains. `ibs-phase1-calibration-diagnose` reads the completed local result JSON files, reports the provisional control false-positive rate, and shows whether one or both core dimensions actually accelerated. The command is diagnostic only; it cannot mutate vocabulary or trigger thresholds.
+
 ## Stage C — blind validation-only proxy cohort
 
 Blind cases have no expected bucket and do not contribute to label-based pass/fail metrics. Selection must happen before transcript signals are inspected and may use identity/classification metadata only.
@@ -140,6 +144,7 @@ freeze source-backed labels / pre-event controls
   -> verify real event timestamps and provenance
   -> finalize exact-match metadata
   -> run cache-only matched current/baseline experiments
+  -> diagnose any control false positive before changing gates
   -> freeze result JSON
   -> evaluate manifest with ibs-phase1-validate
   -> inspect blind results only after freezing
@@ -148,7 +153,7 @@ freeze source-backed labels / pre-event controls
 
 Fiscal-quarter labels must never be converted into fake publication timestamps. Exact or explicitly sourced event metadata remains a separate provenance step before batch scanning.
 
-The validation evaluator never changes scanner vocabulary, trigger thresholds, discovery scores, or result files.
+The validation evaluator and calibration diagnostics never change scanner vocabulary, trigger thresholds, discovery scores, or result files.
 
 ## Phase 2 gate
 
