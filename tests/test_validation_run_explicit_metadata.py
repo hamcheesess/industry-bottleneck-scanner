@@ -46,6 +46,7 @@ def test_runner_uses_explicit_metadata_paths_from_frozen_manifest(monkeypatch, t
         encoding="utf-8",
     )
     calls: list[list[str]] = []
+    monkeypatch.setattr(validation_run_cli, "missing_experiment_transcripts", lambda **kwargs: ())
     monkeypatch.setattr(validation_run_cli, "batch_main", lambda argv: calls.append(list(argv)) or 0)
 
     assert validation_run_cli.main(
