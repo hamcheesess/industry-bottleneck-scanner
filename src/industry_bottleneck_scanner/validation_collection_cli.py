@@ -17,6 +17,7 @@ DEFAULT_REQUEST_FILES = (
     Path("experiments/validation_semiconductor_2019q2_control_requests.csv"),
     Path("experiments/validation_semiconductor_2019q3_control_requests.csv"),
     Path("experiments/validation_auto_2019q2_control_requests.csv"),
+    Path("experiments/pilot_power_infrastructure_requests.csv"),
 )
 DEFAULT_BLIND_REQUEST_FILE = Path("var/cohort/neutral_proxy_requests.csv")
 
@@ -24,8 +25,9 @@ DEFAULT_BLIND_REQUEST_FILE = Path("var/cohort/neutral_proxy_requests.csv")
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Collect the frozen Phase-1 validation transcript requests cache-first under one "
-            "global provider budget. Re-run safely on later days to resume from cache."
+            "Collect every frozen Phase-1 validation transcript request cache-first under one "
+            "global provider budget, including the retained power pilot. Re-run safely on later days "
+            "to resume from cache."
         )
     )
     parser.add_argument("--transcript-root", type=Path, default=Path("var/transcripts"))
@@ -161,6 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         "provider": source.provider_name,
         "request_files": [str(path) for path in request_files],
         "blind_requests_included": args.blind_requests in request_files,
+        "power_pilot_requests_included": Path("experiments/pilot_power_infrastructure_requests.csv") in request_files,
         "planned_unique_requests": len(planned),
         "available_after_run": len(available_requests),
         "remaining_after_run": len(missing_requests),
