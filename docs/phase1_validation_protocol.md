@@ -2,178 +2,209 @@
 
 ## Purpose
 
-Phase 1 is not considered validated merely because transcript collection and signal extraction run successfully. The discovery engine must demonstrate that it can recover known operating bottlenecks, avoid firing on negative controls, and surface plausible clusters in a neutral sample without using the expected outcome during selection.
+Phase 1 is a discovery-engine validation, not a demo that selected historical themes can be made to pass. The scanner must show four distinct properties:
 
-The validation sequence is deliberately ordered to separate recall, precision, and blind discovery behavior.
+1. source-backed phenomenon/extraction recall,
+2. meaningful current-vs-baseline acceleration behavior,
+3. precision on matched pre-event controls,
+4. nontrivial blind discovery without outcome-aware cohort selection.
 
-## Frozen case contract
+The repository keeps the original validation manifest as **frozen v1**. Observed failures may reveal correctness bugs, but they must not cause labels, vocabulary, or trigger thresholds to be edited until the validation round is complete.
 
-Every validation case freezes before execution:
+## Frozen v1 case contract
+
+`experiments/phase1_validation_cases.csv` freezes:
 
 - `case_id`
 - `role`: `positive`, `control`, or `blind`
 - result path
-- aggregation level: `sector`, `industry`, or `subindustry`
+- aggregation level
 - expected bucket for positive cases
 - expected metrics for positive cases
 - external label-source URLs
-- notes explaining the label/control rationale
+- notes
 
-Positive cases require at least one HTTP(S) label source. The evaluator also verifies that the result's aggregation level matches the frozen case. An aggregation mismatch blocks a positive recovery and blocks the overall validation pass rather than silently comparing unlike buckets.
+The manifest may also contain `current_metadata_path` and `baseline_metadata_path`. Those fields are **operational inputs only**. They make a frozen case reproducible and do not change its label or evaluation rule. Cases without explicit paths use `var/validation/metadata/<case>-current.csv` and `...-baseline.csv`.
 
-The repository's initial frozen case set is `experiments/phase1_validation_cases.csv`.
+Positive cases require at least one HTTP(S) label source. Aggregation-level mismatch blocks recovery rather than silently comparing unlike buckets.
 
-## Stage A — known-positive recovery
+## Result freshness is part of correctness
 
-Use historical periods where a bottleneck or demand/supply imbalance is independently documented outside the scanner.
+A result file is not valid merely because it exists.
 
-Labels must be frozen before scanner output is inspected. A positive case is recovered only when:
+Every `ibs-phase1-batch` result now carries `result_provenance` containing:
 
-1. the expected aggregation level matches the result,
-2. the expected bucket reaches at least `watchlisted`, and
-3. every predeclared expected metric is present in the current-window active metrics.
+- a versioned result schema,
+- a deterministic fingerprint of result-affecting scanner/pipeline code,
+- a deterministic fingerprint of current/baseline metadata plus normalized transcript-cache inputs,
+- the provider and metadata paths used by the run.
 
-The purpose is to test whether the vocabulary/retrieval stack can recover a real phenomenon, not whether thresholds can be tuned until a selected example fires.
+`ibs-phase1-validation-ready` evaluates only results whose schema, pipeline fingerprint, and input fingerprint match the current environment. Old files with no provenance, results generated before a scanner fix, and results whose local inputs changed are reported as stale and do not enter interim validation metrics.
 
-The initial positive set contains:
+This prevents a mixed-version validation set, such as combining newly recalibrated semiconductor cases with an older power-pilot result.
 
-- the 2021 semiconductor shortage at sector level,
-- the 2021 downstream auto chip shortage at sector level,
-- the existing 2026 electrical-equipment pilot at industry level.
+## Routine cache-only validation cycle
 
-The existing power pilot remains in the validation set even though the current scanner missed the production trigger. Its negative result is not rewritten after the fact.
+The normal local validation command is now:
 
-After the candidate-direction correctness fix, the two newly run 2021 cases remain nontrivial: `semiconductor-shortage-2021` is `confirmed`, while `auto-chip-shortage-2021` is `watchlisted`. Calibration therefore reports triggered positives and watch-or-trigger positives separately rather than treating a watchlisted known-positive as equivalent to an observing miss.
-
-## Stage B — negative controls
-
-Controls should match source type, company cohort, and temporal structure as closely as practical while preceding the labeled shock.
-
-The initial controls therefore use pre-shortage 2019 windows for the same semiconductor and auto cohorts rather than unrelated contemporary sectors. This makes the precision test materially harder and reduces the chance that a generic sector difference is mistaken for scanner precision.
-
-A control is counted as a false positive if any cluster reaches `triggered` or `confirmed`. `observing` and `watchlisted` states remain diagnostic and are not counted as production false positives.
-
-The first completed pre-event control, `semiconductor-2019q2-control`, still reached `triggered` after fixing the candidate-direction bug. Evidence audit then showed that its residual `lead_time_pressure` prevalence gain came from an analyst question: "Do you believe it was due to the long lead times you experienced...". That is not issuer evidence. Analyst questions can contain the researcher's hypothesis and therefore must not be promoted into company AtomicSignals.
-
-`scan_transcript` now retains analyst turns as source documents for transcript provenance and Q&A sectioning, but excludes them from AtomicSignal production. Management answers in the same Q&A section remain eligible. This is treated as a provenance correctness fix, not threshold tuning. The remaining 2019 control Demand evidence (`backlog_strength` from AMD management) is left untouched and must be evaluated after re-running the frozen cases.
-
-Before changing any production gate, false positives are decomposed into Demand, Scarcity, and Capex/Pricing prevalence gains. `ibs-phase1-calibration-diagnose` reads completed local result JSON files, reports the provisional control false-positive rate, and shows whether one or both core dimensions actually accelerated. The command is diagnostic only; it cannot mutate vocabulary or trigger thresholds.
-
-`ibs-phase1-evidence-audit` goes one level deeper. It reads the AtomicSignal JSONL artifacts already written by the batch runner and, for each prevalence-gaining metric, records current-versus-baseline supporting companies, newly supporting companies, extraction methods, source sections, speaker provenance, evidence text, document IDs, timestamps, and source URLs. This is the required next step when a control still triggers after a correctness fix. No threshold or vocabulary change is permitted until the evidence itself is inspected.
-
-Watch diagnostics are also separated from observed change diagnostics. `change_reasons` records weak observed changes for every cluster, `watch_reasons` is populated only when a cluster actually qualifies as watchlisted, and `watch_blockers` records structural gates that prevented watchlisting. This avoids outputs where `watchlisted=false` is paired with apparent watch reasons, without changing the watch or trigger thresholds.
-
-## Stage C — blind validation-only proxy cohort
-
-Blind cases have no expected bucket and do not contribute to label-based pass/fail metrics. Selection must happen before transcript signals are inspected and may use identity/classification metadata only.
-
-For Phase-1 validation only, the approved free broad-U.S. proxy is the public iShares Russell 3000 ETF (`IWV`) holdings CSV. It is explicitly **not** canonical Russell 3000 membership.
-
-The public holdings file exposes sector but not granular industry. Therefore:
-
-- the proxy plan records `canonical_russell_3000=false`;
-- it records `purpose=phase1_validation_only`;
-- placeholder `proxy-sector::<sector>` labels are used only to satisfy the generic sampler contract;
-- the resulting experiment must run with `aggregation_level=sector`;
-- passing the proxy validation does not authorize proxy holdings for production discovery.
-
-`ibs-phase1-proxy-plan` downloads the dated holdings file, makes a stable scanner-blind selection, and emits paired transcript requests.
-
-The blind sampler is trigger-reachable by construction. The production trigger needs at least three independent companies in one aggregation bucket, so the default blind plan selects three groups with four companies each: 12 issuers and 24 ticker-quarter requests. The fourth company supplies one unit of coverage slack.
-
-## Transcript collection
-
-Frozen labeled request manifests live under `experiments/validation_*_requests.csv`. The blind request file is generated under `var/cohort/neutral_proxy_requests.csv`.
-
-`ibs-phase1-validation-collect` deduplicates all available labeled and blind requests and applies one global Alpha Vantage provider budget. It is cache-first and safe to re-run on later days. The default budget is 24 provider calls so a free-tier daily ceiling is not intentionally exhausted by the command itself.
-
-Collection status is written to `var/validation/collection-status.json`. Already-cached ticker-quarter pairs consume no provider budget.
-
-## Event-date metadata drafting
-
-Cached transcripts still do not authorize inventing publication timestamps. Fiscal-quarter labels are period identifiers, not event dates.
-
-`ibs-phase1-validation-metadata-draft` creates separate current and baseline metadata CSV drafts plus a research checklist. It always leaves `published_at` blank until a real timezone-aware timestamp is independently verified.
-
-For convenience, the command scans the first transcript turns for unambiguous written calendar dates such as `August 13, 2026`. Those values are emitted only as `published_date_candidate` and `published_date_evidence`; they are not promoted into `published_at`, no time of day is invented, and numeric-only dates are ignored. If multiple distinct written dates appear, no candidate date is selected.
-
-The generic metadata loader ignores these extra research columns, so completed drafts remain compatible with `ibs-phase1-batch` after `published_at` and provenance are filled.
-
-## Verified timestamp provenance
-
-For the three request files already complete in the local cache, event timestamps were independently verified from issuer investor-relations pages, issuer-hosted SEC filing mirrors, or issuer-hosted historical earnings releases. The frozen provenance files are:
-
-- `experiments/verified_timestamps_semiconductor_2021.csv`
-- `experiments/verified_timestamps_auto_2021.csv`
-- `experiments/verified_timestamps_semiconductor_2019q2_control.csv`
-
-Every row contains ticker, fiscal-quarter label, an ISO-8601 timestamp with explicit UTC offset, and the HTTP(S) source URL supporting the conference-call date and local time. Daylight-saving offsets are preserved explicitly rather than inferred later.
-
-`ibs-phase1-validation-metadata-finalize` remains fail-closed: verified rows must match the draft ticker+quarter set exactly, timestamps must be timezone-aware, and every row must carry HTTP(S) provenance.
-
-`ibs-phase1-validation-advance` is the convenience path for these frozen provenance files. It applies only the committed verified rows that exactly match an existing local draft, finalizes current and baseline metadata in place, then invokes `ibs-phase1-validation-run`. Cases whose transcript cache or draft metadata are still incomplete remain skipped; no missing timestamp is guessed.
-
-## Validation metrics
-
-`ibs-phase1-validate` evaluates a CSV manifest pointing to completed `ibs-phase1-batch` result JSON files.
-
-Primary metrics:
-
-- positive recovery recall
-- expected-metric recall
-- control false-positive rate
-- aggregation-level mismatch count
-
-Default viability thresholds are intentionally explicit rather than hidden in a composite score:
-
-- positive recovery recall >= 67%
-- expected-metric recall >= 67%
-- control false-positive rate <= 20%
-- aggregation mismatches = 0
-
-These are development gates, not claims of statistical significance. They should be revisited only after sample size expands; they must not be changed merely to make a failing cohort pass.
-
-## Manifest format
-
-```csv
-case_id,role,result_path,aggregation_level,expected_bucket,expected_metrics,label_sources,notes
-power-positive,positive,var/validation/power-positive.json,industry,Electrical Equipment,backlog_strength|capacity_constraint,https://example.com/source,labels frozen before run
-matched-control,control,var/validation/control.json,sector,,,https://example.com/context,matched pre-event control
-blind-01,blind,var/validation/blind-01.json,sector,,,,scanner-blind proxy sample
+```bash
+ibs-phase1-validation-cycle
 ```
 
-## Execution
+It performs one bounded bundle:
 
 ```text
-freeze source-backed labels / pre-event controls
-  -> generate scanner-blind proxy cohort
-  -> collect bounded paired transcripts cache-first
-  -> create metadata drafts without fabricating timestamps
-  -> verify real event timestamps and provenance
-  -> finalize exact-match metadata
-  -> run cache-only matched current/baseline experiments
-  -> diagnose any control false positive before changing gates
-  -> audit the exact company/evidence support behind residual gains
-  -> correct provenance/extraction bugs without tuning thresholds
-  -> re-run frozen cases from cache
-  -> freeze result JSON
-  -> evaluate manifest with ibs-phase1-validate
-  -> inspect blind results only after freezing
-  -> decide whether Phase 1 is viable for Phase 2
+all metadata-ready frozen cases
+  -> cache-only batch rerun
+  -> result provenance / freshness check
+  -> interim frozen-v1 evaluation
+  -> calibration diagnostics
+  -> one consolidated cycle-status JSON
 ```
 
-Fiscal-quarter labels must never be converted into fake publication timestamps. Exact or explicitly sourced event metadata remains a separate provenance step before batch scanning.
+It does **not** call the transcript provider, change labels, tune vocabulary, or change trigger thresholds. Narrow commands such as evidence audit remain available for exceptional debugging, not as the default run-after-run workflow.
 
-The validation evaluator, calibration diagnostics, and evidence audit never change scanner vocabulary, trigger thresholds, discovery scores, or result files.
+Provider collection remains a separate activity and should only be resumed when quota is available.
+
+## Positive diagnostics: stage recall versus strict v1 recovery
+
+Frozen v1 strict recovery is preserved exactly for audit. A positive case is `positive_recovered` only when:
+
+1. aggregation level matches,
+2. expected bucket exists,
+3. expected bucket reaches at least `watchlisted`,
+4. every predeclared expected metric is active in the current window.
+
+Because this couples cluster recovery to exact taxonomy recovery, the evaluator now also reports `positive_stage_recovered` and `positive_stage_recall`. Stage recovery uses rules 1–3 and intentionally ignores exact metric misses.
+
+These are **diagnostics, not a silent gate change**. The v1 pass/fail CLI continues to use the original strict positive-recall gate plus expected-metric recall, control FPR, and aggregation consistency.
+
+This separation is important because a confirmed cluster with one taxonomy miss is a different failure mode from a cluster that never reaches watchlist, and neither should automatically trigger vocabulary tuning.
+
+## Frozen v1 threshold arithmetic
+
+The current CLI default is `--min-positive-recall 0.67`.
+
+With exactly three positive cases, two recovered cases produce `2 / 3 = 0.666...`, which is below the literal numeric threshold `0.67`. Therefore the current v1 strict gate requires 3/3 positives at this sample size. The code does not round 2/3 upward for pass/fail.
+
+This is recorded as a v1 contract property. It must not be silently changed after seeing results. Any future use of an exact two-of-three rule belongs in a versioned v2 validation contract.
+
+## Calibration findings already accepted as correctness fixes
+
+Two general provenance/extraction bugs were found with matched controls and fixed without changing thresholds:
+
+1. accepted retrieval candidates had lost vocabulary direction/negation/resolution semantics during promotion;
+2. analyst questions could be promoted as issuer evidence in the production batch path.
+
+The first fix reconstructs evidence semantics before AtomicSignal promotion. The second keeps analyst turns for transcript/Q&A provenance but excludes them from lexical/semantic candidate production; management answers remain eligible.
+
+After those fixes, the first completed semiconductor 2019 control no longer reaches the production trigger. Its remaining management-origin `backlog_strength` evidence is preserved rather than removed to make the control cleaner.
+
+## Calibration freeze from this point
+
+Until the remaining frozen controls and blind cohort are collected and evaluated, production extraction/aggregation behavior is frozen except for a **general correctness invariant**.
+
+A further change is allowed only when all of the following are true:
+
+1. it is a source/provenance/data-contract error rather than a desired validation outcome,
+2. the error can be expressed without referring to whether a particular labeled case passes,
+3. a generic or synthetic regression test reproduces it,
+4. the fix does not alter a frozen label or loosen/tighten a gate merely to improve current metrics.
+
+A missing expected metric in a known positive is not, by itself, sufficient reason to add phrases or alter semantic thresholds. Likewise, an `observing` known-domain case is not sufficient reason to relax acceleration gates.
+
+## Known v1 label limitations discovered during review
+
+The v1 manifest remains unchanged, but two limitations are now explicit so they are not accidentally optimized against.
+
+### Semiconductor shortage 2021
+
+The frozen Commerce sources strongly support a semiconductor supply-demand mismatch and wafer/fabrication-capacity bottleneck. The v1 manifest additionally requires the exact scanner metric `backlog_strength`. That exact metric is more taxonomy-specific than the external label source.
+
+Therefore a `backlog_strength` miss is recorded as a v1 strict-metric miss, but it is **not** evidence that the scanner vocabulary should be expanded until a source-grounded extraction review independently supports that change.
+
+### Power infrastructure 2026
+
+The frozen power pilot compares Q2 against Q1. One of its external sources is an Eaton Q1 release whose title itself describes accelerating Q1 sales, orders, and backlog. It is useful evidence that the domain was active, but it is not an independent proof that Q2 accelerated relative to Q1.
+
+Therefore an `observing` Q2-vs-Q1 power result may reflect a temporal-label limitation rather than a trigger defect. Frozen v1 keeps the case unchanged for audit; it must not be used to justify threshold relaxation.
+
+## Stage A — source-backed positives
+
+The frozen v1 positives remain:
+
+- semiconductor shortage 2021, sector level,
+- downstream auto chip shortage 2021, sector level,
+- power/electrical infrastructure 2026, industry level.
+
+The evaluator reports both strict v1 recovery and stage recovery, plus expected-metric hits/misses.
+
+## Stage B — matched negative controls
+
+Controls use the same source type and, where practical, the same issuer cohort before the labeled shock. A control is a false positive only if a cluster reaches `triggered` or `confirmed`; `observing` and `watchlisted` remain diagnostic states.
+
+Current frozen controls are:
+
+- semiconductor 2019 Q2/Q1,
+- semiconductor 2019 Q3/Q2,
+- auto 2019 Q2/Q1.
+
+Control evidence can be decomposed with the evidence-audit commands when a genuine trigger remains after the full routine cycle.
+
+## Stage C — blind validation-only proxy
+
+The blind cohort uses the approved public IWV holdings proxy only for Phase-1 validation. It remains explicitly noncanonical for production Russell 3000 membership.
+
+The proxy plan:
+
+- is selected before scanner outcomes are inspected,
+- uses sector aggregation because the public holdings file does not provide the required granular industry field,
+- selects enough independent companies per group to make the production trigger reachable,
+- cannot contribute a label-based positive or control pass/fail score.
+
+A blind result is inspected only after its result is frozen and fresh under the same pipeline used for labeled cases.
+
+## Transcript collection and timestamp provenance
+
+`ibs-phase1-validation-collect` is cache-first and bounded. Already cached ticker-quarter pairs consume no provider budget. Collection status records per-request-file coverage and missing pairs.
+
+Fiscal-quarter labels are not event timestamps. Metadata drafting always leaves `published_at` blank until a real timezone-aware event timestamp with HTTP(S) provenance is verified. Date-only transcript hints never become timestamps automatically.
+
+`ibs-phase1-validation-metadata-finalize` remains fail-closed on exact ticker+quarter coverage, timezone-aware timestamps, and provenance URLs.
+
+## Frozen v1 validation metrics
+
+The original development gates remain:
+
+- strict positive recovery recall >= 0.67,
+- expected-metric recall >= 0.67,
+- control false-positive rate <= 0.20,
+- aggregation mismatches = 0.
+
+`positive_stage_recall` is reported alongside those metrics but does not replace the frozen v1 strict gate.
+
+These are development gates, not statistical-significance claims.
+
+## Versioned v2 design after v1 collection completes
+
+The current review shows that v1 combines several different questions inside one positive definition. A future **v2 manifest must be created separately**, before its outcomes are inspected, and should separate:
+
+1. **phenomenon/extraction recall** — does the current window recover source-backed signal families without requiring acceleration?
+2. **acceleration recall** — only cases with independent evidence that the exact current window strengthened versus the exact baseline window;
+3. **control precision** — matched pre-event controls under the same pipeline;
+4. **blind discovery/ranking** — outcome-blind cohort selection and post-freeze plausibility review.
+
+V1 is never rewritten into v2 after the fact. V1 remains an audit trail of the initial validation design and its limitations.
 
 ## Phase 2 gate
 
 Proceed to public/physical validation and triangulation only after:
 
-1. the labeled validation manifest passes the declared recall/false-positive gates,
-2. all frozen aggregation levels match their experiment outputs,
-3. at least one blind cohort produces a plausible nontrivial ranking without theme preselection,
-4. evidence concentration and missing-data diagnostics do not explain the result,
-5. the discovery result is reproducible from cached data.
+1. all frozen v1 result files are fresh under one pipeline version,
+2. the complete frozen manifest has been evaluated without unresolved correctness bugs,
+3. control behavior is within the declared precision gate,
+4. the blind result is plausible and not explained by missing data or issuer concentration,
+5. results are reproducible from cached inputs,
+6. the v1 findings and the proposed v2 contract are reviewed as a whole rather than tuned one case at a time.
 
 Until then, Repo B remains untouched and no discovery result is treated as an investment candidate.
