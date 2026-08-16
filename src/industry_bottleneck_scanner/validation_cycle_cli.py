@@ -59,6 +59,23 @@ def _next_gate(ready: dict[str, object]) -> str:
     return "frozen_v1_review"
 
 
+def _false_positive_control_case_ids(calibration: dict[str, object]) -> list[str]:
+    cases = calibration.get("cases")
+    if not isinstance(cases, list):
+        return []
+    result: list[str] = []
+    for item in cases:
+        if not isinstance(item, dict) or item.get("role") != "control":
+            continue
+        triggered = item.get("triggered_clusters")
+        if not isinstance(triggered, list) or not triggered:
+            continue
+        case_id = item.get("case_id")
+        if isinstance(case_id, str) and case_id:
+            result.append(case_id)
+    return result
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.max_companies < 1:
@@ -103,6 +120,8 @@ def main(argv: list[str] | None = None) -> int:
     summary = ready.get("summary") if isinstance(ready, dict) else {}
     if not isinstance(summary, dict):
         summary = {}
+    calibration_dict = calibration if isinstance(calibration, dict) else {}
+    false_positive_controls = _false_positive_control_case_ids(calibration_dict)
     next_gate = _next_gate(ready if isinstance(ready, dict) else {})
 
     output = {
@@ -111,6 +130,7 @@ def main(argv: list[str] | None = None) -> int:
         "run": run_status,
         "freshness_and_validation": ready,
         "calibration": calibration,
+        "false_positive_control_case_ids": false_positive_controls,
         "max_companies": args.max_companies,
         "policy": (
             "cache-only validation cycle; no provider collection, label mutation, vocabulary tuning, "
@@ -133,6 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         f"stage_recall={_rate(summary.get('positive_stage_recall'))} "
         f"metric_recall={_rate(summary.get('expected_metric_recall'))} "
         f"control_fpr={_rate(summary.get('control_false_positive_rate'))} "
+        f"false_positive_controls={','.join(false_positive_controls) or 'none'} "
         f"missing={','.join(missing) or 'none'} stale={','.join(stale) or 'none'} "
         f"blocked_inputs={','.join(blocked) or 'none'} "
         f"blocked_coverage={','.join(blocked_coverage) or 'none'}"
