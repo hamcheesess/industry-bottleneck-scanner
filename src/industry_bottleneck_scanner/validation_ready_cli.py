@@ -5,18 +5,26 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from .phase1_validation import evaluate_validation_manifest, load_validation_cases_csv
+from .phase1_validation import ValidationCase, evaluate_validation_manifest, load_validation_cases_csv
+from .pipeline_fingerprint import (
+    RESULT_SCHEMA_VERSION,
+    compute_experiment_input_fingerprint,
+    compute_pipeline_fingerprint,
+)
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Evaluate only frozen Phase-1 cases whose result JSON already exists. "
-            "This is an interim diagnostic and can never declare full Phase-1 validation complete."
+            "Evaluate only frozen Phase-1 results produced by the current pipeline from the current local inputs. "
+            "Missing or stale results can never contribute to a Phase-1 pass."
         )
     )
     parser.add_argument("--manifest", type=Path, default=Path("experiments/phase1_validation_cases.csv"))
     parser.add_argument("--base-dir", type=Path, default=Path("."))
+    parser.add_argument("--metadata-root", type=Path, default=Path("var/validation/metadata"))
+    parser.add_argument("--transcript-root", type=Path, default=Path("var/transcripts"))
+    parser.add_argument("--provider", default="alpha_vantage")
     parser.add_argument("--output", type=Path, default=Path("var/validation/ready-validation.json"))
     parser.add_argument("--min-positive-recall", type=float, default=0.67)
     parser.add_argument("--max-control-fpr", type=float, default=0.20)
@@ -28,9 +36,66 @@ def _rate(value: float | None) -> str:
     return "n/a" if value is None else f"{value:.1%}"
 
 
-def _result_exists(result_path: str, base_dir: Path) -> bool:
-    path = Path(result_path)
-    return (path if path.is_absolute() else base_dir / path).exists()
+def _resolve(base_dir: Path, path: Path) -> Path:
+    return path if path.is_absolute() else base_dir / path
+
+
+def _result_path(case: ValidationCase, base_dir: Path) -> Path:
+    return _resolve(base_dir, Path(case.result_path))
+
+
+def _metadata_paths(case: ValidationCase, *, base_dir: Path, metadata_root: Path) -> tuple[Path, Path]:
+    if case.current_metadata_path and case.baseline_metadata_path:
+        return (
+            _resolve(base_dir, Path(case.current_metadata_path)),
+            _resolve(base_dir, Path(case.baseline_metadata_path)),
+        )
+    root = _resolve(base_dir, metadata_root)
+    return root / f"{case.case_id}-current.csv", root / f"{case.case_id}-baseline.csv"
+
+
+def _freshness(
+    case: ValidationCase,
+    *,
+    base_dir: Path,
+    metadata_root: Path,
+    transcript_root: Path,
+    provider: str,
+    pipeline_fingerprint: str,
+) -> tuple[str, str | None]:
+    result_path = _result_path(case, base_dir)
+    if not result_path.exists():
+        return "missing_result", None
+    try:
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return "invalid_result", str(exc)
+    if not isinstance(payload, dict):
+        return "invalid_result", "result JSON is not an object"
+    provenance = payload.get("result_provenance")
+    if not isinstance(provenance, dict):
+        return "stale_pipeline", "missing result_provenance"
+    if provenance.get("schema_version") != RESULT_SCHEMA_VERSION:
+        return "stale_pipeline", "result schema version differs from current batch schema"
+    if provenance.get("pipeline_fingerprint") != pipeline_fingerprint:
+        return "stale_pipeline", "pipeline fingerprint differs from current result-affecting code"
+
+    current_metadata, baseline_metadata = _metadata_paths(
+        case,
+        base_dir=base_dir,
+        metadata_root=metadata_root,
+    )
+    if not current_metadata.exists() or not baseline_metadata.exists():
+        return "blocked_inputs", "current or baseline metadata is not locally available"
+    expected_input_fingerprint = compute_experiment_input_fingerprint(
+        current_metadata=current_metadata,
+        baseline_metadata=baseline_metadata,
+        provider=provider,
+        transcript_root=_resolve(base_dir, transcript_root),
+    )
+    if provenance.get("input_fingerprint") != expected_input_fingerprint:
+        return "stale_inputs", "metadata or transcript-cache inputs changed since the result was written"
+    return "fresh", None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -44,12 +109,23 @@ def main(argv: list[str] | None = None) -> int:
             raise SystemExit(f"{name} must be between 0 and 1")
 
     all_cases = load_validation_cases_csv(args.manifest.read_text(encoding="utf-8"))
-    ready_cases = tuple(case for case in all_cases if _result_exists(case.result_path, args.base_dir))
-    missing_cases = tuple(case.case_id for case in all_cases if case not in ready_cases)
-    if not ready_cases:
-        raise SystemExit("no frozen validation result JSON files are available yet")
+    pipeline_fingerprint = compute_pipeline_fingerprint()
+    states: dict[str, dict[str, object]] = {}
+    fresh_cases: list[ValidationCase] = []
+    for case in all_cases:
+        state, detail = _freshness(
+            case,
+            base_dir=args.base_dir,
+            metadata_root=args.metadata_root,
+            transcript_root=args.transcript_root,
+            provider=args.provider,
+            pipeline_fingerprint=pipeline_fingerprint,
+        )
+        states[case.case_id] = {"state": state, "detail": detail}
+        if state == "fresh":
+            fresh_cases.append(case)
 
-    report = evaluate_validation_manifest(ready_cases, base_dir=args.base_dir)
+    report = evaluate_validation_manifest(tuple(fresh_cases), base_dir=args.base_dir)
     summary = report.summary
     provisional_gate_ok = bool(
         summary.positive_recall is not None
@@ -60,19 +136,34 @@ def main(argv: list[str] | None = None) -> int:
         and summary.expected_metric_recall >= args.min_metric_recall
         and summary.aggregation_mismatches == 0
     )
-    complete = len(ready_cases) == len(all_cases)
-    status = "complete_pass" if complete and provisional_gate_ok else (
-        "complete_needs_more_validation" if complete else (
-            "partial_gates_ok" if provisional_gate_ok else "partial_gates_not_met"
-        )
-    )
+    complete = len(fresh_cases) == len(all_cases)
+    if complete:
+        status = "complete_pass" if provisional_gate_ok else "complete_needs_more_validation"
+    elif not fresh_cases:
+        status = "partial_no_fresh_results"
+    else:
+        status = "partial_gates_ok" if provisional_gate_ok else "partial_gates_not_met"
+
+    missing_cases = [case_id for case_id, item in states.items() if item["state"] == "missing_result"]
+    stale_cases = [
+        case_id
+        for case_id, item in states.items()
+        if item["state"] in {"stale_pipeline", "stale_inputs", "invalid_result"}
+    ]
+    blocked_cases = [case_id for case_id, item in states.items() if item["state"] == "blocked_inputs"]
 
     payload = {
         "status": status,
         "full_validation_complete": complete,
         "provisional_gate_ok": provisional_gate_ok,
-        "ready_case_ids": [case.case_id for case in ready_cases],
-        "missing_case_ids": list(missing_cases),
+        "total_frozen_cases": len(all_cases),
+        "ready_case_ids": [case.case_id for case in fresh_cases],
+        "missing_case_ids": missing_cases,
+        "stale_case_ids": stale_cases,
+        "blocked_input_case_ids": blocked_cases,
+        "case_freshness": states,
+        "result_schema_version": RESULT_SCHEMA_VERSION,
+        "pipeline_fingerprint": pipeline_fingerprint,
         "thresholds": {
             "min_positive_recall": args.min_positive_recall,
             "max_control_false_positive_rate": args.max_control_fpr,
@@ -81,24 +172,29 @@ def main(argv: list[str] | None = None) -> int:
         },
         "summary": asdict(summary),
         "cases": [asdict(item) for item in report.cases],
-        "policy": "interim diagnostic only; missing frozen cases prevent a Phase-1 pass",
+        "policy": (
+            "interim diagnostic only; only current-pipeline/current-input results are evaluated, "
+            "and missing or stale frozen cases prevent a Phase-1 pass"
+        ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(
-        f"status={status} ready={len(ready_cases)}/{len(all_cases)} "
-        f"positive_recall={_rate(summary.positive_recall)} "
+        f"status={status} fresh={len(fresh_cases)}/{len(all_cases)} "
+        f"strict_positive_recall={_rate(summary.positive_recall)} "
+        f"stage_recall={_rate(summary.positive_stage_recall)} "
         f"control_fpr={_rate(summary.control_false_positive_rate)} "
         f"metric_recall={_rate(summary.expected_metric_recall)} "
         f"aggregation_mismatches={summary.aggregation_mismatches} "
-        f"missing={','.join(missing_cases) or 'none'}"
+        f"missing={','.join(missing_cases) or 'none'} stale={','.join(stale_cases) or 'none'} "
+        f"blocked_inputs={','.join(blocked_cases) or 'none'}"
     )
     for item in report.cases:
         if item.role == "positive":
             print(
-                f"positive_case={item.case_id} recovered={item.positive_recovered} "
-                f"stage={item.expected_bucket_stage or 'none'} "
+                f"positive_case={item.case_id} strict_recovered={item.positive_recovered} "
+                f"stage_recovered={item.positive_stage_recovered} stage={item.expected_bucket_stage or 'none'} "
                 f"metric_hits={','.join(item.expected_metric_hits) or 'none'} "
                 f"metric_misses={','.join(item.expected_metric_misses) or 'none'}"
             )
