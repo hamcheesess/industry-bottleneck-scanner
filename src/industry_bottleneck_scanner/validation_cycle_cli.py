@@ -51,6 +51,14 @@ def _rate(value: object) -> str:
     return "n/a" if not isinstance(value, (int, float)) else f"{float(value):.1%}"
 
 
+def _next_gate(ready: dict[str, object]) -> str:
+    if not bool(ready.get("full_validation_complete")):
+        return "data_completion"
+    if ready.get("status") == "complete_pass":
+        return "blind_review_then_phase2_decision"
+    return "frozen_v1_review"
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.max_companies < 1:
@@ -95,9 +103,11 @@ def main(argv: list[str] | None = None) -> int:
     summary = ready.get("summary") if isinstance(ready, dict) else {}
     if not isinstance(summary, dict):
         summary = {}
+    next_gate = _next_gate(ready if isinstance(ready, dict) else {})
 
     output = {
         "status": ready.get("status", "unknown"),
+        "next_gate": next_gate,
         "run": run_status,
         "freshness_and_validation": ready,
         "calibration": calibration,
@@ -117,7 +127,8 @@ def main(argv: list[str] | None = None) -> int:
     blocked = ready.get("blocked_input_case_ids", []) if isinstance(ready, dict) else []
     blocked_coverage = ready.get("blocked_coverage_case_ids", []) if isinstance(ready, dict) else []
     print(
-        f"status={ready.get('status', 'unknown')} fresh={len(ready_ids)}/{ready.get('total_frozen_cases', '?')} "
+        f"status={ready.get('status', 'unknown')} next_gate={next_gate} "
+        f"fresh={len(ready_ids)}/{ready.get('total_frozen_cases', '?')} "
         f"strict_positive_recall={_rate(summary.get('positive_recall'))} "
         f"stage_recall={_rate(summary.get('positive_stage_recall'))} "
         f"metric_recall={_rate(summary.get('expected_metric_recall'))} "
