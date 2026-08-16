@@ -83,6 +83,8 @@ def main(argv: list[str] | None = None) -> int:
         baseline_metadata=args.baseline,
         provider=args.provider,
         transcript_root=args.transcript_root,
+        aggregation_level=args.aggregation_level,
+        max_companies=args.max_companies,
     )
 
     current_records = load_company_period_metadata_csv(args.current.read_text(encoding="utf-8"))
@@ -144,6 +146,8 @@ def main(argv: list[str] | None = None) -> int:
             "pipeline_fingerprint": pipeline_fingerprint,
             "input_fingerprint": input_fingerprint,
             "provider": args.provider,
+            "aggregation_level": args.aggregation_level,
+            "max_companies": args.max_companies,
             "current_metadata": str(args.current),
             "baseline_metadata": str(args.baseline),
         },
