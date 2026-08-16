@@ -76,6 +76,8 @@ class AccelerationSnapshot:
     confidence_mean: float
     breadth_accelerating: bool
     prevalence_accelerating: bool
+    change_reasons: tuple[str, ...]
+    watch_blockers: tuple[str, ...]
     watchlisted: bool
     watch_reasons: tuple[str, ...]
     triggered: bool
@@ -110,12 +112,7 @@ def summarize(
     *,
     aggregation_level: AggregationLevel = "industry",
 ) -> list[ClusterSnapshot]:
-    """Summarize active and counter-evidence by an explicit classification level.
-
-    In addition to raw breadth, the snapshot records unique company-metric/category pairs.
-    This makes later acceleration comparisons robust to repeated mentions from one issuer
-    and to transcript-length differences.
-    """
+    """Summarize active and counter-evidence by an explicit classification level."""
 
     grouped: dict[str, list[AtomicSignal]] = defaultdict(list)
     for signal in signals:
@@ -144,9 +141,7 @@ def summarize(
         qa_signals = sum(item.source_section == "qa" for item in active)
         section_labeled = prepared_signals + qa_signals
         qa_share = qa_signals / section_labeled if section_labeled else 0.0
-        confidence_mean = (
-            sum(item.confidence for item in active) / len(active) if active else 0.0
-        )
+        confidence_mean = sum(item.confidence for item in active) / len(active) if active else 0.0
         weighted_signal_count = sum(item.confidence for item in active)
 
         snapshots.append(
@@ -208,16 +203,13 @@ def compare_windows(
     min_metric_prevalence_gains: int = 2,
     min_company_metric_intensity_change: float = 0.25,
 ) -> list[AccelerationSnapshot]:
-    """Compare matched windows using breadth plus prevalence acceleration.
+    """Compare matched windows using breadth plus company-level prevalence acceleration.
 
-    Broad-universe discovery should still reward new independent companies. In a small or
-    already-saturated matched cohort, however, breadth can remain flat even when the same
-    issuers adopt more bottleneck language. We therefore also measure whether multiple
-    metrics spread to more companies and whether unique company-metric incidence rises.
-
-    Raw mention counts are not used as an acceleration trigger, which avoids rewarding a
-    longer transcript or repeated management phrasing. A separate watchlist state records
-    weaker but auditable changes without relaxing the actual research-trigger threshold.
+    Raw mention counts are deliberately excluded from the trigger. `change_reasons` records
+    weak observed changes unconditionally. `watch_reasons` is populated only when a cluster
+    actually qualifies for the watchlist, while `watch_blockers` explains which structural
+    gates prevented watchlisting. This separation is diagnostic only and does not relax any
+    trigger or watchlist threshold.
     """
 
     current_by_bucket = {
@@ -253,9 +245,7 @@ def compare_windows(
         current_metric = _prevalence_map(cur.metric_prevalence) if cur else {}
         baseline_metric = _prevalence_map(base.metric_prevalence) if base else {}
         metric_prevalence_deltas = _prevalence_deltas(current_metric, baseline_metric)
-        metric_prevalence_gains = tuple(
-            item.name for item in metric_prevalence_deltas if item.change > 0
-        )
+        metric_prevalence_gains = tuple(item.name for item in metric_prevalence_deltas if item.change > 0)
         new_metrics = tuple(
             item.name
             for item in metric_prevalence_deltas
@@ -274,9 +264,7 @@ def compare_windows(
         denominator = eligible_count or max(breadth_current, breadth_baseline, 1)
         company_metric_intensity_current = current_pairs / denominator
         company_metric_intensity_baseline = baseline_pairs / denominator
-        company_metric_intensity_change = (
-            company_metric_intensity_current - company_metric_intensity_baseline
-        )
+        company_metric_intensity_change = company_metric_intensity_current - company_metric_intensity_baseline
 
         qa_share_current = cur.qa_share if cur else 0.0
         qa_share_baseline = base.qa_share if base else 0.0
@@ -301,23 +289,32 @@ def compare_windows(
         )
         confirmed = triggered and confirmation_count >= min_confirmation_categories
 
-        watch_reasons: list[str] = []
+        change_reasons_list: list[str] = []
         if breadth_accelerating:
-            watch_reasons.append("breadth_gain")
+            change_reasons_list.append("breadth_gain")
         if metric_prevalence_gains:
-            watch_reasons.append("metric_prevalence_gain")
+            change_reasons_list.append("metric_prevalence_gain")
         if new_metrics:
-            watch_reasons.append("new_metric")
+            change_reasons_list.append("new_metric")
         if company_metric_intensity_change > 0:
-            watch_reasons.append("company_metric_intensity_gain")
+            change_reasons_list.append("company_metric_intensity_gain")
+
+        watch_blockers_list: list[str] = []
+        if breadth_current < min_companies:
+            watch_blockers_list.append("min_breadth")
+        if category_breadth < min_categories:
+            watch_blockers_list.append("min_category_breadth")
+        if confidence_mean < min_confidence:
+            watch_blockers_list.append("min_confidence")
+        if not core_requirement_met:
+            watch_blockers_list.append("core_pair")
+
         watchlisted = (
             not triggered
-            and breadth_current >= min_companies
-            and category_breadth >= min_categories
-            and confidence_mean >= min_confidence
-            and core_requirement_met
-            and bool(watch_reasons)
+            and not watch_blockers_list
+            and bool(change_reasons_list)
         )
+        watch_reasons = tuple(change_reasons_list) if watchlisted else ()
 
         results.append(
             AccelerationSnapshot(
@@ -349,8 +346,10 @@ def compare_windows(
                 confidence_mean=confidence_mean,
                 breadth_accelerating=breadth_accelerating,
                 prevalence_accelerating=prevalence_accelerating,
+                change_reasons=tuple(change_reasons_list),
+                watch_blockers=tuple(watch_blockers_list),
                 watchlisted=watchlisted,
-                watch_reasons=tuple(watch_reasons),
+                watch_reasons=watch_reasons,
                 triggered=triggered,
                 confirmed=confirmed,
             )
