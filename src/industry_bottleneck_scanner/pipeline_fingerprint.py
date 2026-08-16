@@ -9,9 +9,10 @@ from .transcript_store import FileTranscriptStore
 RESULT_SCHEMA_VERSION = "phase1-batch-v2"
 
 # Files that can change accepted signals, comparable-window construction, aggregation,
-# ranking, or the batch result contract. Validation/reporting-only CLIs are excluded.
+# ranking, artifacts, or the batch result contract. Validation/reporting-only CLIs are excluded.
 PIPELINE_SOURCE_FILES: tuple[str, ...] = (
     "aggregation.py",
+    "artifacts.py",
     "batch_cli.py",
     "batch_orchestration.py",
     "candidate_adjudication.py",
@@ -21,10 +22,14 @@ PIPELINE_SOURCE_FILES: tuple[str, ...] = (
     "discovery_score.py",
     "embedding_adapters.py",
     "experiment.py",
+    "handoff_contract.py",
     "models.py",
+    "novel_language.py",
     "pipeline_fingerprint.py",
+    "review_queue.py",
     "scanner.py",
     "semantic_retrieval.py",
+    "taxonomy_candidates.py",
     "transcript_pipeline.py",
     "transcript_store.py",
     "universe.py",
