@@ -35,8 +35,10 @@ def _snapshot() -> AccelerationSnapshot:
         confidence_mean=0.84,
         breadth_accelerating=True,
         prevalence_accelerating=True,
+        change_reasons=("breadth_gain", "metric_prevalence_gain"),
+        watch_blockers=(),
         watchlisted=False,
-        watch_reasons=("breadth_gain", "metric_prevalence_gain"),
+        watch_reasons=(),
         triggered=True,
         confirmed=True,
     )
