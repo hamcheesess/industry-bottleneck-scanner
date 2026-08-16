@@ -15,7 +15,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Run the complete cache-only Phase-1 validation cycle for all metadata-and-cache-ready frozen cases, "
-            "then evaluate only fresh complete-cohort results and regenerate calibration diagnostics. "
+            "then evaluate only fresh complete-cohort results and regenerate calibration diagnostics from that same fresh set. "
             "No provider calls or tuning occur."
         )
     )
@@ -82,7 +82,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     _run_quietly(
         calibration_main,
-        ["--cases", str(args.cases), "--output", str(args.calibration_output)],
+        [
+            "--cases", str(args.cases),
+            "--ready-state", str(args.ready_output),
+            "--output", str(args.calibration_output),
+        ],
     )
 
     run_status = json.loads(args.run_status.read_text(encoding="utf-8"))
@@ -100,7 +104,8 @@ def main(argv: list[str] | None = None) -> int:
         "max_companies": args.max_companies,
         "policy": (
             "cache-only validation cycle; no provider collection, label mutation, vocabulary tuning, "
-            "or trigger-threshold mutation; incomplete frozen transcript coverage is never scored"
+            "or trigger-threshold mutation; incomplete frozen transcript coverage is never scored; "
+            "calibration diagnostics use exactly the freshness-approved case set"
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
