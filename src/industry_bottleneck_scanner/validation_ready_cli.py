@@ -11,6 +11,13 @@ from .pipeline_fingerprint import (
     compute_experiment_input_fingerprint,
     compute_pipeline_fingerprint,
 )
+from .validation_policy import (
+    FROZEN_VALIDATION_POLICY_ID,
+    FROZEN_V1_MAX_CONTROL_FALSE_POSITIVE_RATE,
+    FROZEN_V1_MIN_EXPECTED_METRIC_RECALL,
+    FROZEN_V1_MIN_POSITIVE_RECALL,
+    FROZEN_V1_REQUIRE_AGGREGATION_MATCH,
+)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -26,9 +33,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--transcript-root", type=Path, default=Path("var/transcripts"))
     parser.add_argument("--provider", default="alpha_vantage")
     parser.add_argument("--output", type=Path, default=Path("var/validation/ready-validation.json"))
-    parser.add_argument("--min-positive-recall", type=float, default=0.67)
-    parser.add_argument("--max-control-fpr", type=float, default=0.20)
-    parser.add_argument("--min-metric-recall", type=float, default=0.67)
+    parser.add_argument("--min-positive-recall", type=float, default=FROZEN_V1_MIN_POSITIVE_RECALL)
+    parser.add_argument("--max-control-fpr", type=float, default=FROZEN_V1_MAX_CONTROL_FALSE_POSITIVE_RATE)
+    parser.add_argument("--min-metric-recall", type=float, default=FROZEN_V1_MIN_EXPECTED_METRIC_RECALL)
     return parser
 
 
@@ -154,6 +161,7 @@ def main(argv: list[str] | None = None) -> int:
 
     payload = {
         "status": status,
+        "validation_policy_id": FROZEN_VALIDATION_POLICY_ID,
         "full_validation_complete": complete,
         "provisional_gate_ok": provisional_gate_ok,
         "total_frozen_cases": len(all_cases),
@@ -168,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
             "min_positive_recall": args.min_positive_recall,
             "max_control_false_positive_rate": args.max_control_fpr,
             "min_expected_metric_recall": args.min_metric_recall,
-            "require_aggregation_match": True,
+            "require_aggregation_match": FROZEN_V1_REQUIRE_AGGREGATION_MATCH,
         },
         "summary": asdict(summary),
         "cases": [asdict(item) for item in report.cases],
@@ -181,7 +189,7 @@ def main(argv: list[str] | None = None) -> int:
     args.output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     print(
-        f"status={status} fresh={len(fresh_cases)}/{len(all_cases)} "
+        f"status={status} policy={FROZEN_VALIDATION_POLICY_ID} fresh={len(fresh_cases)}/{len(all_cases)} "
         f"strict_positive_recall={_rate(summary.positive_recall)} "
         f"stage_recall={_rate(summary.positive_stage_recall)} "
         f"control_fpr={_rate(summary.control_false_positive_rate)} "
