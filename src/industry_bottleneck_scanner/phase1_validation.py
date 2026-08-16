@@ -22,6 +22,8 @@ class ValidationCase:
     expected_metrics: tuple[str, ...] = ()
     label_sources: tuple[str, ...] = ()
     notes: str | None = None
+    current_metadata_path: str | None = None
+    baseline_metadata_path: str | None = None
 
 
 @dataclass(frozen=True)
@@ -39,6 +41,7 @@ class CaseEvaluation:
     expected_bucket_stage: str | None
     expected_metric_hits: tuple[str, ...]
     expected_metric_misses: tuple[str, ...]
+    positive_stage_recovered: bool | None
     positive_recovered: bool | None
     control_false_positive: bool | None
 
@@ -50,6 +53,8 @@ class ValidationSummary:
     control_cases: int
     blind_cases: int
     aggregation_mismatches: int
+    positive_stage_recovered: int
+    positive_stage_recall: float | None
     positive_recovered: int
     positive_recall: float | None
     controls_false_positive: int
@@ -95,6 +100,8 @@ def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
         aggregation_level = (row.get("aggregation_level") or "").strip().lower()
         expected_bucket = (row.get("expected_bucket") or "").strip() or None
         notes = (row.get("notes") or "").strip() or None
+        current_metadata_path = (row.get("current_metadata_path") or "").strip() or None
+        baseline_metadata_path = (row.get("baseline_metadata_path") or "").strip() or None
         if not case_id or not result_path:
             raise ValueError(f"row {row_number}: case_id and result_path are required")
         if case_id in seen:
@@ -107,6 +114,10 @@ def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
             raise ValueError(f"row {row_number}: positive cases require expected_bucket")
         if role != "positive" and expected_bucket:
             raise ValueError(f"row {row_number}: expected_bucket is only valid for positive cases")
+        if bool(current_metadata_path) != bool(baseline_metadata_path):
+            raise ValueError(
+                f"row {row_number}: current_metadata_path and baseline_metadata_path must be supplied together"
+            )
 
         expected_metrics = _parse_pipe_list(row.get("expected_metrics"))
         label_sources = _validate_sources(_parse_pipe_list(row.get("label_sources")), row_number=row_number)
@@ -124,6 +135,8 @@ def load_validation_cases_csv(text: str) -> tuple[ValidationCase, ...]:
                 expected_metrics=expected_metrics,
                 label_sources=label_sources,
                 notes=notes,
+                current_metadata_path=current_metadata_path,
+                baseline_metadata_path=baseline_metadata_path,
             )
         )
     if not cases:
@@ -208,14 +221,17 @@ def evaluate_validation_case(case: ValidationCase, *, base_dir: Path = Path(".")
     metric_hits = tuple(metric for metric in case.expected_metrics if metric in active_metrics)
     metric_misses = tuple(metric for metric in case.expected_metrics if metric not in active_metrics)
 
+    positive_stage_recovered: bool | None = None
     positive_recovered: bool | None = None
     if case.role == "positive":
-        positive_recovered = bool(
+        positive_stage_recovered = bool(
             aggregation_level_matches
             and expected
             and _stage_rank(expected_bucket_stage) >= _stage_rank("watchlisted")
-            and not metric_misses
         )
+        # Frozen v1 strict recovery is preserved for audit. Stage recall is reported separately
+        # so an exact taxonomy miss does not get confused with a failure to surface the cluster.
+        positive_recovered = bool(positive_stage_recovered and not metric_misses)
 
     control_false_positive: bool | None = None
     if case.role == "control":
@@ -238,6 +254,7 @@ def evaluate_validation_case(case: ValidationCase, *, base_dir: Path = Path(".")
         expected_bucket_stage=expected_bucket_stage,
         expected_metric_hits=metric_hits,
         expected_metric_misses=metric_misses,
+        positive_stage_recovered=positive_stage_recovered,
         positive_recovered=positive_recovered,
         control_false_positive=control_false_positive,
     )
@@ -252,6 +269,7 @@ def evaluate_validation_manifest(
     positives = [item for item in evaluations if item.role == "positive"]
     controls = [item for item in evaluations if item.role == "control"]
     blinds = [item for item in evaluations if item.role == "blind"]
+    stage_recovered = sum(item.positive_stage_recovered is True for item in positives)
     recovered = sum(item.positive_recovered is True for item in positives)
     false_positives = sum(item.control_false_positive is True for item in controls)
     metric_hits = sum(len(item.expected_metric_hits) for item in positives)
@@ -263,6 +281,8 @@ def evaluate_validation_manifest(
         control_cases=len(controls),
         blind_cases=len(blinds),
         aggregation_mismatches=sum(not item.aggregation_level_matches for item in evaluations),
+        positive_stage_recovered=stage_recovered,
+        positive_stage_recall=(stage_recovered / len(positives)) if positives else None,
         positive_recovered=recovered,
         positive_recall=(recovered / len(positives)) if positives else None,
         controls_false_positive=false_positives,
