@@ -9,10 +9,11 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
     ready_output = tmp_path / "ready.json"
     calibration_output = tmp_path / "calibration.json"
     cycle_output = tmp_path / "cycle.json"
+    calibration_calls: list[list[str]] = []
 
     def fake_run(argv):
         output = Path(argv[argv.index("--output") + 1])
-        output.write_text(json.dumps({"status": "partial", "completed_cases": 4}), encoding="utf-8")
+        output.write_text(json.dumps({"status": "partial", "completed_cases": 3}), encoding="utf-8")
         print("noisy run output")
         return 0
 
@@ -23,14 +24,15 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
                 {
                     "status": "partial_gates_not_met",
                     "total_frozen_cases": 7,
-                    "ready_case_ids": ["a", "b", "c", "d"],
-                    "missing_case_ids": ["e", "f", "g"],
+                    "ready_case_ids": ["a", "b", "c"],
+                    "missing_case_ids": [],
                     "stale_case_ids": [],
-                    "blocked_input_case_ids": [],
+                    "blocked_input_case_ids": ["e", "f", "g"],
+                    "blocked_coverage_case_ids": ["d"],
                     "summary": {
-                        "positive_recall": 1 / 3,
-                        "positive_stage_recall": 2 / 3,
-                        "expected_metric_recall": 6 / 7,
+                        "positive_recall": 0.5,
+                        "positive_stage_recall": 1.0,
+                        "expected_metric_recall": 0.8,
                         "control_false_positive_rate": 0.0,
                     },
                 }
@@ -41,8 +43,9 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
         return 0
 
     def fake_calibration(argv):
+        calibration_calls.append(list(argv))
         output = Path(argv[argv.index("--output") + 1])
-        output.write_text(json.dumps({"status": "diagnosed"}), encoding="utf-8")
+        output.write_text(json.dumps({"status": "diagnosed", "freshness_filtered": True}), encoding="utf-8")
         print("noisy calibration output")
         return 0
 
@@ -61,9 +64,12 @@ def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path:
 
     payload = json.loads(cycle_output.read_text(encoding="utf-8"))
     assert payload["status"] == "partial_gates_not_met"
-    assert payload["run"]["completed_cases"] == 4
-    assert payload["calibration"]["status"] == "diagnosed"
+    assert payload["run"]["completed_cases"] == 3
+    assert payload["calibration"]["freshness_filtered"] is True
+    assert calibration_calls
+    assert calibration_calls[0][calibration_calls[0].index("--ready-state") + 1] == str(ready_output)
     stdout = capsys.readouterr().out
-    assert "status=partial_gates_not_met fresh=4/7" in stdout
+    assert "status=partial_gates_not_met fresh=3/7" in stdout
+    assert "blocked_coverage=d" in stdout
     assert "noisy run output" not in stdout
     assert "noisy ready output" not in stdout
