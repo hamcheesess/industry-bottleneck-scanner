@@ -31,13 +31,16 @@ def main(argv: list[str] | None = None) -> int:
         if not isinstance(payload, dict):
             continue
         diagnosis = diagnose_result(payload)
-        triggered = [item for item in diagnosis["clusters"] if item.get("triggered")]
+        clusters = diagnosis["clusters"]
+        triggered = [item for item in clusters if item.get("triggered")]
+        watch_or_trigger = [item for item in clusters if item.get("triggered") or item.get("watchlisted")]
         cases.append(
             {
                 "case_id": (row.get("case_id") or "").strip(),
                 "role": (row.get("role") or "").strip(),
                 "result_path": str(result_path),
                 "triggered_clusters": triggered,
+                "watch_or_trigger_clusters": watch_or_trigger,
             }
         )
 
@@ -45,11 +48,13 @@ def main(argv: list[str] | None = None) -> int:
     false_positive_controls = [item for item in completed_controls if item["triggered_clusters"]]
     completed_positives = [item for item in cases if item["role"] == "positive"]
     triggered_positives = [item for item in completed_positives if item["triggered_clusters"]]
+    stage_recovered_positives = [item for item in completed_positives if item["watch_or_trigger_clusters"]]
     payload = {
         "status": "diagnosed",
         "completed_cases": len(cases),
         "completed_positive_cases": len(completed_positives),
         "triggered_positive_cases": len(triggered_positives),
+        "watch_or_trigger_positive_cases": len(stage_recovered_positives),
         "completed_control_cases": len(completed_controls),
         "false_positive_control_cases": len(false_positive_controls),
         "provisional_control_fpr": (
@@ -63,8 +68,11 @@ def main(argv: list[str] | None = None) -> int:
     fpr = payload["provisional_control_fpr"]
     fpr_text = "n/a" if fpr is None else f"{fpr:.1%}"
     print(
-        f"status=diagnosed completed={len(cases)} positives_triggered={len(triggered_positives)}/{len(completed_positives)} "
-        f"control_false_positives={len(false_positive_controls)}/{len(completed_controls)} provisional_control_fpr={fpr_text}"
+        f"status=diagnosed completed={len(cases)} "
+        f"positives_triggered={len(triggered_positives)}/{len(completed_positives)} "
+        f"positives_watch_or_trigger={len(stage_recovered_positives)}/{len(completed_positives)} "
+        f"control_false_positives={len(false_positive_controls)}/{len(completed_controls)} "
+        f"provisional_control_fpr={fpr_text}"
     )
     for item in false_positive_controls:
         for cluster in item["triggered_clusters"]:
