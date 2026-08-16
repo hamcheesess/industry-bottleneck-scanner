@@ -14,14 +14,16 @@ from .validation_run_cli import main as validation_run_main
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the complete cache-only Phase-1 validation cycle for all metadata-ready frozen cases, "
-            "then evaluate only fresh results and regenerate calibration diagnostics. No provider calls or tuning occur."
+            "Run the complete cache-only Phase-1 validation cycle for all metadata-and-cache-ready frozen cases, "
+            "then evaluate only fresh complete-cohort results and regenerate calibration diagnostics. "
+            "No provider calls or tuning occur."
         )
     )
     parser.add_argument("--cases", type=Path, default=Path("experiments/phase1_validation_cases.csv"))
     parser.add_argument("--metadata-root", type=Path, default=Path("var/validation/metadata"))
     parser.add_argument("--transcript-root", type=Path, default=Path("var/transcripts"))
     parser.add_argument("--provider", default="alpha_vantage")
+    parser.add_argument("--max-companies", type=int, default=50)
     parser.add_argument("--artifact-root", type=Path, default=Path("var/validation/artifacts"))
     parser.add_argument("--review-root", type=Path, default=Path("var/validation/review"))
     parser.add_argument("--run-status", type=Path, default=Path("var/validation/run-status.json"))
@@ -51,6 +53,8 @@ def _rate(value: object) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    if args.max_companies < 1:
+        raise SystemExit("--max-companies must be at least 1")
 
     _run_quietly(
         validation_run_main,
@@ -59,6 +63,7 @@ def main(argv: list[str] | None = None) -> int:
             "--metadata-root", str(args.metadata_root),
             "--transcript-root", str(args.transcript_root),
             "--provider", args.provider,
+            "--max-companies", str(args.max_companies),
             "--artifact-root", str(args.artifact_root),
             "--review-root", str(args.review_root),
             "--output", str(args.run_status),
@@ -71,6 +76,7 @@ def main(argv: list[str] | None = None) -> int:
             "--metadata-root", str(args.metadata_root),
             "--transcript-root", str(args.transcript_root),
             "--provider", args.provider,
+            "--max-companies", str(args.max_companies),
             "--output", str(args.ready_output),
         ],
     )
@@ -91,9 +97,10 @@ def main(argv: list[str] | None = None) -> int:
         "run": run_status,
         "freshness_and_validation": ready,
         "calibration": calibration,
+        "max_companies": args.max_companies,
         "policy": (
             "cache-only validation cycle; no provider collection, label mutation, vocabulary tuning, "
-            "or trigger-threshold mutation"
+            "or trigger-threshold mutation; incomplete frozen transcript coverage is never scored"
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -103,6 +110,7 @@ def main(argv: list[str] | None = None) -> int:
     missing = ready.get("missing_case_ids", []) if isinstance(ready, dict) else []
     stale = ready.get("stale_case_ids", []) if isinstance(ready, dict) else []
     blocked = ready.get("blocked_input_case_ids", []) if isinstance(ready, dict) else []
+    blocked_coverage = ready.get("blocked_coverage_case_ids", []) if isinstance(ready, dict) else []
     print(
         f"status={ready.get('status', 'unknown')} fresh={len(ready_ids)}/{ready.get('total_frozen_cases', '?')} "
         f"strict_positive_recall={_rate(summary.get('positive_recall'))} "
@@ -110,7 +118,8 @@ def main(argv: list[str] | None = None) -> int:
         f"metric_recall={_rate(summary.get('expected_metric_recall'))} "
         f"control_fpr={_rate(summary.get('control_false_positive_rate'))} "
         f"missing={','.join(missing) or 'none'} stale={','.join(stale) or 'none'} "
-        f"blocked_inputs={','.join(blocked) or 'none'}"
+        f"blocked_inputs={','.join(blocked) or 'none'} "
+        f"blocked_coverage={','.join(blocked_coverage) or 'none'}"
     )
     print(f"wrote {args.output}")
     return 0
