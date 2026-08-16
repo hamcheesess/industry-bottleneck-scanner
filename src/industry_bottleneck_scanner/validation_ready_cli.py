@@ -153,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
 
     report = evaluate_validation_manifest(tuple(fresh_cases), base_dir=args.base_dir)
     summary = report.summary
-    provisional_gate_ok = bool(
+    diagnostic_gate_ok = bool(
         summary.positive_recall is not None
         and summary.positive_recall >= args.min_positive_recall
         and summary.control_false_positive_rate is not None
@@ -164,11 +164,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     complete = len(fresh_cases) == len(all_cases)
     if complete:
-        status = "complete_pass" if provisional_gate_ok else "complete_needs_more_validation"
-    elif not fresh_cases:
-        status = "partial_no_fresh_results"
+        status = "complete_pass" if diagnostic_gate_ok else "complete_needs_more_validation"
+        full_gate_ok: bool | None = diagnostic_gate_ok
     else:
-        status = "partial_gates_ok" if provisional_gate_ok else "partial_gates_not_met"
+        status = "partial_waiting_data"
+        full_gate_ok = None
 
     missing_cases = [case_id for case_id, item in states.items() if item["state"] == "missing_result"]
     stale_cases = [
@@ -185,7 +185,8 @@ def main(argv: list[str] | None = None) -> int:
         "status": status,
         "validation_policy_id": FROZEN_VALIDATION_POLICY_ID,
         "full_validation_complete": complete,
-        "provisional_gate_ok": provisional_gate_ok,
+        "provisional_gate_ok": full_gate_ok,
+        "partial_diagnostic_gate_ok": diagnostic_gate_ok if fresh_cases else None,
         "total_frozen_cases": len(all_cases),
         "ready_case_ids": [case.case_id for case in fresh_cases],
         "missing_case_ids": missing_cases,
@@ -205,8 +206,8 @@ def main(argv: list[str] | None = None) -> int:
         "summary": asdict(summary),
         "cases": [asdict(item) for item in report.cases],
         "policy": (
-            "interim diagnostic only; only complete-cohort current-pipeline/current-input results are evaluated, "
-            "and missing, stale, or incomplete frozen cases prevent a Phase-1 pass"
+            "partial metrics are diagnostics only; no gate pass/fail is assigned until every frozen case is "
+            "complete-cohort, current-pipeline, current-input, and freshness-approved"
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
