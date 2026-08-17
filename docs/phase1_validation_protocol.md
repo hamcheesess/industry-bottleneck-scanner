@@ -68,28 +68,22 @@ This is deliberate. A partial denominator can change materially as missing contr
 
 ## Current trusted local snapshot
 
-The latest complete-cohort local snapshot before the data-completion freeze contained three of seven frozen cases:
+The latest complete-cohort local snapshot contains six of seven frozen cases. The only unready case is `blind-proxy-2026`.
 
-- `semiconductor-shortage-2021`
-- `auto-chip-shortage-2021`
-- `semiconductor-2019q2-control`
+Current fresh-subset diagnostics are:
 
-Its diagnostics were:
+- fresh complete-cohort cases: `6/7`,
+- positive stage recall: `66.7%`,
+- expected-metric recall: `85.7%`,
+- control false-positive rate: `33.3%` (`1/3`),
+- freshness-filtered false-positive control: `auto-2019q2-control`.
 
-- fresh complete-cohort cases: `3/7`
-- strict v1 positive recovery: `50.0%` (`1/2` fresh positives)
-- positive stage recall: `100.0%` (`2/2` fresh positives reached at least watchlist)
-- expected-metric recall: `80.0%` (`4/5`)
-- control false-positive rate: `0.0%` (`0/1`)
+The combined collection plan currently has `68/70` ticker-quarter requests cached. The two uncached requests are:
 
-The remaining blockers were:
+- `MDGL:2026Q2`,
+- `REZI:2026Q2`.
 
-- `power-infrastructure-2026`: incomplete transcript coverage; the retained pilot had 9/10 cached ticker-quarter requests,
-- `semiconductor-2019q3-control`: data/metadata completion,
-- `auto-2019q2-control`: data/metadata completion,
-- `blind-proxy-2026`: data/metadata completion.
-
-These numbers are **not a Phase-1 pass/fail decision** and are not a reason to change vocabulary or trigger thresholds. The current gate is data completion.
+The last bounded provider pass attempted both requests and received provider-missing responses rather than rate limits, local budget exhaustion, or ordinary provider errors. Those misses are a **source-layer coverage dependency**, not a scanner-calibration signal.
 
 ## Routine cache-only validation cycle
 
@@ -140,7 +134,29 @@ bounded cache-first transcript collection
 
 A provider rate limit is recorded and **not retried in a loop**. The command accepts an incomplete/rate-limited collection pass, preserves newly cached transcripts, advances whatever became ready, and then stops with the next unresolved dependency.
 
-The collection plan now includes the retained power-pilot request manifest in addition to the frozen semiconductor/auto controls and the generated blind request file. The exact deduplicated request count is computed from the local blind selection rather than hard-coded in documentation.
+The collection plan includes the retained power-pilot request manifest in addition to the frozen semiconductor/auto controls and the generated blind request file. The exact deduplicated request count is computed from the local blind selection rather than hard-coded in collection logic.
+
+## Provider-missing transcript policy
+
+A provider `missing` response is not treated as proof that the earnings call did not occur, and it is not treated as a scanner failure.
+
+When every still-uncached request from a bounded collection pass has already returned provider-missing, with no rate limit, ordinary provider error, or local budget exhaustion, `ibs-phase1-validation-resume` persists that state and returns:
+
+```text
+next_action=provider_missing_transcripts_review
+```
+
+Ordinary subsequent resume invocations reuse the terminal collection artifact and make **zero repeated live requests** for those same ticker-quarters.
+
+Provider-missing is also not assumed to be permanent. If a later source review concludes that the provider may have ingested a recent call, one deliberate bounded recheck is available through:
+
+```bash
+ibs-phase1-validation-resume --retry-provider-missing
+```
+
+The override is explicit so a human/source-policy decision separates a later recheck from accidental repeated polling.
+
+The frozen blind cohort must not be silently repaired by dropping, replacing, or shrinking issuers after scanner outcomes are available. Likewise, a third-party transcript must not be injected ad hoc under the `alpha_vantage` provider identity. If the two blind requests remain unavailable after the source-policy review, frozen v1 records a source-coverage limitation and the next validation contract must predeclare either a fallback-provider hierarchy or an outcome-blind reserve/replacement rule before results are inspected.
 
 ## Timestamp provenance status
 
@@ -148,7 +164,7 @@ Fiscal-quarter labels are not event timestamps. Metadata drafting always leaves 
 
 `ibs-phase1-validation-metadata-finalize` remains fail-closed on exact ticker+quarter coverage, timezone-aware timestamps, and provenance URLs.
 
-Committed source-backed timestamp tables now exist for:
+Committed source-backed timestamp tables exist for:
 
 - semiconductor shortage 2021,
 - auto chip shortage 2021,
@@ -156,7 +172,7 @@ Committed source-backed timestamp tables now exist for:
 - semiconductor 2019 Q3/Q2 control,
 - auto 2019 Q2/Q1 control.
 
-`ibs-phase1-validation-advance` automatically applies those tables when the corresponding metadata drafts exist. The two previously incomplete controls therefore no longer require manual timestamp research after their transcripts finish collecting.
+`ibs-phase1-validation-advance` automatically applies those tables when the corresponding metadata drafts exist. The historical controls therefore no longer require manual timestamp research after their transcripts finish collecting.
 
 The blind proxy remains different: its selected companies are local validation-only output, so exact event-time provenance cannot be precommitted generically. When blind transcript collection becomes complete, the workflow must surface `blind_timestamp_provenance` rather than inventing timestamps.
 
@@ -263,7 +279,8 @@ The system review shows that v1 combines several different questions inside one 
 1. **phenomenon/extraction recall** — does the current window recover source-backed signal families without requiring acceleration?
 2. **acceleration recall** — only cases with independent evidence that the exact current window strengthened versus the exact baseline window,
 3. **control precision** — matched pre-event controls under the same pipeline,
-4. **blind discovery/ranking** — outcome-blind cohort selection and post-freeze plausibility review.
+4. **blind discovery/ranking** — outcome-blind cohort selection and post-freeze plausibility review,
+5. **source coverage** — explicit transcript availability, fallback-provider, and missing-data handling rules fixed before the blind result is inspected.
 
 V1 is never rewritten into v2 after the fact. V1 remains the audit trail of the initial validation design and its limitations.
 
@@ -271,10 +288,10 @@ V1 is never rewritten into v2 after the fact. V1 remains the audit trail of the 
 
 Proceed to public/physical validation and triangulation only after:
 
-1. all frozen v1 cases are complete-cohort and fresh under one pipeline version,
-2. the complete frozen manifest has been evaluated without unresolved correctness bugs,
-3. control behavior is within the declared precision gate,
-4. the blind result is plausible and not explained by missing data or issuer concentration,
+1. all frozen v1 cases are complete-cohort and fresh under one pipeline version, or frozen v1 is explicitly closed with a documented source-coverage limitation rather than silently repaired,
+2. the frozen manifest has been evaluated without unresolved correctness bugs,
+3. control behavior is reviewed against the declared precision gate,
+4. the blind result is plausible and not explained by missing data or issuer concentration, when a complete blind result exists,
 5. results are reproducible from cached inputs,
 6. the v1 findings and proposed v2 contract are reviewed as a whole rather than tuned one case at a time.
 
