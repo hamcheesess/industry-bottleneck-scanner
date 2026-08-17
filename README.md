@@ -44,7 +44,7 @@ The current Phase-1 path is local-first and transcript-first:
 
 ```text
 explicit ticker/fiscal-quarter requests
-  -> Alpha Vantage transcript adapter
+  -> transcript provider adapter
   -> cache-first bounded collection
   -> transcript quality diagnostics
   -> prepared/Q&A turn labeling
@@ -60,6 +60,8 @@ explicit ticker/fiscal-quarter requests
 ```
 
 Raw full transcripts are not sent to an LLM. The default development path uses no OpenAI API calls.
+
+Frozen validation v1 is closed as source-coverage-limited under its Alpha-Vantage-only source contract. V2 is designed separately and now uses a **predeclared multi-source transcript architecture**: Alpha Vantage remains primary and Quartr edited transcripts are the preferred fallback. V2 fallback must preserve each issuer's current/baseline provider coherence and explicit provider provenance. The Quartr path remains draft-only until API access terms are accepted and credentials are available.
 
 ## Commands
 
@@ -86,4 +88,4 @@ ibs-phase1-batch
 ibs-review-language
 ```
 
-See [`docs/architecture.md`](docs/architecture.md), [`docs/transcript_source_strategy.md`](docs/transcript_source_strategy.md), [`docs/recall_strategy.md`](docs/recall_strategy.md), [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md), and [`docs/phase1_signal_contract.md`](docs/phase1_signal_contract.md).
+See [`docs/architecture.md`](docs/architecture.md), [`docs/transcript_source_strategy.md`](docs/transcript_source_strategy.md), [`docs/recall_strategy.md`](docs/recall_strategy.md), [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md), [`docs/phase1_signal_contract.md`](docs/phase1_signal_contract.md), and [`docs/v2_validation_contract_draft.md`](docs/v2_validation_contract_draft.md).
