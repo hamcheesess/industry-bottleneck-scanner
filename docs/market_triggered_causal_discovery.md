@@ -4,30 +4,59 @@
 
 The discovery engine does not try to predict every quiet industry before the market reacts. It starts from a visible market anomaly, determines whether the move is supported by a structural operating demand shock, then expands outward through the value chain to find economically important nodes before large contracts or explosive reported earnings make the second- and third-order beneficiaries obvious.
 
-The core question is not "what stock has not gone up yet?" It is:
+The core question is:
 
-> If the observed demand shock persists, which value-chain nodes must absorb the incremental demand, where is supply least elastic, who can capture the economics, and which of those implications appear least reflected in current market attention?
+> If the observed demand shock persists, which value-chain nodes must absorb the incremental demand, where was supply already constrained before the shock, where do multiple independent demand branches converge, who can capture the economics, and which implications appear least reflected in current market attention?
 
-## High-level flow
+## Two-loop architecture
+
+The system has two independent loops that meet only when a new demand shock reaches a known value-chain node.
 
 ```text
-Broad US universe
-    -> Market Trigger
-    -> Causal Diagnosis
-    -> Structural Theme or Narrative-Only
-    -> Value-chain Hypothesis Graph
-    -> Evidence-backed Edge Approval
-    -> Pre-News Chain Selection
-    -> Bottleneck / Economic Capture Ranking
-    -> Listed-company Mapping
-    -> Repo B Underwriting
+LOW-FREQUENCY STATE LOOP                 EVENT-DRIVEN DISCOVERY LOOP
+
+public operating evidence               broad-US market data
+        |                                        |
+        v                                        v
+Persistent Industry State               Market Trigger
+        |                                        |
+lead time / capacity /                           v
+qualification / pricing                  Causal Diagnosis
+        |                                        |
+        |                                        v
+        |                               Root Demand Shock
+        |                                        |
+        +-------------------+--------------------+
+                            |
+                            v
+                  Value-chain Expansion
+                            |
+                            v
+                  Demand Convergence Engine
+                            |
+             new shock x pre-shock constraint
+                  x independent demand roots
+                            |
+                            v
+                  Pre-News Chain Selector
+                            |
+                            v
+                 Listed-company Mapping
+                            |
+                            v
+                       Repo B
 ```
 
-The existing transcript scanner becomes one evidence source inside Causal Diagnosis and edge validation. Transcript completeness is not a discovery gate.
+This avoids two bad assumptions:
+
+1. every industry must be continuously researched in depth; and
+2. a supply bottleneck must be created by the new market theme.
+
+A particularly attractive setup is a **new demand shock entering a node that was already constrained for unrelated reasons**.
 
 ## 1. Market Trigger
 
-Run cheap end-of-day or weekly calculations across the broad-US universe. Real-time data is not required.
+Run cheap end-of-day or weekly calculations across the broad-US universe.
 
 Candidate trigger inputs:
 
@@ -39,6 +68,8 @@ Candidate trigger inputs:
 - optional later: estimate-revision breadth.
 
 The output is an `IndustryMarketTrigger`, not a stock recommendation. A valid trigger should prefer broad industry participation over a single-stock spike.
+
+ETF products such as SOXX may be used as corroborating market labels, but the canonical aggregation unit remains bottom-up company membership in sector / industry / economic subcluster buckets.
 
 ## 2. Causal Diagnosis
 
@@ -52,18 +83,57 @@ For the triggered cluster, collect inexpensive public operating evidence:
 
 Run the existing Capex / Demand / Scarcity / Pricing scanner. The diagnosis classifies the market trigger as one of:
 
-- `structural_operating`: broad, source-backed operating acceleration,
-- `narrative_led`: market move with weak operating support,
-- `mixed_or_early`: partial support requiring more evidence,
+- `structural_operating`,
+- `narrative_led`,
+- `mixed_or_early`,
 - `unresolved`.
 
-No value-chain expansion is promoted merely because prices rose.
+A two-month-old earnings call can still be useful. It is treated as pre-existing operating state, not as proof of the immediate cause of today's market move. The discovery `as_of` timestamp determines what was knowable.
 
-## 3. Value-chain Hypothesis Graph
+## 3. Persistent Industry State Registry
 
-A structural theme creates a root demand shock. Candidate edges may be proposed mechanically, manually, or later by an LLM, but an LLM proposal is never sufficient for approval.
+The registry is a low-frequency memory of supply-side conditions at economically meaningful value-chain nodes. It is append-only so historical replay can ask what the system knew before a later market trigger.
 
-Allowed edge relations should stay economically explicit:
+Each `IndustryStateSnapshot` scores six directional dimensions from 0 to 5, where higher always means tighter supply:
+
+- supply inelasticity,
+- lead-time pressure,
+- capacity tightness,
+- capacity-expansion difficulty,
+- qualification barrier,
+- pricing pressure.
+
+A state requires at least two independent evidence classes before it can be classified as known. The deterministic stages are:
+
+- `unknown`,
+- `normal`,
+- `tightening`,
+- `constrained`,
+- `severely_constrained`.
+
+The key historical rule is strict: **a pre-shock state snapshot must be timestamped before the market trigger**. Evidence learned after the new theme became obvious cannot be backfilled into the prior state.
+
+Examples of suitable state evidence include supplier capacity expansion, long lead times, qualification queues, capacity utilization, backlog/orders, pricing/repricing, physical industry data, regulatory/permitting constraints, and competitor corroboration.
+
+## 4. Root Demand Shock
+
+A structural market trigger is translated into a concrete economic demand shock, not a vague theme label.
+
+Prefer:
+
+- `AI inference compute deployment`,
+- `hyperscaler data-center MW expansion`,
+- `grid-hardening capital program`,
+
+rather than simply `AI`, `cloud`, or `energy`.
+
+This root identity matters because later convergence logic must not count multiple paths from the same shock as independent demand branches.
+
+## 5. Value-chain Hypothesis Graph
+
+Candidate edges may be proposed mechanically, manually, or later by an LLM, but an LLM proposal is never sufficient for approval.
+
+Allowed edge relations stay economically explicit:
 
 - `requires_input`,
 - `requires_capacity`,
@@ -73,51 +143,59 @@ Allowed edge relations should stay economically explicit:
 - `distribution_or_service`,
 - `physical_constraint`.
 
-Each edge records:
+Each edge records the mechanism, demand sensitivity, time lag, evidence, provenance, and confidence.
 
-- upstream/root node,
-- downstream/affected node,
-- mechanism,
-- expected demand sensitivity,
-- estimated time lag,
-- supply elasticity,
-- evidence and provenance,
-- confidence.
+The graph is intentionally many-to-many. A node can receive demand from several unrelated roots, and one root can branch into many downstream paths.
+
+## 6. Evidence-backed Edge Approval
+
+Every material edge must be supported by at least two independent evidence classes before it becomes a trusted research path. At least one item should come from outside the candidate beneficiary itself.
+
+Useful evidence classes include customer capex/capacity plans, architecture dependency, supplier capacity expansion, lead-time constraints, qualification barriers, pricing/repricing, physical industry statistics, management commentary, and competitor corroboration.
 
 This prevents vague chains such as `AI -> electricity -> copper -> miner` from being promoted without an explicit economic mechanism.
 
-## 4. Evidence-backed Edge Approval
+## 7. Demand Convergence Engine
 
-Every material edge must be supported by at least two independent evidence classes before it can become a research path. Useful evidence classes include:
+This is the main addition to the architecture.
 
-- customer capex or capacity plans,
-- customer architecture / bill-of-material dependence,
-- supplier capacity expansion,
-- lead-time or availability constraints,
-- qualification / certification barriers,
-- pricing or contract repricing,
-- physical / industry statistics,
-- management operating commentary,
-- competitor corroboration.
+The engine asks whether a newly detected demand root reaches a node that satisfies two separate conditions:
 
-At least one item should come from outside the candidate beneficiary itself. Self-promotional company commentary alone cannot approve an edge.
+1. the node was already `constrained` or `severely_constrained` before the trigger; and
+2. the new root joins one or more economically independent demand roots at the same node.
 
-Historical validation must use an `as_of` cutoff so evidence published after a later large contract or earnings surprise cannot leak backward into a pre-news decision.
+Example:
 
-## 5. Pre-News Chain Selector
+```text
+grid modernization -----------\
+cloud data-center growth -------+--> large power transformers
+AI inference buildout ----------/         |
+                                          +--> pre-shock state: constrained
+```
 
-The selector borrows the useful parts of long-term/value-investing frameworks while remaining deterministic and auditable.
+The attractive fact is not merely that AI needs transformers. It is that a new AI-related demand branch may enter a shared trunk whose supply was already tight because of other demand sources.
 
-Every node receives six 0-5 assessments:
+Multiple paths from the same root shock do **not** count as independent roots. For example, `AI -> GPU cluster -> data center -> transformer` and `AI -> networking -> data center -> transformer` remain one `AI` root for convergence breadth.
 
-1. **Demand Transmission** — how mechanically the root demand shock forces demand into this node.
-2. **Bottleneck Strength** — supply elasticity, lead time, capacity difficulty, qualification barriers, concentration.
-3. **Economic Capture** — pricing power, margins, switching costs, contractual position, competitive advantage.
-4. **Reinvestment Runway** — ability to deploy capital into the opportunity at attractive incremental economics.
-5. **Triangulation** — independent customer/supplier/competitor/physical corroboration.
-6. **Expectation Gap** — strength of the economic implication relative to current market attention and consensus recognition.
+Current deterministic convergence stages are:
 
-The ranking score is a research-priority score, not an intrinsic-value estimate and not a buy signal.
+- `hypothesis`: pre-shock state absent/normal or the new branch is weak,
+- `pre_shock_bottleneck`: one strong new demand root reaches a previously constrained node,
+- `multi_branch_convergence`: at least two independent roots share the constrained node,
+- `priority_convergence`: strong new transmission plus multi-root convergence and a high structural score.
+
+A large contract is not required.
+
+## 8. Pre-News Chain Selector
+
+After a node passes structural convergence, it is assessed on six 0-5 dimensions:
+
+1. **Demand Transmission**
+2. **Bottleneck Strength**
+3. **Economic Capture**
+4. **Reinvestment Runway**
+5. **Triangulation**
+6. **Expectation Gap**
 
 Default weighting:
 
@@ -130,25 +208,11 @@ Triangulation        15%
 Expectation Gap      10%
 ```
 
-Hard gates prevent a high weighted average from hiding a weak causal link:
+Hard gates prevent a high weighted average from hiding a weak causal link. The score is a research-priority score, not a valuation and not a buy signal.
 
-- demand transmission >= 3,
-- at least two independent evidence classes,
-- at least one externally corroborating evidence item,
-- no unresolved look-ahead / timestamp violation.
+## 9. Contract-independent evidence
 
-Research priority stages:
-
-- `hypothesis`: causal idea only,
-- `evidence_backed`: passes causal/evidence gates,
-- `priority_research`: strong bottleneck/capture economics,
-- `pre_news_candidate`: strong economics plus a meaningful expectation gap.
-
-## 6. Contract-independent evidence
-
-The system should deliberately prefer evidence that can exist before a headline contract or explosive earnings print.
-
-Examples:
+The system deliberately prefers evidence that can exist before a headline contract or explosive earnings print:
 
 - customer multi-year capex plans,
 - rising power / compute / capacity requirements,
@@ -157,93 +221,66 @@ Examples:
 - qualification queues,
 - capacity-addition lead times,
 - capex and hiring ahead of revenue,
+- backlog/order changes,
 - pricing discipline,
 - working-capital build consistent with capacity preparation,
 - physical industry data.
 
-A large contract may later confirm the thesis, but it should not be required to create the original candidate.
+A later contract may confirm the thesis, but it should not be needed to create the original candidate.
 
-## 7. Company Mapping
+## 10. Company Mapping and Repo B
 
-Only after a node becomes `priority_research` or `pre_news_candidate` do we map listed companies to the node.
+Only after a node becomes structurally important do we map listed companies to it. Repo A evaluates exposure relevance rather than valuation:
 
-Repo A evaluates exposure relevance rather than valuation:
-
-- revenue / product exposure to the node,
+- product/revenue exposure,
 - owned capacity,
 - qualification position,
-- customer concentration,
 - competitive position,
-- ability to expand capacity,
+- expansion ability,
 - evidence that the company participates in the identified bottleneck.
 
-A company that simply lagged its peers is not automatically attractive. The system must explain why the lag is inconsistent with its economic exposure rather than treating underperformance as cheapness.
-
-## 8. Repo B handoff
-
-Repo A hands off only a small thesis manifest:
-
-```json
-{
-  "theme": "...",
-  "root_demand_shock": "...",
-  "value_chain_node": "...",
-  "candidate": "...",
-  "demand_transmission": 0,
-  "bottleneck_strength": 0,
-  "economic_capture": 0,
-  "reinvestment_runway": 0,
-  "triangulation": 0,
-  "expectation_gap": 0,
-  "evidence_refs": [],
-  "causal_path": []
-}
-```
+A lagging stock is not automatically attractive.
 
 Repo B remains responsible for financial risk, company deep research, valuation, DCF, and the final investment judgment.
 
+## Historical validation
+
+The first serious replay should test whether the system could have constructed a chain such as `AI compute -> data-center capacity -> electrical infrastructure -> constrained transformer/electrical nodes` using only information available before obvious downstream confirmation events.
+
+Validation must freeze:
+
+- market-trigger timestamp,
+- root demand shock definition,
+- pre-shock registry snapshot,
+- allowed evidence cutoff,
+- graph paths,
+- later confirmation event held out from discovery.
+
+The first question is not whether the stock later rose. It is whether the causal convergence node was discoverable without look-ahead.
+
 ## Development order
 
-### Stage A — Provider-independent causal core
+### Stage A — completed provider-independent core
 
-- frozen data contracts for graph edges, evidence, node assessments, and pre-news ranking,
-- deterministic hard gates and scoring,
-- look-ahead-safe `as_of` handling,
-- synthetic regression tests.
+- causal evidence and value-chain edge contracts,
+- pre-news node ranking,
+- market-trigger breadth core,
+- persistent industry-state registry,
+- multi-root demand convergence engine,
+- look-ahead-safe synthetic regression tests.
 
-### Stage B — Market trigger
+### Stage B — next
 
-- add price-history ingestion,
-- industry/subindustry breadth aggregation,
-- deterministic market-trigger output,
-- historical trigger validation.
+- free/low-cost end-of-day price-history ingestion,
+- real industry/subindustry market-trigger generation,
+- source-agnostic operating evidence ingestion beyond transcripts,
+- state-registry update jobs from public disclosures,
+- graph persistence and approved-edge artifacts.
 
-### Stage C — Causal diagnosis
+### Stage C — historical replay
 
-- reuse current AtomicSignal scanners,
-- add document-source-agnostic operating evidence,
-- classify `structural_operating` vs `narrative_led`.
-
-### Stage D — Value-chain expansion
-
-- graph storage,
-- candidate edge generation,
-- evidence-backed edge approval,
-- customer/supplier triangulation.
-
-### Stage E — Pre-news validation
-
-For historical themes, freeze an `as_of` date before the obvious confirmation event. Ask whether the system could have produced the eventual important value-chain node using only information available at that cutoff.
-
-Validation is therefore not "did the stock later go up?" The first gate is whether the causal/economic node was discoverable without look-ahead. Investment returns belong to a later research question.
-
-## Design invariants
-
-- Market motion starts research; it does not validate the thesis.
-- No edge is approved from LLM reasoning alone.
-- No candidate is promoted from a single beneficiary's self-description alone.
-- Large contracts and earnings surprises are confirmation events, not required discovery inputs.
-- Exact evidence timestamps are first-class data.
-- Scanner/provider gaps never silently shrink the economic hypothesis.
-- Market-attention gaps rank research priority; they do not substitute for valuation.
-- Repo A discovers economic exposure. Repo B underwrites the security.
+- freeze an early AI-cycle `as_of` case,
+- reconstruct pre-shock electrical/transformer state,
+- replay market trigger and causal expansion,
+- measure when shared constrained nodes became discoverable,
+- hold later contracts/earnings surprises out as confirmation only.
