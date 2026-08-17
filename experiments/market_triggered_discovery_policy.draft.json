@@ -1,7 +1,7 @@
 {
   "status": "draft_not_frozen",
   "policy_id": "market-triggered-causal-discovery-v0",
-  "objective": "Start from broad market anomalies, validate structural operating causes, then expand through evidence-backed value-chain paths to find pre-news bottleneck/economic-capture research candidates.",
+  "objective": "Start from broad market anomalies, validate structural operating causes, then expand through evidence-backed value-chain paths and prioritize nodes where a new demand shock converges with pre-existing supply constraints and other independent demand roots before obvious confirmation events.",
   "market_trigger": {
     "real_time_required": false,
     "preferred_cadence": "end_of_day_or_weekly",
@@ -21,6 +21,26 @@
     "transcript_completeness_is_discovery_gate": false,
     "classifications": ["structural_operating", "narrative_led", "mixed_or_early", "unresolved"]
   },
+  "persistent_industry_state": {
+    "purpose": "Maintain low-frequency, evidence-backed state for value-chain nodes before a later market trigger arrives.",
+    "append_only_history_required": true,
+    "pre_shock_lookup_must_be_strictly_before_trigger": true,
+    "dimensions": {
+      "supply_inelasticity": 0.25,
+      "lead_time_pressure": 0.20,
+      "capacity_tightness": 0.20,
+      "capacity_expansion_difficulty": 0.15,
+      "qualification_barrier": 0.10,
+      "pricing_pressure": 0.10
+    },
+    "minimum_independent_evidence_classes_for_known_state": 2,
+    "stages": ["unknown", "normal", "tightening", "constrained", "severely_constrained"],
+    "constraint_thresholds": {
+      "tightening_min_score": 45,
+      "constrained_min_score": 65,
+      "severely_constrained_min_score": 80
+    }
+  },
   "value_chain_edge": {
     "allowed_relations": [
       "requires_input",
@@ -35,6 +55,22 @@
     "minimum_independent_evidence_classes": 2,
     "external_corroboration_required": true,
     "timestamp_provenance_required": true
+  },
+  "demand_convergence": {
+    "principle": "Prefer shared downstream trunks where a newly detected demand shock joins one or more independent demand roots and the node was already supply-constrained before the trigger.",
+    "same_root_multiple_paths_count_as_multiple_independent_roots": false,
+    "new_trigger_branch_transmission_min": 3,
+    "pre_shock_state_required_for_promotion": true,
+    "pre_shock_stage_for_promotion": ["constrained", "severely_constrained"],
+    "stages": [
+      "hypothesis",
+      "pre_shock_bottleneck",
+      "multi_branch_convergence",
+      "priority_convergence"
+    ],
+    "priority_requires_multiple_independent_roots": true,
+    "large_contract_required": false,
+    "post_trigger_constraint_evidence_can_define_pre_shock_state": false
   },
   "pre_news_selector": {
     "dimensions": {
@@ -64,7 +100,9 @@
   "historical_validation": {
     "as_of_cutoff_required": true,
     "obvious_confirmation_event_must_be_after_as_of": true,
-    "first_gate": "causal_node_discoverable_without_look_ahead",
+    "pre_shock_state_must_predate_market_trigger": true,
+    "independent_root_deduplication_required": true,
+    "first_gate": "causal_convergence_discoverable_without_look_ahead",
     "stock_return_is_primary_validation_target": false
   }
 }
