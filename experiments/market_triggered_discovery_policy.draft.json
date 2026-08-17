@@ -1,10 +1,45 @@
 {
   "status": "draft_not_frozen",
   "policy_id": "market-triggered-causal-discovery-v0",
-  "objective": "Start from broad market anomalies, validate structural operating causes, then expand through evidence-backed value-chain paths and prioritize nodes where a new demand shock converges with pre-existing supply constraints and other independent demand roots before obvious confirmation events.",
+  "architecture_source_of_truth": "docs/current_roadmap.md",
+  "compatibility_map": "docs/implementation_compatibility.md",
+  "objective": "Start from broad market anomalies, validate a concrete structural demand shock, expand through evidence-backed value-chain paths, and prioritize shared downstream nodes where new demand converges with pre-existing supply constraints and other independent demand roots before obvious confirmation events.",
+  "architecture": {
+    "top_level_flow": [
+      "broad_us_universe",
+      "eod_market_history",
+      "market_trigger",
+      "causal_diagnosis",
+      "root_demand_shock",
+      "evidence_backed_causal_graph",
+      "pre_shock_industry_state_lookup",
+      "demand_convergence",
+      "pre_news_chain_selection",
+      "bottleneck_economic_capture_reinvestment_expectation",
+      "listed_company_exposure_mapping",
+      "repo_b_thesis_manifest"
+    ],
+    "transcript_completeness_is_discovery_gate": false,
+    "real_time_required": false,
+    "llm_can_approve_causal_edges": false,
+    "repo_b_modification_allowed_before_manifest_freeze": false
+  },
+  "legacy_compatibility": {
+    "atomic_signal_contract": "keep",
+    "capex_demand_scarcity_pricing_scanner": "keep",
+    "alpha_vantage_transcript_path": "reuse_optional_source",
+    "comparable_window_acceleration": "reuse_optional_operating_support",
+    "frozen_v1": "frozen_audit_only",
+    "quartr_adapter": "parked_optional_adapter",
+    "transcript_fallback_resolver": "parked",
+    "v2_source_provenance": "parked_transcript_specific",
+    "quartr_availability_may_gate_active_architecture": false
+  },
   "market_trigger": {
     "real_time_required": false,
     "preferred_cadence": "end_of_day_or_weekly",
+    "canonical_aggregation": "bottom_up_company_membership",
+    "etf_role": "optional_corroboration_only",
     "inputs": [
       "1m_3m_6m_returns",
       "market_relative_returns",
@@ -18,13 +53,21 @@
   "causal_diagnosis": {
     "operating_signal_families": ["demand", "scarcity", "capex", "pricing"],
     "document_sources_are_pluggable": true,
+    "source_roles": [
+      "pre_existing_operating_state",
+      "since_last_earnings_updates",
+      "trigger_era_catalyst_evidence"
+    ],
     "transcript_completeness_is_discovery_gate": false,
-    "classifications": ["structural_operating", "narrative_led", "mixed_or_early", "unresolved"]
+    "missing_operating_documents_count_as_negative_evidence": false,
+    "classifications": ["structural_operating", "narrative_led", "mixed_or_early", "unresolved"],
+    "current_acceleration_snapshot_interface": "interim_compatibility_bridge"
   },
   "persistent_industry_state": {
-    "purpose": "Maintain low-frequency, evidence-backed state for value-chain nodes before a later market trigger arrives.",
+    "purpose": "Maintain low-frequency, evidence-backed supply state for economically meaningful value-chain nodes before a later market trigger arrives.",
     "append_only_history_required": true,
     "pre_shock_lookup_must_be_strictly_before_trigger": true,
+    "node_identity_is_company_ticker": false,
     "dimensions": {
       "supply_inelasticity": 0.25,
       "lead_time_pressure": 0.20,
@@ -54,7 +97,8 @@
     "llm_proposal_can_approve_edge": false,
     "minimum_independent_evidence_classes": 2,
     "external_corroboration_required": true,
-    "timestamp_provenance_required": true
+    "timestamp_provenance_required": true,
+    "append_only_approval_history_required": true
   },
   "demand_convergence": {
     "principle": "Prefer shared downstream trunks where a newly detected demand shock joins one or more independent demand roots and the node was already supply-constrained before the trigger.",
@@ -94,6 +138,7 @@
   },
   "company_mapping": {
     "relative_underperformance_is_sufficient": false,
+    "node_first_company_second": true,
     "repo_a_role": "economic_exposure_and_bottleneck_relevance",
     "repo_b_role": "financial_underwriting_valuation_and_investment_judgment"
   },
@@ -104,5 +149,57 @@
     "independent_root_deduplication_required": true,
     "first_gate": "causal_convergence_discoverable_without_look_ahead",
     "stock_return_is_primary_validation_target": false
-  }
+  },
+  "validation_dimensions": [
+    "market_trigger_quality",
+    "operating_extraction_correctness",
+    "causal_edge_correctness",
+    "pre_shock_state_correctness",
+    "independent_root_convergence",
+    "pre_news_node_ranking",
+    "company_exposure_mapping",
+    "end_to_end_historical_replay"
+  ],
+  "development_phases": [
+    {
+      "phase": 0,
+      "name": "architecture_consolidation",
+      "status": "in_progress"
+    },
+    {
+      "phase": 1,
+      "name": "real_market_trigger",
+      "status": "next"
+    },
+    {
+      "phase": 2,
+      "name": "source_agnostic_operating_evidence",
+      "status": "planned"
+    },
+    {
+      "phase": 3,
+      "name": "persistent_industry_state_updater",
+      "status": "planned"
+    },
+    {
+      "phase": 4,
+      "name": "causal_graph_and_demand_convergence",
+      "status": "core_exists_integration_planned"
+    },
+    {
+      "phase": 5,
+      "name": "historical_pre_news_replay",
+      "status": "planned"
+    },
+    {
+      "phase": 6,
+      "name": "company_exposure_mapping",
+      "status": "planned"
+    },
+    {
+      "phase": 7,
+      "name": "repo_a_to_repo_b_manifest",
+      "status": "blocked_until_upstream_stable"
+    }
+  ]
 }
