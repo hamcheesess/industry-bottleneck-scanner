@@ -1,0 +1,43 @@
+{
+  "status": "draft_not_frozen_not_executable",
+  "policy_id": "phase1-validation-v2-draft",
+  "inherits_v1_results": false,
+  "rewrites_frozen_v1": false,
+  "dimensions": [
+    "source_coverage",
+    "phenomenon_extraction_recall",
+    "window_acceleration_recall",
+    "control_precision",
+    "blind_discovery_ranking"
+  ],
+  "target_case_counts": {
+    "extraction_cases": 6,
+    "acceleration_positive_pairs": 6,
+    "controls": 8,
+    "blind_cohorts": 1
+  },
+  "draft_integer_gates": {
+    "extraction_recovered_min": "5/6",
+    "acceleration_watch_or_stronger_min": "4/6",
+    "acceleration_trigger_or_stronger_min": "3/6",
+    "control_false_positives_max": "1/8"
+  },
+  "source_policy": {
+    "status": "decision_required_before_freeze",
+    "source_class": "earnings_call_transcript",
+    "silent_cohort_shrinkage_allowed": false,
+    "post_outcome_issuer_replacement_allowed": false,
+    "fallback_must_preserve_source_class": true,
+    "fallback_provider_hierarchy": null,
+    "provider_provenance_required": true
+  },
+  "calibration_freeze": {
+    "case_outcome_driven_vocabulary_changes_allowed": false,
+    "case_outcome_driven_threshold_changes_allowed": false,
+    "post_outcome_cohort_or_window_changes_allowed": false,
+    "general_correctness_fix_requires_outcome_independent_regression": true,
+    "correctness_fix_requires_same_version_full_rerun": true
+  },
+  "phase2_ready_from_this_file": false,
+  "notes": "Draft design only. Freeze a separate v2 contract after the source architecture, exact cases/windows, blind ranking rubric, and evidence-review rules are approved. Frozen v1 remains unchanged."
+}
