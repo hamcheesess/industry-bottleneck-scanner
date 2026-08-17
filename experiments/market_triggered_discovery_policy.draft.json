@@ -1,0 +1,70 @@
+{
+  "status": "draft_not_frozen",
+  "policy_id": "market-triggered-causal-discovery-v0",
+  "objective": "Start from broad market anomalies, validate structural operating causes, then expand through evidence-backed value-chain paths to find pre-news bottleneck/economic-capture research candidates.",
+  "market_trigger": {
+    "real_time_required": false,
+    "preferred_cadence": "end_of_day_or_weekly",
+    "inputs": [
+      "1m_3m_6m_returns",
+      "market_relative_returns",
+      "sector_relative_returns",
+      "industry_breadth",
+      "abnormal_volume",
+      "distance_to_52w_high"
+    ],
+    "single_stock_spike_is_sufficient": false
+  },
+  "causal_diagnosis": {
+    "operating_signal_families": ["demand", "scarcity", "capex", "pricing"],
+    "document_sources_are_pluggable": true,
+    "transcript_completeness_is_discovery_gate": false,
+    "classifications": ["structural_operating", "narrative_led", "mixed_or_early", "unresolved"]
+  },
+  "value_chain_edge": {
+    "allowed_relations": [
+      "requires_input",
+      "requires_capacity",
+      "capacity_enabler",
+      "complement",
+      "substitute",
+      "distribution_or_service",
+      "physical_constraint"
+    ],
+    "llm_proposal_can_approve_edge": false,
+    "minimum_independent_evidence_classes": 2,
+    "external_corroboration_required": true,
+    "timestamp_provenance_required": true
+  },
+  "pre_news_selector": {
+    "dimensions": {
+      "demand_transmission": 0.20,
+      "bottleneck_strength": 0.20,
+      "economic_capture": 0.20,
+      "reinvestment_runway": 0.15,
+      "triangulation": 0.15,
+      "expectation_gap": 0.10
+    },
+    "hard_gates": {
+      "demand_transmission_min": 3,
+      "independent_evidence_classes_min": 2,
+      "external_corroboration_required": true,
+      "look_ahead_allowed": false
+    },
+    "stages": ["hypothesis", "evidence_backed", "priority_research", "pre_news_candidate"],
+    "large_contract_required_for_promotion": false,
+    "explosive_reported_earnings_required_for_promotion": false,
+    "score_is_buy_signal": false
+  },
+  "company_mapping": {
+    "relative_underperformance_is_sufficient": false,
+    "repo_a_role": "economic_exposure_and_bottleneck_relevance",
+    "repo_b_role": "financial_underwriting_valuation_and_investment_judgment"
+  },
+  "historical_validation": {
+    "as_of_cutoff_required": true,
+    "obvious_confirmation_event_must_be_after_as_of": true,
+    "first_gate": "causal_node_discoverable_without_look_ahead",
+    "stock_return_is_primary_validation_target": false
+  }
+}
