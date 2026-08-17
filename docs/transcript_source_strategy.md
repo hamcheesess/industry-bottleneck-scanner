@@ -1,78 +1,120 @@
-# Transcript Source Strategy
+# Transcript source strategy — retained operating-evidence subsystem
 
-## Decision
+Status: **REUSE / NOT TOP-LEVEL DISCOVERY STRATEGY**.
 
-Earnings-call transcripts are the primary Phase-1 discovery source because prepared remarks and especially Q&A contain operational language about lead times, capacity, reservations, qualification barriers, pricing, and inability to meet demand. SEC filings and earnings releases remain important validation/fallback sources.
+The canonical architecture is [`current_roadmap.md`](current_roadmap.md). This document defines how earnings-call transcripts remain usable inside the new source-agnostic operating-evidence layer.
 
-## Source priority
+## Current role
 
-1. earnings-call transcript
-2. earnings release / investor-relations material
-3. SEC 10-Q / 10-K / 8-K
-4. later fallback: first-party webcast/audio converted to text when permitted
+Earnings-call transcripts are valuable because prepared remarks and management Q&A contain operational language about demand, backlog, lead times, capacity, qualification barriers, pricing, and inability to meet demand.
 
-## Adapter boundary
-
-Provider-specific retrieval is hidden behind `TranscriptSource`.
+They are no longer required to be the primary or complete discovery source.
 
 ```text
-explicit ticker + fiscal-quarter request
+transcript available
   -> TranscriptSource adapter
   -> normalized EarningsCallTranscript
   -> local cache
   -> turn normalization
-  -> prepared / Q&A section inference
-  -> local candidate retrieval
-  -> AtomicSignal / review queue
+  -> prepared / Q&A provenance
+  -> existing deterministic scanner
+  -> AtomicSignal
+  -> optional comparable-window acceleration
+  -> operating support for Causal Diagnosis / Industry State
 ```
 
-Provider adapters only retrieve and normalize transcript data. They never send raw calls to an LLM. The cache stores the normalized transcript contract rather than raw provider responses.
+A missing transcript remains explicit source unavailability. It is not a negative operating signal and does not block the whole market-triggered discovery pipeline.
 
-## Alpha Vantage operating status
+## Broader operating-evidence sources
 
-Alpha Vantage is the provisional primary provider for the Phase-1 pilot. The adapter uses `EARNINGS_CALL_TRANSCRIPT` with explicit `symbol` and issuer-specific fiscal `quarter` values. The provider URL containing the API key is never stored as signal provenance.
+Future source-agnostic ingestion should also normalize usable public text from:
 
-A real five-company probe succeeded 5/5 after enforcing the provider's observed one-request-per-second constraint. This establishes endpoint viability, not Russell 3000 coverage.
+- earnings releases,
+- 8-K / 10-Q / 10-K filings,
+- investor presentations,
+- customer / supplier / competitor disclosures.
 
-Collection therefore remains:
+When a document is issuer operating language, prefer normalization into the existing `SourceDocument` contract so the current scanner can produce `AtomicSignal` without a parallel extraction system.
 
-- cache first
-- explicit request-list based
-- request-budget capped
-- rate-limit aware
-- resumable across runs
-- free of OpenAI/GPT calls
+Physical/industry statistics that do not fit issuer-language semantics should become `CausalEvidence` or industry-state evidence instead of being forced into `AtomicSignal`.
 
-## Fiscal-quarter discipline
+## Provider boundary
 
-A global calendar-quarter label must not be assumed to mean the same fiscal period for every issuer. Collection accepts explicit `(ticker, quarter)` pairs, and matched experiments use dated company-period metadata.
+Provider-specific retrieval stays below normalization.
 
-The fiscal-quarter label is never converted into an earnings-call date. `published_at` must be an explicit timezone-aware event timestamp. The metadata contract can retain the public URL used to establish that timestamp.
+```text
+provider transport
+  -> normalized transcript/document contract
+  -> cache / provenance
+  -> extraction
+  -> causal/state layers
+```
 
-## Transcript structure quality
+Active causal/state modules must not import Alpha Vantage, Quartr, or another provider directly.
 
-A provider is useful only if its normalized transcript structure is usable. The pilot measures:
+## Alpha Vantage status
 
-- turn count
-- speaker-label coverage
-- title/role-label coverage
-- whether Q&A can be detected
-- prepared-vs-Q&A turn counts
+Alpha Vantage remains a usable optional transcript provider and the source used by frozen validation v1. Its existing adapter/cache logic stays available for bounded collection and regression work.
 
-Q&A inference is conservative: an explicit Q&A marker or analyst turn starts the Q&A section, and subsequent turns remain in that section. Section labels are provenance; they do not create additional source independence.
+Collection principles remain:
 
-## Bounded matched pilot
+- cache first,
+- explicit request budget,
+- rate-limit aware,
+- resumable,
+- API-key material excluded from provenance URLs,
+- no raw full-transcript LLM requirement.
 
-Before universe-scale collection, the repository runs a matched current-vs-baseline pilot over explicit issuer/quarter pairs. A pilot is ready for signal-acceleration analysis only when enough issuers have both periods cached. Provider gaps and rate-limited pairs remain unresolved rather than being treated as negative evidence.
+Frozen v1 remains Alpha-Vantage-only and is not retrofitted with new fallback sources.
 
-The current pilot manifest focuses on power/electrical infrastructure issuers with one control company and consecutive fiscal quarters. The experiment defaults to industry-level aggregation so distinct subindustry labels do not fragment the cross-company breadth test.
+## Quartr status
 
-## Cost and safety rules
+The repository contains a synthetic-tested Quartr edited-transcript adapter and pair-coherent fallback resolver from the superseded transcript-v2 design.
 
-- every live collection has an explicit provider-request cap
-- cached calls consume no provider budget
-- rate-limit responses stop the run rather than triggering retry storms
-- no universe-scale backfill occurs before bounded pilot validation
-- no OpenAI/GPT call is part of transcript acquisition or Phase-1 scanning
-- raw full transcripts are never sent to an LLM by default
-- future model use, if any, is limited to ambiguous retrieved passages or already-triggered clusters
+Usable Quartr API access is unavailable, so these modules are **PARKED**:
+
+- keep code/tests for audit or possible future optional use;
+- do not make active architecture depend on them;
+- do not make Quartr availability a phase-readiness gate;
+- do not extend transcript-specific `v2_source_provenance.py` into the general source model.
+
+See [`implementation_compatibility.md`](implementation_compatibility.md).
+
+## Fiscal-quarter and timestamp discipline
+
+Explicit issuer fiscal-quarter requests remain necessary for transcript collection. A global calendar-quarter label must not be assumed to mean the same fiscal period for every issuer.
+
+`published_at` must remain a real timezone-aware event timestamp. Fiscal-quarter labels must not be fabricated into event dates.
+
+For the current architecture, document timing has an additional role relative to a later Market Trigger:
+
+- pre-existing operating state,
+- since-last-earnings update,
+- trigger-era catalyst evidence.
+
+A two-month-old call can therefore be useful pre-news evidence without being treated as the immediate cause of today's market move.
+
+## Transcript structure correctness
+
+The existing quality rules remain active:
+
+- preserve turns and speakers when available;
+- preserve prepared-vs-Q&A provenance;
+- exclude analyst questions from issuer operating evidence;
+- retain management Q&A answers;
+- keep direction, negation, and resolution semantics;
+- do not treat source-section labels as independent evidence classes.
+
+## Comparable-window acceleration
+
+Matched current-vs-baseline transcript experiments remain a useful optional method for measuring operating-language acceleration when comparable source windows exist.
+
+They are no longer a universal prerequisite for Causal Diagnosis. A future source-agnostic operating-support interface should combine comparable acceleration when available with one-sided recent disclosures, since-last-earnings updates, and source freshness/coverage diagnostics.
+
+## Cost and safety
+
+- no universe-scale transcript backfill is required for market discovery;
+- cached transcripts should be reused indefinitely subject to provenance correctness;
+- provider gaps must not trigger retry loops or cohort mutation;
+- cheap deterministic extraction stays local-first;
+- model calls, if later used, operate only on already-filtered research material and cannot by themselves approve causal edges or industry state.
