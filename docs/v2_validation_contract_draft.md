@@ -1,6 +1,6 @@
 # Phase-1 validation v2 — draft contract
 
-Status: **draft only; not frozen, not executable, and not a replacement for frozen v1**.
+Status: **draft only; architecture selected, provider access pending; not frozen, not executable, and not a replacement for frozen v1**.
 
 Frozen v1 remains the audit trail of the Alpha-Vantage-only experiment. V2 exists to separate source coverage, extraction correctness, acceleration behavior, control precision, and blind discovery so one failure mode cannot masquerade as another.
 
@@ -30,11 +30,36 @@ Rules:
 - A case is scoreable only when every required issuer-window has a source document from the predeclared source policy.
 - Missing sources never count as negative signals and never cause silent cohort shrinkage.
 - Source coverage is reported separately from scanner recall/precision.
-- Any fallback hierarchy must be frozen before v2 outcomes are inspected.
 - Fallback documents must preserve the same semantic source class. A transcript fallback may replace a transcript; an earnings release or 10-Q is corroboration, not a hidden substitute for an unavailable call transcript.
 - Provider identity and document provenance remain explicit in every cached normalized document.
+- Fallback occurs only on an explicit provider `missing` result. A rate limit or ordinary provider error stops the chain; it does not silently change provider.
+- A matched issuer's current and baseline windows must come from the same provider. If the primary source misses one side, fallback must supply the complete issuer pair. This prevents provider-format differences from manufacturing apparent acceleration.
+- Different issuers inside the same frozen cohort may resolve to different providers, but provider mix must be reported as a validation diagnostic.
 
-Provider selection for the v2 fallback slot is deliberately **not** chosen in this draft. That choice requires a separate source-architecture review before v2 is frozen.
+### Selected multi-source hierarchy
+
+The architecture decision is now **multi-source transcript fallback**.
+
+Draft provider order:
+
+1. `alpha_vantage` — primary transcript source.
+2. `quartr_edited` — fallback using Quartr edited transcript type ID 22 only.
+
+Quartr raw transcript type ID 15 is not an allowed substitute. The edited transcript dataset adds `speaker_mapping` with speaker name, role, and company affiliation; that metadata is important because Phase 1 already found that analyst questions must not be treated as issuer operating evidence. Quartr also documents transcript availability for 95% of events within 45 minutes after conclusion and exposes historical transcripts through its REST API.
+
+Official references reviewed for this decision:
+
+- Quartr transcript structure and speaker mapping: https://quartr.com/docs/datasets/earnings-call-transcripts
+- Quartr data availability/SLA: https://quartr.com/docs/data-overview
+- Quartr API pricing/access: https://quartr.com/pricing/overview
+- Financial Modeling Prep transcript endpoint and pricing: https://intelligence.financialmodelingprep.com/developer/docs and https://site.financialmodelingprep.com/pricing-plans
+- Finnhub transcript schema/pricing: https://finnhub.io/docs/api/indices-constituents and https://finnhub.io/pricing
+
+Financial Modeling Prep is not selected for the frozen fallback slot at this stage even though it has a self-service transcript endpoint and an Ultimate tier with earnings call transcripts. Its public transcript documentation does not expose the same explicit speaker-role/company mapping contract that the current analyst-exclusion provenance rule needs.
+
+Finnhub remains a technically viable contingency because its premium transcript response documents participant roles and call session, but transcript access is an add-on/contact-sales product. It is not part of the selected hierarchy while Quartr remains the preferred structured fallback.
+
+**Access is not yet approved or purchased.** Quartr API pricing is contact-sales. The repository can implement and test the adapter against synthetic payloads now, but v2 cannot be frozen or executed with Quartr until access terms are accepted and a key is available.
 
 ### 2. Phenomenon / extraction recall
 
@@ -128,14 +153,17 @@ Once v2 is frozen:
 - only general correctness invariants, reproduced with synthetic or outcome-independent regression tests, may change production code during the frozen round;
 - any such correctness change invalidates stale result fingerprints and requires one same-version rerun of the full v2 set.
 
-## V2 source-policy decision still required
+## Implementation boundary before v2 freeze
 
-Before freezing v2, choose one source architecture:
+The repository now contains a provider-agnostic fallback resolver and a Quartr edited-transcript adapter, but they are intentionally not wired into frozen-v1 collection or scanner execution.
 
-1. single-provider with an outcome-blind reserve/replacement rule frozen before collection; or
-2. a predeclared transcript-provider fallback hierarchy with explicit provider provenance.
+Before v2 can become executable:
 
-The recommendation is the second architecture because frozen v1 demonstrated that a single free provider can block a blind complete-cohort experiment even when the underlying earnings calls exist. The actual fallback provider(s), access terms, and normalization adapter are not selected by this draft.
+1. Quartr access terms/key must be available or the fallback provider must be changed before freeze.
+2. The v2 collector must use the ordered resolver with per-provider bounded budgets.
+3. Provider mix and issuer-pair provider coherence must enter input fingerprints and validation artifacts.
+4. Exact v2 extraction cases, acceleration windows, controls, and blind ranking rubric must be frozen.
+5. The full v2 source policy and case manifest must be reviewed once before any v2 scanner outcome is inspected.
 
 ## Phase-2 gate after v2
 
