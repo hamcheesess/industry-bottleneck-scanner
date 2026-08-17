@@ -1,103 +1,145 @@
 # Industry Bottleneck Scanner
 
-Upstream discovery engine for detecting economically important industry bottlenecks and second-/third-order beneficiaries from market-triggered causal research.
+Upstream discovery engine for finding economically important second-/third-order beneficiaries from market-triggered causal research.
 
-The current target architecture starts from **observable market anomalies**, asks whether the move is supported by a structural operating demand shock, and then expands through the value chain to find nodes where a new demand branch meets pre-existing supply constraints, independent demand roots, economic capture, reinvestment runway, and a still-open expectations gap.
+The active architecture starts from observable market anomalies, checks whether a concrete structural demand shock is real, expands through evidence-backed value-chain dependencies, and prioritizes nodes where new demand reaches **pre-existing constrained supply** and/or joins **other independent demand roots** before obvious contracts or explosive earnings make the beneficiary widely recognized.
 
-The system does **not** try to predict every quiet industry before the market reacts, and it does not treat a lagging stock as automatically cheap.
+The system does **not** try to predict every quiet industry before the market reacts, does not require complete earnings-call transcript coverage, and does not treat a lagging stock as automatically cheap.
+
+The canonical roadmap is [`docs/current_roadmap.md`](docs/current_roadmap.md). The module migration/compatibility rules are [`docs/implementation_compatibility.md`](docs/implementation_compatibility.md).
 
 ## Canonical discovery universe
 
-The discovery universe is the **Russell 3000 membership universe**, represented as a dated immutable snapshot rather than a hard-coded list.
-
-The registry preserves issuer- and security-level identity so market data, disclosures, transcript sources, and later company mapping remain reproducible across ticker changes, share classes, and SEC identity resolution.
+The discovery universe remains a broad US-listed universe represented as a dated immutable snapshot rather than a hard-coded ticker list. The registry preserves issuer/security identity so market data, SEC identity resolution, disclosures, and later company mapping remain reproducible across ticker changes and share classes.
 
 ```text
-Russell 3000 membership snapshot
-  -> normalized Universe Registry
+Broad US universe
+  -> EOD / weekly market history
+  -> bottom-up industry / economic-cluster breadth
   -> Market Trigger
   -> Causal Diagnosis
   -> Root Demand Shock
-  -> Value-chain Hypothesis Graph
-  -> Evidence-backed Edge Approval
+  -> Evidence-backed Causal Graph
   -> Pre-shock Industry State Lookup
-  -> Demand Convergence
+  -> Independent Demand-root Convergence
   -> Pre-News Chain Selection
-  -> Bottleneck / Economic Capture Ranking
-  -> Listed-company Mapping
+  -> Bottleneck / Economic Capture / Reinvestment / Expectation Gap
+  -> Listed-company Exposure Mapping
   -> Repo B Underwriting
 ```
 
-A parallel low-frequency state loop maintains append-only supply-side snapshots for economically meaningful nodes. The event-driven market loop queries only state that existed **strictly before** a later market trigger, which makes historical replay look-ahead safe.
+ETF products such as SOXX may later corroborate a market theme, but they are not the canonical industry aggregation unit.
 
-See [`docs/universe_contract.md`](docs/universe_contract.md) and [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md).
+## Two-loop design
+
+The active architecture has two loops.
+
+```text
+LOW-FREQUENCY STATE LOOP                 EVENT-DRIVEN MARKET LOOP
+
+public disclosures / physical data       broad-US price / volume history
+            |                                         |
+            v                                         v
+Persistent Industry State                         Market Trigger
+            |                                         |
+            |                                         v
+            |                                  Causal Diagnosis
+            |                                         |
+            |                                         v
+            |                                  Root Demand Shock
+            |                                         |
+            +----------------------+------------------+
+                                   |
+                                   v
+                         Causal Graph / Expansion
+                                   |
+                                   v
+                         Demand Convergence Engine
+                                   |
+                     new shock x old bottleneck
+                    x independent demand roots
+                                   |
+                                   v
+                         Pre-News Chain Selector
+```
+
+This allows the system to recognize cases where a new theme enters a supply chain that was already tight for unrelated reasons.
+
+## Existing scanner work is retained
+
+The original transcript-first implementation is now a reusable **operating-evidence subsystem**, not the top-level discovery architecture.
+
+The following remain canonical and should be reused:
+
+- `SourceDocument` / `AtomicSignal` contracts,
+- Capex / Demand / Scarcity / Pricing extraction,
+- direction / negation / resolution logic,
+- analyst-question exclusion,
+- speaker/section/source provenance,
+- independent-company aggregation,
+- comparable current-vs-baseline acceleration when like-for-like windows exist,
+- cache-first collection and validation artifacts.
+
+```text
+SourceDocument
+  -> local deterministic scanner
+  -> AtomicSignal
+  -> optional comparable-window acceleration
+  -> operating support for Causal Diagnosis
+```
+
+Earnings calls remain useful, including older calls that document a condition before the market notices it. They are one source alongside earnings releases, 8-K/10-Q filings, investor presentations, customer/supplier/competitor disclosures, and public physical industry data.
+
+## Historical transcript validation
+
+Frozen validation v1 remains preserved as an Alpha-Vantage-only, source-coverage-limited audit artifact. It is not rewritten to fit the new roadmap.
+
+The later Quartr-centered transcript-v2 draft is **superseded as an active plan**. Quartr adapter/fallback code may remain parked because the technical work is reusable if access changes, but no active market/causal/state module may depend on Quartr availability and complete transcript coverage is no longer a system gate.
+
+See [`docs/v2_validation_contract_draft.md`](docs/v2_validation_contract_draft.md) for the historical supersession note.
+
+## Active implementation modules
+
+Current provider-independent core:
+
+- `market_history.py` — adjusted daily-bar features with explicit `as_of` safety;
+- `market_trigger.py` — bottom-up industry/economic-bucket breadth trigger;
+- `causal_diagnosis.py` — market trigger + operating-support compatibility bridge;
+- `causal_expansion.py` — pre-news research-priority scoring and gates;
+- `causal_graph.py` — append-only evidence-backed dependency edges;
+- `industry_state.py` — append-only pre-shock supply-state memory;
+- `demand_convergence.py` — new-shock x pre-shock constraint x independent-root convergence.
+
+Raw full transcripts are not sent to an LLM. Cheap deterministic work remains local-first; later model calls are reserved for already-filtered research tasks and cannot approve causal evidence by themselves.
 
 ## Responsibility boundary
 
-This repository owns:
+Repo A owns:
 
-- Russell 3000 discovery-universe normalization and provenance
-- market-trigger detection and industry/subindustry breadth
-- transcript/disclosure source adapters and local caches
-- Capex / Demand / Scarcity / Pricing operating-signal normalization
-- cross-company aggregation and acceleration
-- persistent industry-state history for supply constraints
-- causal value-chain hypothesis representation
-- evidence-backed edge approval and triangulation
-- multi-root demand convergence at shared constrained nodes
-- pre-news bottleneck / economic-capture research ranking
-- listed-company exposure mapping
-- small auditable handoff manifests for downstream underwriting
+- broad-US universe normalization/provenance,
+- market-trigger detection,
+- source/document normalization,
+- operating-signal extraction,
+- persistent industry state,
+- causal/value-chain graph and evidence approval,
+- demand convergence,
+- bottleneck/economic-capture research ranking,
+- listed-company exposure mapping,
+- a small thesis manifest for downstream underwriting.
 
-This repository does **not** own full company underwriting, financial-risk adjudication, DCF valuation, or final investment reports. Those belong to the downstream `investment-research-automation` repository.
+Repo A does **not** own full financial underwriting, DCF, final valuation, or final investment reports. Those remain in `investment-research-automation` (Repo B), which stays untouched until the upstream manifest is stable.
 
-## Existing operating scanner
+## Current development sequence
 
-The current implemented scanner remains local-first and mostly transcript-first:
-
-```text
-explicit ticker/fiscal-quarter requests
-  -> transcript provider adapter
-  -> cache-first bounded collection
-  -> transcript quality diagnostics
-  -> prepared/Q&A turn labeling
-  -> keyword + regex retrieval
-  -> optional local semantic retrieval
-  -> deterministic adjudication
-  -> AtomicSignal / semantic review queue
-  -> matched current-vs-baseline issuer cohort
-  -> industry-level aggregation
-  -> signal acceleration
-  -> trigger / confirmation hierarchy
-  -> AtomicSignal JSONL + experiment JSON
-```
-
-Raw full transcripts are not sent to an LLM. The default development path uses no OpenAI API calls.
-
-Frozen validation v1 is closed as source-coverage-limited under its Alpha-Vantage-only source contract. That experiment remains an audit trail; it is not the architecture for the next discovery stage.
-
-Transcript completeness is no longer intended to gate discovery. Transcripts become one operating-evidence source alongside earnings releases, SEC disclosures, investor presentations, customer/supplier evidence, and physical industry data.
-
-## Market-triggered causal discovery
-
-The next architecture is deliberately slower than real-time trading and does not require headline-speed data. End-of-day or weekly market anomalies are sufficient to start research.
-
-The provider-independent causal core is defined in `causal_expansion.py`. It ranks value-chain nodes on six transparent dimensions:
-
-- demand transmission,
-- bottleneck strength,
-- economic capture,
-- reinvestment runway,
-- triangulation,
-- expectation gap.
-
-The persistent supply-side memory is defined in `industry_state.py`. Each historical snapshot scores supply inelasticity, lead-time pressure, capacity tightness, capacity-expansion difficulty, qualification barriers, and pricing pressure. The append-only registry preserves what was known before later market triggers.
-
-The convergence core is defined in `demand_convergence.py`. It distinguishes multiple paths from the same root shock from genuinely independent demand roots, and promotes shared downstream nodes only when the new trigger reaches a node that was already constrained before the trigger.
-
-Hard gates prevent a high weighted score from hiding a weak causal link. Historical validation must freeze an `as_of` date so later large contracts or earnings surprises cannot leak backward into the original candidate decision.
-
-The governing draft policy is [`experiments/market_triggered_discovery_policy.draft.json`](experiments/market_triggered_discovery_policy.draft.json).
+1. consolidate the active architecture and legacy boundaries;
+2. connect free/low-cost EOD adjusted price history;
+3. generate real bottom-up market triggers;
+4. ingest source-agnostic public disclosures into the existing evidence contracts;
+5. update persistent industry-state snapshots;
+6. persist root-demand shocks and approved causal paths;
+7. replay an early AI-cycle case with frozen `as_of` timestamps and later confirmation held out;
+8. map listed-company exposure;
+9. freeze the Repo-A -> Repo-B thesis manifest only after upstream validation.
 
 ## Commands
 
@@ -107,21 +149,17 @@ Install the package in editable mode:
 pip install -e .
 ```
 
-Run the bounded real-data Phase-1 pilot after `ALPHA_VANTAGE_API_KEY` is available in the environment:
-
-```bash
-ibs-phase1-pilot
-```
-
-The pilot uses the matched request and dated metadata manifests under `experiments/`, caches successful transcripts under `var/transcripts/`, and writes runtime experiment artifacts under `var/`. Re-running it is cache-first, so successfully collected transcripts do not consume provider requests again.
-
-Lower-level commands remain available for transcript collection, provider diagnostics, cache-only batch scans, and novel-language review:
+Legacy bounded transcript workflows remain available for regression/audit work:
 
 ```text
 ibs-transcript-collect
 ibs-pilot-diagnostics
 ibs-phase1-batch
+ibs-phase1-pilot
+ibs-phase1-validate
 ibs-review-language
 ```
 
-See [`docs/architecture.md`](docs/architecture.md), [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md), [`docs/transcript_source_strategy.md`](docs/transcript_source_strategy.md), [`docs/recall_strategy.md`](docs/recall_strategy.md), [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md), and [`docs/phase1_signal_contract.md`](docs/phase1_signal_contract.md).
+They should not be interpreted as the top-level current product workflow.
+
+See also [`docs/architecture.md`](docs/architecture.md), [`docs/current_roadmap.md`](docs/current_roadmap.md), [`docs/implementation_compatibility.md`](docs/implementation_compatibility.md), [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md), and [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md).
