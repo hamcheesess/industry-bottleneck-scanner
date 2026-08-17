@@ -11,11 +11,11 @@ Phase 1 is a discovery-engine validation, not a demo that selected historical th
 
 The repository keeps the original validation manifest as **frozen v1**. Observed failures may reveal correctness bugs, but they must not cause labels, vocabulary, or trigger thresholds to be edited until the validation round is complete.
 
-## Current trusted local snapshot
+## Frozen v1 closure
 
-The latest complete-cohort local snapshot contains six of seven frozen cases. The only unready case is `blind-proxy-2026`.
+Frozen v1 is formally closed as `closed_source_coverage_limited` under its Alpha-Vantage-only source contract. Six of seven frozen cases are fresh. The blind proxy is unscoreable because `MDGL:2026Q2` and `REZI:2026Q2` returned provider-missing and were not replaced, dropped, or backfilled from a different provider.
 
-Current fresh-subset diagnostics are:
+The fresh labeled/control subset remains diagnostic:
 
 - fresh complete-cohort cases: `6/7`,
 - positive stage recall: `66.7%`,
@@ -23,7 +23,7 @@ Current fresh-subset diagnostics are:
 - control false-positive rate: `33.3%` (`1/3`),
 - freshness-filtered false-positive control: `auto-2019q2-control`.
 
-The combined collection plan currently has `68/70` ticker-quarter requests cached. The two uncached requests are `MDGL:2026Q2` and `REZI:2026Q2`. The last bounded provider pass attempted both and received provider-missing responses rather than rate limits, local budget exhaustion, or ordinary provider errors. Those misses are a **source-layer coverage dependency**, not a scanner-calibration signal.
+Frozen v1 remains the audit trail. It is no longer a calibration target and does not become Phase-2-ready by later source backfilling.
 
 ## Frozen v1 case contract
 
@@ -44,61 +44,11 @@ A frozen validation case is scoreable only when all of the following are true:
 
 This prevents mixed-version scoring and prevents a frozen case from being scored after the comparable experiment silently shrinks to issuers with both cached windows.
 
-## Partial metrics are diagnostics, not gate decisions
+## Provider-missing transcript policy retained for v1
 
-Until every frozen v1 case is freshness-approved, the validation state is `partial_waiting_data`. Fresh-subset strict recall, stage recall, metric recall, and control FPR are diagnostics only. `provisional_gate_ok` remains unset until the complete frozen manifest is available.
+A provider `missing` response is not treated as proof that the call did not occur, and it is not a scanner failure. Ordinary `ibs-phase1-validation-resume` calls reuse a terminal all-provider-missing collection state and perform zero repeated live requests. A deliberate diagnostic recheck remains available through `--retry-provider-missing`, but it does not reopen or rewrite frozen v1.
 
-Repeatedly tuning the scanner against an incomplete denominator is prohibited.
-
-## Routine cache-only validation cycle
-
-```bash
-ibs-phase1-validation-cycle
-```
-
-This reruns metadata-and-cache-ready frozen cases, checks complete-cohort provenance/freshness, evaluates frozen-v1 diagnostics, and regenerates calibration diagnostics from the exact same freshness-approved set. It does not call the provider or tune labels, vocabulary, or thresholds.
-
-The cycle emits one next gate: `data_completion`, `frozen_v1_review`, or `blind_review_then_phase2_decision`.
-
-## One-command provider resume
-
-```bash
-ibs-phase1-validation-resume
-```
-
-This performs one bounded cache-first Alpha Vantage collection pass, drafts metadata for newly complete request files, applies committed timestamp provenance where available, then runs one cache-only validation cycle. Rate limits stop the pass; they are never retried in a loop.
-
-## Provider-missing transcript policy
-
-A provider `missing` response is not treated as proof that the call did not occur, and it is not a scanner failure.
-
-When every still-uncached request from a bounded pass has already returned provider-missing, with no rate limit, ordinary provider error, or local budget exhaustion, ordinary `ibs-phase1-validation-resume` calls reuse that terminal collection state and perform **zero repeated live requests**. The workflow reports:
-
-```text
-next_action=provider_missing_transcripts_review
-```
-
-Provider-missing is also not assumed to be permanent. A deliberate later bounded recheck is possible only through the explicit override:
-
-```bash
-ibs-phase1-validation-resume --retry-provider-missing
-```
-
-The override prevents accidental polling while preserving a controlled path for recent provider ingestion lag.
-
-The frozen blind cohort must not be silently repaired by dropping, replacing, or shrinking issuers after results are available. A third-party transcript also must not be injected under the `alpha_vantage` identity. If the blind requests remain unavailable after source review, frozen v1 records a source-coverage limitation and the next validation contract must predeclare either a fallback-provider hierarchy or an outcome-blind reserve/replacement rule.
-
-## Timestamp provenance
-
-Fiscal-quarter labels are not event timestamps. Metadata drafting leaves `published_at` blank until a real timezone-aware event timestamp with HTTP(S) provenance is verified. Date-only transcript hints never become timestamps automatically.
-
-Committed source-backed timestamp tables exist for the two 2021 positives and all three historical controls. The blind proxy is local validation-only output, so its exact event-time provenance is resolved only after its source coverage is complete.
-
-## Positive diagnostics
-
-Frozen v1 strict positive recovery requires aggregation match, expected bucket existence, at least watchlist stage, and every predeclared expected metric active in the current window. `positive_stage_recall` intentionally separates stage recovery from exact taxonomy recovery, but it does not replace the frozen v1 gate.
-
-The frozen threshold is `0.67`; with three positives, `2/3 = 0.666...` does not pass. V1 is not rewritten after observing outcomes.
+The frozen blind cohort must never be silently repaired by dropping, replacing, or shrinking issuers after results are available. A third-party transcript also must not be injected under the `alpha_vantage` identity.
 
 ## Accepted correctness fixes
 
@@ -109,17 +59,12 @@ Two general extraction/provenance bugs were fixed without changing thresholds:
 
 The first completed semiconductor 2019 control no longer triggers after those fixes.
 
-## Calibration freeze
-
-Until frozen v1 is complete or explicitly closed with a documented source-coverage limitation, production extraction/aggregation behavior is frozen except for a general correctness invariant that can be reproduced without reference to whether a labeled case passes.
-
-A missing expected metric or an observing known-positive case is not sufficient reason to change phrases, semantic thresholds, aggregation thresholds, or trigger contracts.
-
-## Known v1 limitations
+## Known v1 limitations retained for audit
 
 - The semiconductor 2021 external ground truth strongly supports supply-demand/capacity bottleneck conditions, while frozen v1 additionally requires exact `backlog_strength`; that taxonomy-specific miss is recorded but not tuned away.
 - The power 2026 case compares Q2 against Q1 even though its external evidence already documents accelerating Q1 activity; an observing result can therefore be a temporal-label limitation rather than a trigger defect.
-- The current blind source layer has two provider-missing Q2 requests (`MDGL`, `REZI`), which exposes source coverage as a first-class validation dimension.
+- The blind source layer exposed two provider-missing Q2 requests (`MDGL`, `REZI`), making source coverage a first-class validation dimension.
+- The literal positive-recall gate is `0.67`; `2/3 = 0.666...` does not pass numerically.
 
 ## Frozen v1 metrics
 
@@ -128,22 +73,46 @@ A missing expected metric or an observing known-positive case is not sufficient 
 - control false-positive rate <= 0.20,
 - aggregation mismatches = 0.
 
-These are development gates, not statistical-significance claims.
+These are retained development gates, not statistical-significance claims.
 
-## Versioned v2 design
+## V2 design status
 
-A future v2 contract must be created separately before outcomes are inspected and should separate:
+The next gate is `v2_validation_contract_design`. V2 is a separately versioned contract and does not inherit or rewrite v1 outcomes.
 
-1. phenomenon/extraction recall,
-2. true window-to-window acceleration recall,
-3. control precision,
-4. blind discovery/ranking,
-5. source coverage, including fallback-provider and missing-data rules.
+The chosen source architecture is **predeclared multi-source transcript fallback**:
 
-V1 remains the audit trail and is never rewritten into v2 after the fact.
+1. Alpha Vantage primary,
+2. Quartr edited transcripts (`typeId=22`) as the preferred fallback.
+
+Fallback is allowed only after an explicit primary-provider miss. Rate limits or provider errors stop the chain. Each issuer's current and baseline windows must resolve from the same provider; fallback therefore supplies the complete issuer pair rather than only the missing side. Provider mix across different issuers is allowed only with explicit provenance and reporting.
+
+Quartr raw transcript type 15 is not eligible because the current scanner correctness contract depends on speaker/role provenance for analyst-question exclusion. Edited transcript speaker mapping is required.
+
+This architecture is implemented only as a draft adapter/resolver layer. It is **not yet executable or frozen** because Quartr API access is a contact-sales product and no purchase/access decision has been made. Selecting the technical architecture does not authorize a subscription.
+
+See `docs/v2_validation_contract_draft.md` and `experiments/v2_validation_policy.draft.json` for the full draft.
+
+## V2 dimensions and draft gates
+
+V2 separates:
+
+1. source coverage,
+2. phenomenon/extraction recall,
+3. true window-to-window acceleration recall,
+4. control precision,
+5. blind discovery/ranking.
+
+Draft integer gates avoid the v1 decimal-threshold ambiguity:
+
+- extraction recall: at least `5/6`,
+- acceleration watchlisted-or-stronger: at least `4/6`,
+- acceleration triggered-or-stronger: at least `3/6`,
+- controls: at most `1/8` triggered/confirmed false positives.
+
+These are still draft values and cannot be used to claim a v2 pass before the contract is frozen.
 
 ## Phase 2 gate
 
-Proceed to public/physical validation and triangulation only after frozen v1 is either complete under one pipeline version or explicitly closed with a documented source-coverage limitation, unresolved correctness bugs are cleared, control behavior is reviewed, the blind result is reviewed when complete, and the v1 findings plus proposed v2 contract are reviewed as a whole.
+Phase 2 remains blocked. Before Phase 2, the v2 source access decision, exact extraction cases, true acceleration windows, controls, blind ranking rubric, and evidence-review rules must be frozen before scanner outcomes are inspected. The full v2 run must then be reviewed without post-hoc threshold, cohort, source, or window changes.
 
 Until then, Repo B remains untouched and no discovery result is treated as an investment candidate.
