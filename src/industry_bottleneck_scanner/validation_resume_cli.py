@@ -31,6 +31,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-provider-requests", type=int, default=24)
     parser.add_argument("--interval-seconds", type=float, default=1.1)
     parser.add_argument("--max-companies", type=int, default=50)
+    parser.add_argument(
+        "--retry-provider-missing",
+        action="store_true",
+        help=(
+            "Explicitly re-query requests that a prior bounded pass returned as provider-missing. "
+            "Without this flag, an all-provider-missing terminal state is reused so repeated resume calls cannot "
+            "silently hammer the same unavailable ticker-quarters."
+        ),
+    )
     parser.add_argument("--collection-output", type=Path, default=Path("var/validation/collection-status.json"))
     parser.add_argument("--progress-output", type=Path, default=Path("var/validation/progress.json"))
     parser.add_argument("--advance-output", type=Path, default=Path("var/validation/advance-status.json"))
@@ -124,9 +133,9 @@ def _remaining_requests(collection: dict[str, object]) -> list[str]:
 def _provider_missing_only(collection: dict[str, object]) -> bool:
     """True when every still-uncached request was already attempted and returned no transcript.
 
-    Historical transcript misses are often stable provider-coverage gaps. Reissuing the same
-    requests on every resume invocation creates a pointless provider loop, so the previous
-    collection artifact acts as a stop marker until a source/provider decision is made.
+    Historical transcript misses can be stable provider-coverage gaps, while very recent calls can also appear
+    later. Reissuing the same requests on every resume invocation creates a pointless provider loop, so the
+    previous collection artifact acts as a stop marker until an explicit source review or retry decision is made.
     """
 
     remaining = set(_remaining_requests(collection))
@@ -182,9 +191,10 @@ def main(argv: list[str] | None = None) -> int:
     if args.collection_output.exists():
         previous_collection = _load(args.collection_output)
 
-    reused_terminal_collection = bool(
+    previous_terminal_missing = bool(
         previous_collection is not None and _provider_missing_only(previous_collection)
     )
+    reused_terminal_collection = previous_terminal_missing and not args.retry_provider_missing
     if reused_terminal_collection:
         collection_code = 2
     else:
@@ -266,6 +276,7 @@ def main(argv: list[str] | None = None) -> int:
         "provider_missing_requests": provider_missing,
         "provider_error_requests": provider_errors,
         "reused_terminal_collection": reused_terminal_collection,
+        "provider_missing_retry_requested": bool(args.retry_provider_missing),
     }
     payload = {
         "status": cycle.get("status", "unknown"),
@@ -279,9 +290,9 @@ def main(argv: list[str] | None = None) -> int:
         "cycle": cycle,
         "policy": (
             "one bounded provider pass per invocation; rate limits are never retried in a loop; "
-            "when every remaining request has already returned provider-missing, subsequent resume invocations "
-            "reuse that terminal collection state instead of reissuing the same requests; scanner vocabulary "
-            "and trigger thresholds are not mutated"
+            "when every remaining request has already returned provider-missing, ordinary resume invocations "
+            "reuse that terminal collection state instead of reissuing the same requests; a deliberate later "
+            "recheck requires --retry-provider-missing; scanner vocabulary and trigger thresholds are not mutated"
         ),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -297,6 +308,7 @@ def main(argv: list[str] | None = None) -> int:
         f"rate_limited={collection_stop['rate_limited']} budget_exhausted={collection_stop['budget_exhausted']} "
         f"provider_missing={_list_text(provider_missing)} provider_errors={_list_text(provider_errors)} "
         f"reused_terminal_collection={str(reused_terminal_collection).lower()} "
+        f"provider_missing_retry_requested={str(bool(args.retry_provider_missing)).lower()} "
         f"fresh={len(ready_ids) if isinstance(ready_ids, list) else 0}/"
         f"{freshness.get('total_frozen_cases', '?')} "
         f"stage_recall={_rate(summary.get('positive_stage_recall'))} "
