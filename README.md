@@ -1,46 +1,53 @@
 # Industry Bottleneck Scanner
 
-Upstream discovery engine for detecting emerging industry bottlenecks from cross-company operating signals.
+Upstream discovery engine for detecting economically important industry bottlenecks and second-/third-order beneficiaries from market-triggered causal research.
 
-The project starts from **phenomena**, not industry names. It scans company disclosures for recurring signals such as rising capex, accelerating demand, supply scarcity, and pricing power; aggregates those signals across companies; and surfaces clusters that deserve deeper industry research.
+The current target architecture starts from **observable market anomalies**, asks whether the move is supported by a structural operating demand shock, and then expands through the value chain to find nodes where demand transmission, supply constraints, economic capture, reinvestment runway, and a still-open expectations gap justify deeper research.
+
+The system does **not** try to predict every quiet industry before the market reacts, and it does not treat a lagging stock as automatically cheap.
 
 ## Canonical discovery universe
 
 The discovery universe is the **Russell 3000 membership universe**, represented as a dated immutable snapshot rather than a hard-coded list.
 
-The registry preserves both issuer-level and security-level identity so source collection can remain reproducible across ticker changes, share classes, and SEC identity resolution.
+The registry preserves issuer- and security-level identity so market data, disclosures, transcript sources, and later company mapping remain reproducible across ticker changes, share classes, and SEC identity resolution.
 
 ```text
 Russell 3000 membership snapshot
   -> normalized Universe Registry
-  -> source adapters
-  -> local candidate retrieval
-  -> AtomicSignal
-  -> cross-company industry aggregation
-  -> signal acceleration
-  -> research-trigger clusters
+  -> Market Trigger
+  -> Causal Diagnosis
+  -> Structural Theme
+  -> Value-chain Hypothesis Graph
+  -> Evidence-backed Edge Approval
+  -> Pre-News Chain Selection
+  -> Bottleneck / Economic Capture Ranking
+  -> Listed-company Mapping
+  -> Repo B Underwriting
 ```
 
-See [`docs/universe_contract.md`](docs/universe_contract.md).
+See [`docs/universe_contract.md`](docs/universe_contract.md) and [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md).
 
 ## Responsibility boundary
 
 This repository owns:
 
 - Russell 3000 discovery-universe normalization and provenance
+- market-trigger detection and industry/subindustry breadth
 - transcript/disclosure source adapters and local caches
-- phenomenon-based signal discovery
-- Capex / Demand / Scarcity / Pricing normalization
+- Capex / Demand / Scarcity / Pricing operating-signal normalization
 - cross-company aggregation and acceleration
-- semantic-only review queues and repeated novel-language discovery
-- auditable Phase-1 experiment artifacts
-- later: public-data validation, triangulation, value-chain mapping, bottleneck analysis, economic-capture analysis, and candidate discovery
+- causal value-chain hypothesis representation
+- evidence-backed edge approval and triangulation
+- pre-news bottleneck / economic-capture research ranking
+- listed-company exposure mapping
+- small auditable handoff manifests for downstream underwriting
 
 This repository does **not** own full company underwriting, financial-risk adjudication, DCF valuation, or final investment reports. Those belong to the downstream `investment-research-automation` repository.
 
-## Phase 1 pipeline
+## Existing operating scanner
 
-The current Phase-1 path is local-first and transcript-first:
+The current implemented scanner remains local-first and mostly transcript-first:
 
 ```text
 explicit ticker/fiscal-quarter requests
@@ -61,7 +68,26 @@ explicit ticker/fiscal-quarter requests
 
 Raw full transcripts are not sent to an LLM. The default development path uses no OpenAI API calls.
 
-Frozen validation v1 is closed as source-coverage-limited under its Alpha-Vantage-only source contract. V2 is designed separately and now uses a **predeclared multi-source transcript architecture**: Alpha Vantage remains primary and Quartr edited transcripts are the preferred fallback. V2 fallback must preserve each issuer's current/baseline provider coherence and explicit provider provenance. The Quartr path remains draft-only until API access terms are accepted and credentials are available.
+Frozen validation v1 is closed as source-coverage-limited under its Alpha-Vantage-only source contract. That experiment remains an audit trail; it is not the architecture for the next discovery stage.
+
+Transcript completeness is no longer intended to gate discovery. Transcripts become one operating-evidence source alongside earnings releases, SEC disclosures, investor presentations, customer/supplier evidence, and physical industry data.
+
+## Market-triggered causal discovery
+
+The next architecture is deliberately slower than real-time trading and does not require headline-speed data. End-of-day or weekly market anomalies are sufficient to start research.
+
+The provider-independent causal core is defined in `causal_expansion.py`. It ranks value-chain nodes on six transparent dimensions:
+
+- demand transmission,
+- bottleneck strength,
+- economic capture,
+- reinvestment runway,
+- triangulation,
+- expectation gap.
+
+Hard gates prevent a high weighted score from hiding a weak causal link. Historical validation must freeze an `as_of` date so later large contracts or earnings surprises cannot leak backward into the original candidate decision.
+
+The governing draft policy is [`experiments/market_triggered_discovery_policy.draft.json`](experiments/market_triggered_discovery_policy.draft.json).
 
 ## Commands
 
@@ -88,4 +114,4 @@ ibs-phase1-batch
 ibs-review-language
 ```
 
-See [`docs/architecture.md`](docs/architecture.md), [`docs/transcript_source_strategy.md`](docs/transcript_source_strategy.md), [`docs/recall_strategy.md`](docs/recall_strategy.md), [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md), [`docs/phase1_signal_contract.md`](docs/phase1_signal_contract.md), and [`docs/v2_validation_contract_draft.md`](docs/v2_validation_contract_draft.md).
+See [`docs/architecture.md`](docs/architecture.md), [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md), [`docs/transcript_source_strategy.md`](docs/transcript_source_strategy.md), [`docs/recall_strategy.md`](docs/recall_strategy.md), [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md), and [`docs/phase1_signal_contract.md`](docs/phase1_signal_contract.md).
