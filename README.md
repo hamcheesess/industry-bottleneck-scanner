@@ -2,7 +2,7 @@
 
 Upstream discovery engine for detecting economically important industry bottlenecks and second-/third-order beneficiaries from market-triggered causal research.
 
-The current target architecture starts from **observable market anomalies**, asks whether the move is supported by a structural operating demand shock, and then expands through the value chain to find nodes where demand transmission, supply constraints, economic capture, reinvestment runway, and a still-open expectations gap justify deeper research.
+The current target architecture starts from **observable market anomalies**, asks whether the move is supported by a structural operating demand shock, and then expands through the value chain to find nodes where a new demand branch meets pre-existing supply constraints, independent demand roots, economic capture, reinvestment runway, and a still-open expectations gap.
 
 The system does **not** try to predict every quiet industry before the market reacts, and it does not treat a lagging stock as automatically cheap.
 
@@ -17,14 +17,18 @@ Russell 3000 membership snapshot
   -> normalized Universe Registry
   -> Market Trigger
   -> Causal Diagnosis
-  -> Structural Theme
+  -> Root Demand Shock
   -> Value-chain Hypothesis Graph
   -> Evidence-backed Edge Approval
+  -> Pre-shock Industry State Lookup
+  -> Demand Convergence
   -> Pre-News Chain Selection
   -> Bottleneck / Economic Capture Ranking
   -> Listed-company Mapping
   -> Repo B Underwriting
 ```
+
+A parallel low-frequency state loop maintains append-only supply-side snapshots for economically meaningful nodes. The event-driven market loop queries only state that existed **strictly before** a later market trigger, which makes historical replay look-ahead safe.
 
 See [`docs/universe_contract.md`](docs/universe_contract.md) and [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md).
 
@@ -37,8 +41,10 @@ This repository owns:
 - transcript/disclosure source adapters and local caches
 - Capex / Demand / Scarcity / Pricing operating-signal normalization
 - cross-company aggregation and acceleration
+- persistent industry-state history for supply constraints
 - causal value-chain hypothesis representation
 - evidence-backed edge approval and triangulation
+- multi-root demand convergence at shared constrained nodes
 - pre-news bottleneck / economic-capture research ranking
 - listed-company exposure mapping
 - small auditable handoff manifests for downstream underwriting
@@ -84,6 +90,10 @@ The provider-independent causal core is defined in `causal_expansion.py`. It ran
 - reinvestment runway,
 - triangulation,
 - expectation gap.
+
+The persistent supply-side memory is defined in `industry_state.py`. Each historical snapshot scores supply inelasticity, lead-time pressure, capacity tightness, capacity-expansion difficulty, qualification barriers, and pricing pressure. The append-only registry preserves what was known before later market triggers.
+
+The convergence core is defined in `demand_convergence.py`. It distinguishes multiple paths from the same root shock from genuinely independent demand roots, and promotes shared downstream nodes only when the new trigger reaches a node that was already constrained before the trigger.
 
 Hard gates prevent a high weighted score from hiding a weak causal link. Historical validation must freeze an `as_of` date so later large contracts or earnings surprises cannot leak backward into the original candidate decision.
 
