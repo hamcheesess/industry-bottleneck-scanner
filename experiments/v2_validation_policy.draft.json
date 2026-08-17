@@ -40,7 +40,7 @@
         "fallback_on": ["missing"],
         "speaker_mapping_required": true,
         "raw_transcript_type_15_allowed": false,
-        "access_status": "api_contract_and_key_required_before_freeze"
+        "access_status": "student_access_application_pending"
       }
     ],
     "provider_error_or_rate_limit_stops_chain": true,
@@ -55,10 +55,10 @@
   },
   "provider_selection_notes": {
     "selected_fallback": "quartr_edited",
-    "selection_reason": "Quartr edited transcripts expose speaker mapping with name, role, and company affiliation and document an explicit transcript availability SLA, which better preserves the issuer-evidence/analyst-exclusion correctness invariant than a role-opaque transcript fallback.",
+    "selection_reason": "Quartr edited transcripts expose speaker mapping with name, role, and company affiliation, which better preserves the issuer-evidence/analyst-exclusion correctness invariant than a role-opaque transcript fallback.",
     "financial_modeling_prep": "Not selected for the frozen fallback slot at this stage. FMP documents a self-service earnings transcript endpoint, but its public transcript documentation does not provide the same explicit speaker-role/company mapping contract needed by the current provenance filter.",
     "finnhub": "Technically viable contingency because its premium transcript response documents participant roles and sessions, but transcript access is an add-on/contact-sales product and is not selected while Quartr remains the preferred structured fallback.",
-    "quartr_access": "Pricing is contact-sales. Selecting the provider in this draft does not authorize purchase and does not make v2 executable."
+    "quartr_access": "A free student-access application is pending. The draft remains non-executable until access is approved and the actual entitlement is verified against edited transcript type 22."
   },
   "calibration_freeze": {
     "case_outcome_driven_vocabulary_changes_allowed": false,
@@ -68,5 +68,5 @@
     "correctness_fix_requires_same_version_full_rerun": true
   },
   "phase2_ready_from_this_file": false,
-  "notes": "Draft design only. The multi-source architecture is selected, with Alpha Vantage primary and Quartr edited transcripts as the preferred fallback. Freeze a separate executable v2 contract only after Quartr access terms are accepted, exact cases/windows and blind ranking rubric are frozen, and the fallback resolver is wired into the v2 collection path. Frozen v1 remains unchanged."
+  "notes": "Draft design only. The multi-source architecture is selected, with Alpha Vantage primary and Quartr edited transcripts as the preferred fallback. Freeze a separate executable v2 contract only after Quartr access is approved and entitlement verified, exact cases/windows and blind ranking rubric are frozen, and the fallback resolver is wired into the v2 collection path. Frozen v1 remains unchanged."
 }
