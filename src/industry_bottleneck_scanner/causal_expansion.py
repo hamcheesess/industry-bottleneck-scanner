@@ -15,6 +15,11 @@ EvidenceClass = Literal[
     "physical_industry_data",
     "management_operating_commentary",
     "competitor_corroboration",
+    "backlog_or_orders",
+    "capacity_utilization",
+    "inventory_or_working_capital",
+    "facility_or_hiring",
+    "regulatory_or_permitting",
 ]
 
 RelationType = Literal[
