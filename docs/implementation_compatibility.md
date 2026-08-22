@@ -29,7 +29,10 @@ This document prevents the architecture pivot from turning into a rewrite. It de
 | Market trigger | `market_trigger.py` | ACTIVE | bottom-up industry/economic-bucket market breadth trigger |
 | EOD normalization | `eod_market_data.py` | ACTIVE | Massive grouped-daily provider boundary, raw date cache, normalized `DailyBar` histories and explicit coverage |
 | Market artifacts / CLI | `market_trigger_artifacts.py`, `market_trigger_cli.py`, `market_trigger_replay_cli.py` | ACTIVE | self-contained normalized history, dated v1 triggers, live collection and strict-as-of replay outside legacy validation |
-| Causal diagnosis | `causal_diagnosis.py` | ACTIVE | joins market trigger with operating support; current adapter still reuses old acceleration snapshots |
+| Disclosure normalization | `disclosure_documents.py`, `source_scan.py`, `operating_evidence_cli.py` | ACTIVE | provider-neutral public disclosures -> existing `SourceDocument` / scanner / `AtomicSignal` contracts |
+| SEC disclosure provider | `sec_edgar.py`, `sec_edgar_cli.py` | ACTIVE | cache-first, strict-as-of 8-K/10-Q/10-K and EX-99 collection below normalization |
+| Operating support | `operating_support.py` | ACTIVE | freshness/coverage-aware one-sided evidence plus optional comparable acceleration |
+| Causal diagnosis | `causal_diagnosis.py` | ACTIVE | joins market trigger with provider-independent `OperatingSupport`; legacy acceleration input remains compatible |
 | Causal node ranking | `causal_expansion.py` | ACTIVE | pre-news research-priority dimensions and hard gates |
 | Causal graph | `causal_graph.py` | ACTIVE | append-only approved economic dependency edges and bounded traversal |
 | Industry state | `industry_state.py` | ACTIVE | append-only pre-shock supply-state memory |
@@ -67,7 +70,9 @@ However, the active discovery path must not require complete transcript pairs fo
 
 `OperatingSupport` should wrap/reference these outputs. It must not replace `AtomicSignal`, duplicate the scanner taxonomy, or mutate `AccelerationSnapshot` merely to satisfy the new architecture.
 
-Until that adapter is implemented, `causal_diagnosis.py` is an interim compatibility bridge, not the final evidence-fusion contract.
+That adapter is now implemented in `operating_support.py`. `causal_diagnosis.py` accepts it
+without importing any provider, while retaining the prior `AccelerationSnapshot` call shape for
+existing consumers.
 
 ### 4. Provider code stays below evidence normalization
 

@@ -108,7 +108,10 @@ Current provider-independent core:
 - `market_history.py` — adjusted daily-bar features with explicit `as_of` safety;
 - `market_trigger.py` — bottom-up industry/economic-bucket breadth trigger;
 - `market_trigger_artifacts.py` — dated normalized history and versioned market-trigger artifacts;
-- `causal_diagnosis.py` — market trigger + operating-support compatibility bridge;
+- `disclosure_documents.py` / `source_scan.py` — source-agnostic normalization through the existing scanner;
+- `sec_edgar.py` — cache-first, strict-as-of SEC 8-K/10-Q/10-K and EX-99 adapter;
+- `operating_support.py` — freshness/coverage-aware provider-independent operating support;
+- `causal_diagnosis.py` — market trigger + operating-support diagnosis;
 - `causal_expansion.py` — pre-news research-priority scoring and gates;
 - `causal_graph.py` — append-only evidence-backed dependency edges;
 - `industry_state.py` — append-only pre-shock supply-state memory;
@@ -202,6 +205,23 @@ ibs-market-trigger-replay \
   --as-of 2026-06-30 \
   --output artifacts/market-trigger/replay-2026-06-30.json
 ```
+
+Collect trigger-scoped SEC disclosures. SEC does not require an API key, but its fair-access
+policy requires a declared organization/contact User-Agent:
+
+```bash
+export SEC_USER_AGENT="Research Project contact@example.com"
+ibs-sec-disclosures \
+  --companies-csv artifacts/trigger-companies.csv \
+  --since 2024-11-01 \
+  --as-of 2026-08-21T23:59:59+00:00 \
+  --cache-dir var/cache/sec-edgar \
+  --output-jsonl artifacts/operating/disclosures.jsonl \
+  --diagnostics artifacts/operating/sec-collection.json
+```
+
+See [`docs/source_agnostic_operating_evidence.md`](docs/source_agnostic_operating_evidence.md)
+for the normalization, freshness, coverage, and replay contracts.
 
 Legacy bounded transcript workflows remain available for regression/audit work:
 

@@ -180,13 +180,18 @@ A two-month-old earnings call may be strong pre-news evidence. It must not be mi
 
 - `market_history.py` — provider-independent EOD feature calculation and `as_of` safety;
 - `market_trigger.py` — bottom-up market breadth trigger;
-- `causal_diagnosis.py` — compatibility bridge from market trigger to operating support;
+- `disclosure_documents.py` / `source_scan.py` — provider-neutral issuer disclosures through the existing scanner;
+- `sec_edgar.py` — cache-first SEC adapter below `PublicDisclosure` normalization;
+- `operating_support.py` — freshness/coverage-aware one-sided evidence plus optional comparable acceleration;
+- `causal_diagnosis.py` — market trigger plus provider-independent operating support;
 - `causal_expansion.py` — demand transmission / bottleneck / capture / reinvestment / triangulation / expectation-gap ranking;
 - `causal_graph.py` — append-only edge approval history and bounded traversal;
 - `industry_state.py` — append-only pre-shock node-state memory;
 - `demand_convergence.py` — new-shock x pre-shock constraint x independent-root convergence.
 
-`causal_diagnosis.py` currently reuses the older `AccelerationSnapshot` interface when available. That is intentional compatibility, but it is an interim bridge: future source-agnostic diagnosis should also accept recent one-sided operating evidence and since-last-earnings updates without requiring perfect transcript pairs.
+`causal_diagnosis.py` still accepts the older `AccelerationSnapshot` interface for compatibility,
+but the active path now consumes `OperatingSupport`. It can therefore classify fresh one-sided
+evidence and since-last-earnings updates without requiring perfect transcript pairs.
 
 ## Historical artifacts and frozen work
 

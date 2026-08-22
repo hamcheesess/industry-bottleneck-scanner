@@ -5,6 +5,7 @@ from typing import Literal
 
 from .aggregation import AccelerationSnapshot
 from .market_trigger import IndustryMarketTrigger
+from .operating_support import OperatingSupport
 
 CausalDiagnosisClass = Literal[
     "structural_operating",
@@ -56,8 +57,9 @@ class CausalDiagnosis:
 def diagnose_market_trigger(
     market: IndustryMarketTrigger,
     *,
-    operating: AccelerationSnapshot | None,
-    coverage: OperatingCoverage,
+    operating: AccelerationSnapshot | None = None,
+    coverage: OperatingCoverage | None = None,
+    support: OperatingSupport | None = None,
     policy: CausalDiagnosisPolicy = CausalDiagnosisPolicy(),
 ) -> CausalDiagnosis:
     """Classify a market move without confusing missing documents with narrative-only evidence.
@@ -67,8 +69,13 @@ def diagnose_market_trigger(
     evidence that the market move lacks a structural cause.
     """
 
+    if support is not None and (operating is not None or coverage is not None):
+        raise ValueError("pass OperatingSupport or legacy operating/coverage inputs, not both")
+    if support is None and coverage is None:
+        raise ValueError("legacy diagnosis requires OperatingCoverage")
+
     reasons: list[str] = []
-    ratio = coverage.paired_coverage_ratio
+    ratio = support.fresh_coverage_ratio if support is not None else coverage.paired_coverage_ratio
 
     if not market.triggered:
         reasons.append("market_not_triggered")
@@ -78,6 +85,25 @@ def diagnose_market_trigger(
         reasons.append("insufficient_operating_coverage")
         classification = "unresolved"
         operating_stage = "coverage_blocked"
+    elif support is not None and support.stage in {
+        "comparable_confirmed",
+        "comparable_triggered",
+    }:
+        reasons.extend(support.reasons)
+        classification = "structural_operating"
+        operating_stage = support.stage
+    elif support is not None and support.stage in {
+        "one_sided_strengthening",
+        "comparable_partial",
+        "observing",
+    }:
+        reasons.extend(support.reasons)
+        classification = "mixed_or_early"
+        operating_stage = support.stage
+    elif support is not None:
+        reasons.extend(support.reasons)
+        classification = "narrative_led"
+        operating_stage = support.stage
     elif operating is None:
         reasons.append("no_operating_acceleration_detected")
         classification = "narrative_led"

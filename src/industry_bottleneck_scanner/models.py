@@ -36,6 +36,9 @@ class SourceDocument:
     speaker: str | None = None
     speaker_title: str | None = None
     source_section: str | None = None
+    provider: str | None = None
+    retrieved_at: datetime | None = None
+    content_fingerprint: str | None = None
 
 
 @dataclass(frozen=True)

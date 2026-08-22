@@ -24,6 +24,14 @@ PARKED_PROVIDER_MODULES = {
     "v2_source_provenance",
 }
 
+ACTIVE_PROVIDER_MODULES = {
+    "alpha_vantage",
+    "eod_market_data",
+    "massive_universe",
+    "quartr",
+    "sec_edgar",
+}
+
 
 def _local_import_roots(path: Path) -> set[str]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -56,6 +64,16 @@ def test_active_causal_modules_do_not_depend_on_parked_quartr_path() -> None:
     for name in ACTIVE_CAUSAL_MODULES:
         imports = _local_import_roots(PACKAGE_ROOT / name)
         bad = sorted(imports & PARKED_PROVIDER_MODULES)
+        if bad:
+            violations[name] = bad
+    assert violations == {}
+
+
+def test_active_causal_modules_do_not_import_provider_adapters() -> None:
+    violations: dict[str, list[str]] = {}
+    for name in ACTIVE_CAUSAL_MODULES:
+        imports = _local_import_roots(PACKAGE_ROOT / name)
+        bad = sorted(imports & ACTIVE_PROVIDER_MODULES)
         if bad:
             violations[name] = bad
     assert violations == {}

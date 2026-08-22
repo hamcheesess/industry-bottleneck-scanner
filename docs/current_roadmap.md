@@ -157,12 +157,12 @@ This is the code status after architecture consolidation.
 |---|---|---|---|
 | Universe / identity | **REUSE + MARKET JOIN IMPLEMENTED** | dated broad-US universe contracts, issuer/security identity, dated sector/bucket classification join with explicit unclassified denominator | production membership/classification snapshot and refresh path |
 | Transcript evidence | **REUSE OPTIONAL** | Alpha Vantage adapter, cache, transcript normalization, analyst exclusion | no universal transcript fallback required |
-| Operating scanner | **KEEP** | `SourceDocument`, `AtomicSignal`, four scanners, adjudication, aggregation | source-agnostic non-transcript document adapters |
+| Operating scanner | **KEEP + GENERIC PATH EXECUTABLE** | `SourceDocument`, `AtomicSignal`, four scanners, generic disclosure normalization/scanning, analyst exclusion | real trigger-scoped source artifacts |
 | Frozen transcript validation | **FROZEN** | v1 audit trail and regression lessons | nothing; do not retrofit |
 | Quartr-era v2 | **PARKED** | adapter/fallback/provenance code and tests | no active work unless access situation changes |
 | Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, self-contained cache-first normalized history archive | production universe run and provider entitlement/retention verification |
 | Market trigger | **EXECUTABLE / CALIBRATION PENDING** | `market_trigger.py`, bottom-up breadth, dated v1 trigger artifact, live CLI and strict-as-of replay CLI | real historical calibration and trigger-quality assessment |
-| Causal diagnosis | **INTERIM BRIDGE** | `causal_diagnosis.py` consumes old `AccelerationSnapshot` | broader `OperatingSupport` interface for one-sided/recent evidence |
+| Causal diagnosis | **PROVIDER-INDEPENDENT BOUNDARY IMPLEMENTED** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot` | real source coverage calibration |
 | Causal graph | **CORE IMPLEMENTED** | `causal_graph.py`, evidence approval, append-only history, bounded traversal | root-shock/path orchestration and real edge evidence |
 | Pre-shock industry state | **CORE IMPLEMENTED** | `industry_state.py`, append-only snapshots, strict pre-trigger lookup | automatic state-observation derivation from public evidence |
 | Demand convergence | **CORE IMPLEMENTED** | `demand_convergence.py`, root deduplication, pre-shock constraint gate | real graph/state integration and persisted assessments |
@@ -238,18 +238,22 @@ Implementation:
 
 No LLM is required.
 
-### Phase 2 — source-agnostic operating evidence
+### Phase 2 — source-agnostic operating evidence — IN PROGRESS
 
 Goal: stop relying on transcript completeness while reusing the existing scanner.
 
 Implementation:
 
-- normalize earnings release / 8-K / 10-Q / presentation text into `SourceDocument`;
-- retain transcript path as an optional high-quality source;
-- run the existing deterministic scanner over all eligible document types;
-- add source freshness / coverage diagnostics;
-- keep analyst-question exclusion where speaker structure exists;
-- introduce one provider-independent `OperatingSupport` boundary for causal diagnosis.
+- **DONE:** normalize earnings release / 8-K / 10-Q / presentation text into `SourceDocument`;
+- **DONE:** add a cache-first, strict-`as_of` SEC submissions/archive adapter for 8-K, 10-Q,
+  10-K, and 8-K `EX-99.*` exhibits;
+- **DONE:** retain transcript path as an optional high-quality source;
+- **DONE:** run the existing deterministic scanner over all eligible document types;
+- **DONE:** add source freshness / coverage diagnostics;
+- **DONE:** keep analyst-question exclusion where speaker structure exists;
+- **DONE:** introduce one provider-independent `OperatingSupport` boundary for causal diagnosis;
+- **IN PROGRESS:** exercise SEC collection on the first real trigger-scoped company set and
+  measure non-SEC IR/presentation coverage gaps before deciding whether another adapter is needed.
 
 The existing comparable current-vs-baseline engine remains available where like-for-like windows exist. `OperatingSupport` should be an adapter/output contract, not a replacement for `AtomicSignal` or `AccelerationSnapshot`.
 

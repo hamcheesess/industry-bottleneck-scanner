@@ -14,7 +14,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Real EOD normalization | **DONE** | Massive adjusted grouped-daily adapter, validated raw date cache, normalized `DailyBar` history | execute 2024-11-01 through 2026-08-21 after universe enrichment completes |
 | Market trigger generation | **PARTIAL** | versioned dated trigger artifact, coverage diagnostics, `ibs-market-trigger` | production broad-US run and threshold calibration |
 | Market trigger replay | **DONE** | self-contained normalized archive and strict-as-of `ibs-market-trigger-replay` | real historical cases not yet calibrated |
-| Source-agnostic operating evidence | **NOT STARTED** | existing `SourceDocument` / scanner / `AtomicSignal` are reusable | release / 8-K / 10-Q / presentation adapters and `OperatingSupport` |
+| Source-agnostic operating evidence | **PARTIAL** | generic disclosure normalization/scanning, freshness/coverage, `operating-support-v1`, SEC submissions/archive adapter and CLIs | trigger-scoped live SEC run; automated non-SEC IR/presentation discovery |
 | Frozen transcript validation v1 | **LEGACY** | preserved audit/regression CLIs and artifacts | frozen; no product extension allowed |
 | Quartr transcript v2 | **LEGACY** | parked adapter/fallback/provenance experiments | `superseded_historical_only`; never a product gate |
 | Persistent industry state core | **PARTIAL** | append-only snapshots and strict `latest_before` lookup | automatic evidence-to-state updater |
