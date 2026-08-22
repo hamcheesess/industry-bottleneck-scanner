@@ -75,6 +75,12 @@ responses are cached before normalized artifacts are rebuilt. `--max-overview-re
 bounds one job; later jobs restore the cache and resume without re-requesting completed
 tickers.
 
+A per-ticker overview HTTP 400 or 404 is checkpointed as a terminal enrichment gap rather
+than aborting the broad-US run. The member remains in the canonical denominator and appears in
+`overview_error_tickers`; only its optional overview/SIC enrichment is absent. Authentication,
+entitlement, rate-limit, transport, pagination, and response-contract failures still stop the
+run instead of being silently downgraded.
+
 The GitHub bootstrap workflow runs seven sequential jobs of at most 800 uncached overview
 requests each. Each job stays below the hosted-runner timeout; the final job starts the
 market backfill only when no overview requests remain.
@@ -88,6 +94,8 @@ Every run writes:
 
 An incomplete run has `enrichment_status=enrichment_in_progress`. Completion with genuine
 provider SIC gaps is distinct: `complete_with_classification_gaps`.
+The manifest separately records `overview_error_count` and `overview_error_tickers` so provider
+reference anomalies cannot be confused with ordinary missing SIC fields.
 
 ## Snapshot provenance and replay
 

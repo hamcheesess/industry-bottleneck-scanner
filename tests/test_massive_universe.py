@@ -3,6 +3,7 @@ from datetime import date
 from urllib.parse import parse_qs, urlparse
 
 from industry_bottleneck_scanner.massive_universe import (
+    MassiveHttpError,
     MassiveReferenceClient,
     build_massive_universe,
     rows_to_csv,
@@ -146,6 +147,56 @@ def test_sic_classification_is_explicit_and_round_trips_market_universe(tmp_path
     assert snapshot.active_member_count == 1
     assert snapshot.classification_coverage_ratio == 1.0
     assert snapshot.entries[0].bucket == "SIC 3571 — Electronic Computers"
+
+
+def test_one_terminal_overview_error_is_checkpointed_without_killing_universe(tmp_path) -> None:
+    requested: list[str] = []
+
+    def transport(url: str) -> bytes:
+        requested.append(url)
+        parsed = urlparse(url)
+        if parsed.path == "/v3/reference/tickers":
+            return response(
+                {"status": "OK", "results": [ticker("AAA"), ticker("BAD"), ticker("BBB")]}
+            )
+        symbol = parsed.path.rsplit("/", 1)[-1]
+        if symbol == "BAD":
+            raise MassiveHttpError(400)
+        return response(overview(symbol))
+
+    first = build_massive_universe(
+        MassiveReferenceClient(
+            api_key="secret",
+            cache_dir=tmp_path,
+            request_interval_seconds=0,
+            transport=transport,
+        ),
+        as_of=AS_OF,
+        max_overview_requests=3,
+    )
+
+    assert first.diagnostics.pending_overview_count == 0
+    assert first.diagnostics.overview_error_count == 1
+    assert first.diagnostics.overview_error_tickers == ("BAD",)
+    assert first.diagnostics.classified_member_count == 2
+    assert first.diagnostics.enrichment_status == "complete_with_classification_gaps"
+    assert first.diagnostics.provider_requests == 4
+
+    def no_transport(url: str) -> bytes:
+        raise AssertionError(f"terminal errors and successful responses must be cached: {url}")
+
+    second = build_massive_universe(
+        MassiveReferenceClient(
+            api_key="secret",
+            cache_dir=tmp_path,
+            request_interval_seconds=0,
+            transport=no_transport,
+        ),
+        as_of=AS_OF,
+        max_overview_requests=0,
+    )
+    assert second.diagnostics.overview_error_tickers == ("BAD",)
+    assert second.diagnostics.provider_requests == 0
 
 
 def test_manifest_records_checkpoint_status_and_normalized_fingerprint(tmp_path) -> None:

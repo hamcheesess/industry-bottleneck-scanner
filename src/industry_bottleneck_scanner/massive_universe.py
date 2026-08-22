@@ -68,6 +68,8 @@ class MassiveUniverseDiagnostics:
     classified_member_count: int
     unclassified_member_count: int
     pending_overview_count: int
+    overview_error_count: int
+    overview_error_tickers: tuple[str, ...]
     provider_requests: int
     cache_hits: int
     enrichment_status: str
@@ -81,6 +83,12 @@ class MassiveUniverseDiagnostics:
 class MassiveUniverseBuild:
     rows: tuple[dict[str, str], ...]
     diagnostics: MassiveUniverseDiagnostics
+
+
+class MassiveHttpError(MarketDataError):
+    def __init__(self, status_code: int):
+        super().__init__(f"Massive HTTP {status_code}")
+        self.status_code = status_code
 
 
 def _optional_string(value: object) -> str | None:
@@ -179,7 +187,7 @@ class MassiveReferenceClient:
             with urlopen(url, timeout=60) as response:  # noqa: S310 - fixed provider host
                 return response.read()
         except HTTPError as exc:
-            raise MarketDataError(f"Massive HTTP {exc.code}") from exc
+            raise MassiveHttpError(exc.code) from exc
 
     def _request(self, url: str) -> bytes:
         parsed = urlparse(url)
@@ -193,8 +201,8 @@ class MassiveReferenceClient:
             if elapsed < self._request_interval_seconds:
                 time.sleep(self._request_interval_seconds - elapsed)
         try:
-            raw = self._transport(authenticated_url)
             self.provider_requests += 1
+            raw = self._transport(authenticated_url)
             return raw
         finally:
             self._last_request_at = time.monotonic()
@@ -298,6 +306,43 @@ class MassiveReferenceClient:
     def has_cached_overview(self, ticker: str, *, as_of: date) -> bool:
         return self._overview_cache_path(ticker, as_of=as_of).exists()
 
+    def _overview_error_path(self, ticker: str, *, as_of: date) -> Path:
+        return self._overview_cache_path(ticker, as_of=as_of).with_suffix(".error.json")
+
+    def cached_overview_error(self, ticker: str, *, as_of: date) -> int | None:
+        path = self._overview_error_path(ticker, as_of=as_of)
+        if not path.exists():
+            return None
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise MarketDataError(f"invalid cached Massive overview error for {ticker}") from exc
+        if (
+            not isinstance(payload, dict)
+            or payload.get("schema_version") != "massive-overview-terminal-error-v1"
+            or normalize_ticker(str(payload.get("ticker") or "")) != normalize_ticker(ticker)
+            or payload.get("http_status") not in {400, 404}
+        ):
+            raise MarketDataError(f"invalid cached Massive overview error for {ticker}")
+        return int(payload["http_status"])
+
+    def record_overview_error(self, ticker: str, *, as_of: date, status_code: int) -> None:
+        if status_code not in {400, 404}:
+            raise ValueError("only terminal per-ticker Massive errors may be checkpointed")
+        _atomic_write(
+            self._overview_error_path(ticker, as_of=as_of),
+            json.dumps(
+                {
+                    "schema_version": "massive-overview-terminal-error-v1",
+                    "ticker": normalize_ticker(ticker),
+                    "as_of": as_of.isoformat(),
+                    "http_status": status_code,
+                },
+                sort_keys=True,
+            )
+            + "\n",
+        )
+
     def fetch_overview(self, ticker: str, *, as_of: date) -> MassiveTickerOverview:
         normalized_ticker = normalize_ticker(ticker)
         encoded_ticker = urlencode({"ticker": normalized_ticker}).split("=", 1)[1]
@@ -377,15 +422,30 @@ def build_massive_universe(
     canonical = tuple(sorted(filter(_is_canonical_reference, references), key=lambda item: item.ticker))
     rows: list[dict[str, str]] = []
     pending = 0
+    overview_errors: list[str] = []
     overview_requests = 0
     for reference in canonical:
         cached = client.has_cached_overview(reference.ticker, as_of=as_of)
+        terminal_error = client.cached_overview_error(reference.ticker, as_of=as_of)
         overview: MassiveTickerOverview | None = None
-        if cached or overview_requests < max_overview_requests:
+        if terminal_error is not None:
+            overview_errors.append(reference.ticker)
+        elif cached or overview_requests < max_overview_requests:
             before = client.provider_requests
-            overview = client.fetch_overview(reference.ticker, as_of=as_of)
-            if client.provider_requests > before:
-                overview_requests += 1
+            try:
+                overview = client.fetch_overview(reference.ticker, as_of=as_of)
+            except MassiveHttpError as exc:
+                if exc.status_code not in {400, 404}:
+                    raise
+                client.record_overview_error(
+                    reference.ticker,
+                    as_of=as_of,
+                    status_code=exc.status_code,
+                )
+                overview_errors.append(reference.ticker)
+            finally:
+                if client.provider_requests > before:
+                    overview_requests += 1
         else:
             pending += 1
         rows.append(_row(reference, overview))
@@ -393,7 +453,7 @@ def build_massive_universe(
     classified = sum(bool(row["sector"] and row["bucket"]) for row in rows)
     if pending:
         status = "enrichment_in_progress"
-    elif classified == len(rows):
+    elif classified == len(rows) and not overview_errors:
         status = "complete"
     else:
         status = "complete_with_classification_gaps"
@@ -405,6 +465,8 @@ def build_massive_universe(
             classified_member_count=classified,
             unclassified_member_count=len(rows) - classified,
             pending_overview_count=pending,
+            overview_error_count=len(overview_errors),
+            overview_error_tickers=tuple(sorted(overview_errors)),
             provider_requests=client.provider_requests,
             cache_hits=client.cache_hits,
             enrichment_status=status,

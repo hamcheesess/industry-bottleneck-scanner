@@ -111,6 +111,7 @@ jobs:
               output.write(f"status={diagnostics['enrichment_status']}\n")
               output.write(f"pending={diagnostics['pending_overview_count']}\n")
               output.write(f"classified={diagnostics['classified_member_count']}\n")
+              output.write(f"overview_errors={diagnostics['overview_error_count']}\n")
           PY
 
       - name: Save Massive reference checkpoint
@@ -178,5 +179,6 @@ jobs:
             echo "- universe status: ${{ steps.checkpoint.outputs.status }}"
             echo "- pending overview requests: ${{ steps.checkpoint.outputs.pending }}"
             echo "- classified members: ${{ steps.checkpoint.outputs.classified }}"
+            echo "- terminal per-ticker overview errors: ${{ steps.checkpoint.outputs.overview_errors }}"
             echo "- market backfill start: 2024-11-01"
           } >> "$GITHUB_STEP_SUMMARY"
