@@ -5,6 +5,11 @@ development order remain canonical in [`current_roadmap.md`](current_roadmap.md)
 
 ## Dated market universe input
 
+The canonical production ID is `broad_us_common_stocks_v1`. The initial adapter generates
+it from a dated Massive active-U.S.-common-stock reference snapshot and SEC SIC enrichment.
+Provider response schemas stop at `massive_universe.py`; the CSV remains the stable market
+input contract.
+
 `ibs-market-trigger` accepts a CSV extending the existing broad-US universe identity
 contract. Required columns are:
 
@@ -35,6 +40,11 @@ symbols with fewer than the minimum required observations are explicit coverage 
 
 The initial backfill is quota-sensitive. The CLI defaults to a 13-second interval between
 uncached requests; incremental runs reuse cache entries.
+
+The free-plan MVP freezes the first production snapshot and market cutoff at `2026-08-21`
+and backfills price/volume from `2024-11-01`. This does not authorize replay before the
+universe snapshot date; historical calibration requires separately dated membership
+snapshots at or before each replay cutoff.
 
 ## Normalized history archive
 

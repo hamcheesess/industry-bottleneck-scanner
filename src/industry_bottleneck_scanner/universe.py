@@ -7,7 +7,7 @@ from datetime import date
 from io import StringIO
 from typing import Iterable, Mapping
 
-CANONICAL_UNIVERSE_ID = "russell_3000"
+CANONICAL_UNIVERSE_ID = "broad_us_common_stocks_v1"
 
 
 def normalize_ticker(value: str) -> str:

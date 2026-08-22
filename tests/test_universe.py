@@ -43,7 +43,11 @@ def test_builds_snapshot_and_tracks_sec_resolution() -> None:
     apple = snapshot.members[0]
     assert apple.cik == "0000320193"
     assert apple.issuer_id == "cik-0000320193"
-    assert apple.memberships == ("russell_3000", "sp500", "nasdaq100")
+    assert apple.memberships == (
+        "broad_us_common_stocks_v1",
+        "sp500",
+        "nasdaq100",
+    )
 
 
 def test_preserves_multiple_share_classes_for_one_issuer() -> None:

@@ -102,6 +102,7 @@ See [`docs/v2_validation_contract_draft.md`](docs/v2_validation_contract_draft.m
 
 Current provider-independent core:
 
+- `massive_universe.py` — cache-first dated common-stock membership and SIC enrichment;
 - `market_universe.py` — dated identity/classification join with explicit classification coverage;
 - `eod_market_data.py` — cache-first Massive grouped-daily normalization into the existing daily-bar contract;
 - `market_history.py` — adjusted daily-bar features with explicit `as_of` safety;
@@ -136,8 +137,8 @@ Repo A does **not** own full financial underwriting, DCF, final valuation, or fi
 
 Architecture consolidation / legacy-boundary work is **complete**. The active sequence is now:
 
-1. connect a free/low-cost EOD adjusted-price source;
-2. generate real broad-US bottom-up Market Trigger artifacts;
+1. bootstrap `broad_us_common_stocks_v1` from Massive reference data;
+2. generate real broad-US bottom-up Market Trigger artifacts from 2024-11-01 onward;
 3. ingest earnings releases / SEC filings / presentations into existing evidence contracts;
 4. add provider-independent operating-support and industry-state update jobs;
 5. persist root-demand-shock/path artifacts and integrate the existing causal graph/convergence cores;
@@ -156,19 +157,34 @@ Install the package in editable mode:
 pip install -e .
 ```
 
-Run the current Phase-1 market path with a dated CSV containing at least `ticker`,
-`company_name`, `sector`, and `bucket`. `IWB` is used only as the broad-market benchmark;
-company membership, not an ETF, defines each industry bucket.
+Build or resume the dated canonical universe. The default pacing is compatible with the
+Massive Stocks Basic five-calls-per-minute limit. Validated raw responses are checkpointed;
+rerunning the command continues with uncached tickers.
+
+```bash
+export MASSIVE_API_KEY="..."
+ibs-massive-universe \
+  --as-of 2026-08-21 \
+  --cache-dir var/cache/massive-reference \
+  --output-csv var/universe/as_of=2026-08-21/market_universe.csv \
+  --manifest var/universe/as_of=2026-08-21/manifest.json \
+  --max-overview-requests 1000
+```
+
+Once the manifest has no pending overview requests, run the Phase-1 market path. `IWB` is
+used only as the broad-market benchmark; company membership, not an ETF, defines each
+industry bucket.
 
 ```bash
 export MASSIVE_API_KEY="..."
 ibs-market-trigger \
-  --universe-csv data/market_universe.csv \
-  --universe-as-of 2026-06-30 \
-  --universe-source "licensed membership snapshot 2026-Q2" \
+  --universe-csv var/universe/as_of=2026-08-21/market_universe.csv \
+  --universe-as-of 2026-08-21 \
+  --universe-source "Massive reference v3 dated snapshot" \
   --as-of 2026-08-21 \
+  --start-date 2024-11-01 \
   --benchmark IWB \
-  --cache-dir data/cache/massive-grouped-daily \
+  --cache-dir var/cache/massive-grouped-daily \
   --output-dir artifacts/market-trigger \
   --request-interval-seconds 13
 ```

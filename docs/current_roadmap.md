@@ -224,13 +224,17 @@ Goal: generate real bottom-up market triggers from broad-US end-of-day history.
 
 Implementation:
 
+- **DONE:** adopt `broad_us_common_stocks_v1` instead of licensed Russell 3000 membership;
+- **DONE:** add a cache-first Massive reference adapter for dated common-stock membership,
+  CIK/FIGI identity, explicit SEC-SIC classification, and free-plan batch resume;
 - **DONE:** connect Massive grouped-daily adjusted US-stock bars through a cache-first adapter to `market_history.py`;
 - map universe companies into sector / industry / economic-subcluster buckets;
 - **DONE:** compute market-relative and bottom-up sector-relative breadth;
 - **DONE:** persist normalized history plus dated, versioned `IndustryMarketTrigger` artifacts with explicit coverage diagnostics;
 - **DONE:** enforce strict `as_of` in feature calculation and dated artifact paths;
 - **DONE:** preserve dated universe provenance/classification gaps and support provider-free strict-as-of replay from normalized history;
-- **PENDING:** run a production broad-US membership/classification snapshot and calibrate thresholds through historical trigger replay.
+- **IN PROGRESS:** enrich the frozen `2026-08-21` production snapshot, backfill from
+  `2024-11-01`, and calibrate thresholds through valid dated historical trigger replay.
 
 No LLM is required.
 

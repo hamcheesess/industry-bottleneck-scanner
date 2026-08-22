@@ -10,6 +10,7 @@ from .market_history import build_market_snapshots
 from .market_trigger import MarketTriggerPolicy, rank_market_buckets
 from .market_trigger_artifacts import write_market_history_jsonl, write_market_trigger_artifact
 from .market_universe import load_market_universe_csv
+from .universe import CANONICAL_UNIVERSE_ID
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -17,7 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--universe-csv", type=Path, required=True)
     parser.add_argument("--universe-as-of", type=date.fromisoformat, required=True)
     parser.add_argument("--universe-source", required=True)
-    parser.add_argument("--universe-id", default="russell_3000")
+    parser.add_argument("--universe-id", default=CANONICAL_UNIVERSE_ID)
     parser.add_argument("--as-of", type=date.fromisoformat, required=True)
     parser.add_argument("--start-date", type=date.fromisoformat)
     parser.add_argument("--benchmark", default="IWB")

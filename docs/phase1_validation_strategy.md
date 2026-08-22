@@ -41,7 +41,9 @@ IWV holdings expose sector but not granular industry classification in the publi
 
 Because the public proxy classification is sector-only, the resulting blind proxy experiment must use `aggregation_level=sector`. The plan writes `recommended_aggregation_level=sector`. Production industry-level discovery remains unchanged and must use a source with genuine industry classifications.
 
-Production discovery remains tied to the canonical Russell 3000 universe contract. Passing Phase 1 with the validation proxy does not authorize proxy holdings as the production universe.
+Production discovery now uses the separately approved `broad_us_common_stocks_v1` contract.
+Passing historical Phase-1 transcript validation with the IWV proxy does not authorize ETF
+holdings as production membership.
 
 ## Trigger-reachable blind cohort
 

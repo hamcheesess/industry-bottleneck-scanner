@@ -9,9 +9,9 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Product layer | Status | Executable boundary | Current gap |
 |---|---:|---|---|
 | Architecture consolidation | **DONE** | canonical roadmap, architecture and compatibility regression rules | none |
-| Broad-US identity snapshot | **DONE** | dated `UniverseSnapshot`, issuer/security IDs and explicit unresolved identities | production membership refresh policy remains future cadence work |
-| Market classification snapshot | **DONE** | dated `MarketUniverseSnapshot`, bottom-up sector/bucket membership and explicit unclassified denominator | production classification snapshot still needs to be supplied |
-| Real EOD normalization | **DONE** | Massive adjusted grouped-daily adapter, validated raw date cache, normalized `DailyBar` history | live backfill requires provider credentials and entitlement verification |
+| Broad-US identity snapshot | **PARTIAL** | dated `UniverseSnapshot`; Massive active-common-stock adapter; CIK/FIGI identity; batch checkpoint | first production enrichment run is in progress; refresh cadence remains future work |
+| Market classification snapshot | **PARTIAL** | SEC-SIC division/bucket mapping and explicit unclassified denominator | measure provider SIC gaps in the first production run |
+| Real EOD normalization | **DONE** | Massive adjusted grouped-daily adapter, validated raw date cache, normalized `DailyBar` history | execute 2024-11-01 through 2026-08-21 after universe enrichment completes |
 | Market trigger generation | **PARTIAL** | versioned dated trigger artifact, coverage diagnostics, `ibs-market-trigger` | production broad-US run and threshold calibration |
 | Market trigger replay | **DONE** | self-contained normalized archive and strict-as-of `ibs-market-trigger-replay` | real historical cases not yet calibrated |
 | Source-agnostic operating evidence | **NOT STARTED** | existing `SourceDocument` / scanner / `AtomicSignal` are reusable | release / 8-K / 10-Q / presentation adapters and `OperatingSupport` |
@@ -25,7 +25,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Repo A thesis manifest | **NOT STARTED** | conceptual Repo A/Repo B boundary only | freeze only after node-level historical replay succeeds |
 | Production cadence | **NOT STARTED** | none | begin only after replay and handoff stability |
 
-The immediate blocker to closing Phase 1 is not a code dependency: it is a real dated
-broad-US membership/classification input plus Massive API credentials for the initial
-adjusted-history backfill. Phase 2 must not redefine Phase 1 outputs or bypass that
-calibration requirement.
+The user approved `broad_us_common_stocks_v1`, supplied the Massive repository secret, and
+accepted `2024-11-01` as the earliest MVP research date. The current Phase-1 execution gate
+is the checkpointed production universe enrichment followed by the adjusted-history
+backfill. Phase 2 must not redefine Phase 1 outputs or bypass calibration.
