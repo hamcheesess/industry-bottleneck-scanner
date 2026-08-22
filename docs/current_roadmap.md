@@ -155,13 +155,13 @@ This is the code status after architecture consolidation.
 
 | Layer | Current status | Reused / implemented pieces | Missing before real execution |
 |---|---|---|---|
-| Universe / identity | **REUSE** | dated broad-US universe contracts, issuer/security identity | production-quality current universe refresh path later |
+| Universe / identity | **REUSE + MARKET JOIN IMPLEMENTED** | dated broad-US universe contracts, issuer/security identity, dated sector/bucket classification join with explicit unclassified denominator | production membership/classification snapshot and refresh path |
 | Transcript evidence | **REUSE OPTIONAL** | Alpha Vantage adapter, cache, transcript normalization, analyst exclusion | no universal transcript fallback required |
 | Operating scanner | **KEEP** | `SourceDocument`, `AtomicSignal`, four scanners, adjudication, aggregation | source-agnostic non-transcript document adapters |
 | Frozen transcript validation | **FROZEN** | v1 audit trail and regression lessons | nothing; do not retrofit |
 | Quartr-era v2 | **PARKED** | adapter/fallback/provenance code and tests | no active work unless access situation changes |
-| Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, cache-first persisted normalized history | production universe run and provider entitlement/retention verification |
-| Market trigger | **EXECUTABLE / CALIBRATION PENDING** | `market_trigger.py`, bottom-up breadth, dated v1 trigger artifact and CLI | historical calibration and trigger-quality replay |
+| Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, self-contained cache-first normalized history archive | production universe run and provider entitlement/retention verification |
+| Market trigger | **EXECUTABLE / CALIBRATION PENDING** | `market_trigger.py`, bottom-up breadth, dated v1 trigger artifact, live CLI and strict-as-of replay CLI | real historical calibration and trigger-quality assessment |
 | Causal diagnosis | **INTERIM BRIDGE** | `causal_diagnosis.py` consumes old `AccelerationSnapshot` | broader `OperatingSupport` interface for one-sided/recent evidence |
 | Causal graph | **CORE IMPLEMENTED** | `causal_graph.py`, evidence approval, append-only history, bounded traversal | root-shock/path orchestration and real edge evidence |
 | Pre-shock industry state | **CORE IMPLEMENTED** | `industry_state.py`, append-only snapshots, strict pre-trigger lookup | automatic state-observation derivation from public evidence |
@@ -229,6 +229,7 @@ Implementation:
 - **DONE:** compute market-relative and bottom-up sector-relative breadth;
 - **DONE:** persist normalized history plus dated, versioned `IndustryMarketTrigger` artifacts with explicit coverage diagnostics;
 - **DONE:** enforce strict `as_of` in feature calculation and dated artifact paths;
+- **DONE:** preserve dated universe provenance/classification gaps and support provider-free strict-as-of replay from normalized history;
 - **PENDING:** run a production broad-US membership/classification snapshot and calibrate thresholds through historical trigger replay.
 
 No LLM is required.

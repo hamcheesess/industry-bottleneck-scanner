@@ -102,6 +102,7 @@ See [`docs/v2_validation_contract_draft.md`](docs/v2_validation_contract_draft.m
 
 Current provider-independent core:
 
+- `market_universe.py` — dated identity/classification join with explicit classification coverage;
 - `eod_market_data.py` — cache-first Massive grouped-daily normalization into the existing daily-bar contract;
 - `market_history.py` — adjusted daily-bar features with explicit `as_of` safety;
 - `market_trigger.py` — bottom-up industry/economic-bucket breadth trigger;
@@ -155,14 +156,16 @@ Install the package in editable mode:
 pip install -e .
 ```
 
-Run the current Phase-1 market path with a dated CSV containing `ticker`, `sector`, and
-`bucket` columns. `IWB` is used only as the broad-market benchmark; company membership,
-not an ETF, defines each industry bucket.
+Run the current Phase-1 market path with a dated CSV containing at least `ticker`,
+`company_name`, `sector`, and `bucket`. `IWB` is used only as the broad-market benchmark;
+company membership, not an ETF, defines each industry bucket.
 
 ```bash
 export MASSIVE_API_KEY="..."
 ibs-market-trigger \
   --universe-csv data/market_universe.csv \
+  --universe-as-of 2026-06-30 \
+  --universe-source "licensed membership snapshot 2026-Q2" \
   --as-of 2026-08-21 \
   --benchmark IWB \
   --cache-dir data/cache/massive-grouped-daily \
@@ -174,6 +177,15 @@ The initial backfill is provider-quota-sensitive. Raw daily responses are cached
 so normal incremental EOD runs fetch only uncached dates. Outputs are written below an
 `as_of=YYYY-MM-DD` directory and include explicit missing/insufficient-history coverage;
 the cohort is never silently shrunk.
+
+Replay the persisted normalized history without calling the provider:
+
+```bash
+ibs-market-trigger-replay \
+  --history-jsonl artifacts/market-trigger/as_of=2026-08-21/market_history.jsonl \
+  --as-of 2026-06-30 \
+  --output artifacts/market-trigger/replay-2026-06-30.json
+```
 
 Legacy bounded transcript workflows remain available for regression/audit work:
 
@@ -188,4 +200,4 @@ ibs-review-language
 
 They should not be interpreted as the top-level current product workflow.
 
-See also [`docs/architecture.md`](docs/architecture.md), [`docs/current_roadmap.md`](docs/current_roadmap.md), [`docs/implementation_compatibility.md`](docs/implementation_compatibility.md), [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md), and [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md).
+See also [`docs/architecture.md`](docs/architecture.md), [`docs/current_roadmap.md`](docs/current_roadmap.md), [`docs/implementation_status.md`](docs/implementation_status.md), [`docs/implementation_compatibility.md`](docs/implementation_compatibility.md), [`docs/market_trigger_contract.md`](docs/market_trigger_contract.md), [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md), and [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md).

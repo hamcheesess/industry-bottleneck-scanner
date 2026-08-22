@@ -1,42 +1,23 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import os
 from datetime import date, timedelta
 from pathlib import Path
 
-from .eod_market_data import (
-    MarketUniverseEntry,
-    MassiveGroupedDailyClient,
-    collect_grouped_market_history,
-)
+from .eod_market_data import MassiveGroupedDailyClient, collect_grouped_market_history
 from .market_history import build_market_snapshots
 from .market_trigger import MarketTriggerPolicy, rank_market_buckets
 from .market_trigger_artifacts import write_market_history_jsonl, write_market_trigger_artifact
-
-
-def _entries(path: Path) -> tuple[MarketUniverseEntry, ...]:
-    with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle)
-        required = {"ticker", "sector", "bucket"}
-        missing = required - set(reader.fieldnames or ())
-        if missing:
-            raise ValueError(f"market universe CSV missing required columns: {sorted(missing)}")
-        return tuple(
-            MarketUniverseEntry(
-                ticker=row["ticker"].strip().upper().replace(".", "-"),
-                sector=row["sector"].strip(),
-                bucket=row["bucket"].strip(),
-            )
-            for row in reader
-            if row.get("active", "true").strip().casefold() not in {"0", "false", "no", "inactive"}
-        )
+from .market_universe import load_market_universe_csv
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate bottom-up broad-US market triggers")
     parser.add_argument("--universe-csv", type=Path, required=True)
+    parser.add_argument("--universe-as-of", type=date.fromisoformat, required=True)
+    parser.add_argument("--universe-source", required=True)
+    parser.add_argument("--universe-id", default="russell_3000")
     parser.add_argument("--as-of", type=date.fromisoformat, required=True)
     parser.add_argument("--start-date", type=date.fromisoformat)
     parser.add_argument("--benchmark", default="IWB")
@@ -53,13 +34,21 @@ def main(argv: list[str] | None = None) -> int:
     if not api_key:
         raise SystemExit(f"missing API key environment variable: {args.api_key_env}")
     start = args.start_date or args.as_of - timedelta(days=400)
+    universe = load_market_universe_csv(
+        args.universe_csv.read_text(encoding="utf-8"),
+        as_of=args.universe_as_of,
+        source=args.universe_source,
+        universe_id=args.universe_id,
+    )
+    if universe.as_of > args.as_of:
+        raise SystemExit("universe-as-of cannot be later than market as-of")
     client = MassiveGroupedDailyClient(
         api_key=api_key,
         cache_dir=args.cache_dir,
         request_interval_seconds=args.request_interval_seconds,
     )
     collected = collect_grouped_market_history(
-        _entries(args.universe_csv),
+        universe.entries,
         benchmark_ticker=args.benchmark,
         start=start,
         as_of=args.as_of,
@@ -73,7 +62,16 @@ def main(argv: list[str] | None = None) -> int:
     policy = MarketTriggerPolicy()
     triggers = rank_market_buckets(snapshots, policy=policy)
     dated = args.output_dir / f"as_of={args.as_of.isoformat()}"
-    write_market_history_jsonl(dated / "market_history.jsonl", collected.histories)
+    write_market_history_jsonl(
+        dated / "market_history.jsonl",
+        collected.histories,
+        as_of=args.as_of,
+        source="massive_grouped_daily_adjusted",
+        benchmark_ticker=args.benchmark,
+        benchmark_bars=collected.benchmark_bars,
+        diagnostics=collected.diagnostics,
+        universe=universe,
+    )
     write_market_trigger_artifact(
         dated / "industry_market_triggers.json",
         as_of=args.as_of,
@@ -82,6 +80,7 @@ def main(argv: list[str] | None = None) -> int:
         triggers=triggers,
         policy=policy,
         diagnostics=collected.diagnostics,
+        universe=universe,
     )
     return 0
 

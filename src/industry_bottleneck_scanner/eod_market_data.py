@@ -12,21 +12,11 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 from .market_history import DailyBar, MIN_REQUIRED_TRADING_DAYS, TickerMarketHistory
+from .market_universe import MarketUniverseEntry
 
 
 class MarketDataError(RuntimeError):
     """A provider or normalized market-history collection failure."""
-
-
-@dataclass(frozen=True)
-class MarketUniverseEntry:
-    ticker: str
-    sector: str
-    bucket: str
-
-    def __post_init__(self) -> None:
-        if not self.ticker.strip() or not self.sector.strip() or not self.bucket.strip():
-            raise ValueError("ticker, sector, and bucket are required")
 
 
 @dataclass(frozen=True)
