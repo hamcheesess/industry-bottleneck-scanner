@@ -114,6 +114,7 @@ Current provider-independent core:
 - `causal_diagnosis.py` — market trigger + operating-support diagnosis;
 - `causal_expansion.py` — pre-news research-priority scoring and gates;
 - `causal_graph.py` — append-only evidence-backed dependency edges;
+- `root_demand_shock.py` / `causal_orchestration.py` — evidence-gated roots and as-of path/convergence artifacts;
 - `industry_state.py` — append-only pre-shock supply-state memory;
 - `industry_state_updater.py` — explicit issuer-to-node mapping plus evidence-diverse state updates;
 - `demand_convergence.py` — new-shock x pre-shock constraint x independent-root convergence.
@@ -237,6 +238,24 @@ ibs-industry-state-update \
 ```
 
 See [`docs/industry_state_update_contract.md`](docs/industry_state_update_contract.md).
+
+Record an evidence-gated Root Demand Shock and traverse approved graph/state history:
+
+```bash
+ibs-root-shock-append \
+  --input artifacts/causal/root_shock_input.json \
+  --registry artifacts/causal/root_shocks.jsonl
+
+ibs-causal-convergence \
+  --root-shock-registry artifacts/causal/root_shocks.jsonl \
+  --causal-graph-registry artifacts/causal/graph.jsonl \
+  --industry-state-registry artifacts/industry/industry_state.jsonl \
+  --trigger-root-shock-id ai-inference-deployment-2026q3 \
+  --as-of 2026-08-21T23:59:59+00:00 \
+  --output-dir artifacts/causal/convergence
+```
+
+See [`docs/causal_convergence_contract.md`](docs/causal_convergence_contract.md).
 
 Legacy bounded transcript workflows remain available for regression/audit work:
 

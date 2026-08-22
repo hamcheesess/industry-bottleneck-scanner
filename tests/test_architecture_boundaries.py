@@ -14,7 +14,9 @@ ACTIVE_CAUSAL_MODULES = (
     "causal_diagnosis.py",
     "causal_expansion.py",
     "causal_graph.py",
+    "causal_orchestration.py",
     "industry_state.py",
+    "root_demand_shock.py",
     "demand_convergence.py",
 )
 

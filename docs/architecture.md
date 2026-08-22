@@ -189,6 +189,7 @@ A two-month-old earnings call may be strong pre-news evidence. It must not be mi
 - `industry_state.py` — append-only pre-shock node-state memory;
 - `industry_state_updater.py` — explicit node mapping and evidence-diverse state observations;
 - `demand_convergence.py` — new-shock x pre-shock constraint x independent-root convergence.
+- `root_demand_shock.py` / `causal_orchestration.py` — append-only root approvals and as-of path/convergence composition.
 
 `causal_diagnosis.py` still accepts the older `AccelerationSnapshot` interface for compatibility,
 but the active path now consumes `OperatingSupport`. It can therefore classify fresh one-sided

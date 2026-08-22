@@ -163,9 +163,9 @@ This is the code status after architecture consolidation.
 | Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, self-contained cache-first normalized history archive | production universe run and provider entitlement/retention verification |
 | Market trigger | **EXECUTABLE / CALIBRATION PENDING** | `market_trigger.py`, bottom-up breadth, dated v1 trigger artifact, live CLI and strict-as-of replay CLI | real historical calibration and trigger-quality assessment |
 | Causal diagnosis | **PROVIDER-INDEPENDENT BOUNDARY IMPLEMENTED** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot` | real source coverage calibration |
-| Causal graph | **CORE IMPLEMENTED** | `causal_graph.py`, evidence approval, append-only history, bounded traversal | root-shock/path orchestration and real edge evidence |
+| Causal graph | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | edge approval/history, append-only Root Demand Shock approval, bounded path expansion, `DemandBranch` artifacts | real root/edge evidence |
 | Pre-shock industry state | **UPDATER EXECUTABLE / REAL EVIDENCE PENDING** | append-only snapshots, strict pre-trigger lookup, explicit company-to-node assignments, AtomicSignal/external observation updater, diversity gate | real node assignments and physical/industry observations |
-| Demand convergence | **CORE IMPLEMENTED** | `demand_convergence.py`, root deduplication, pre-shock constraint gate | real graph/state integration and persisted assessments |
+| Demand convergence | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | root deduplication, strict pre-shock constraint join, versioned convergence artifacts | real graph/state integration and replay calibration |
 | Pre-news node ranking | **CORE IMPLEMENTED** | `causal_expansion.py`, six dimensions + hard gates | real-data scoring policy validation |
 | Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
 | Repo-A -> Repo-B manifest | **NOT FROZEN** | conceptual boundary only | implement only after upstream historical replay works |
@@ -272,20 +272,21 @@ Implementation:
 - **IN PROGRESS:** supply real node assignments and public physical/industry observations;
 - add decay/staleness rules later only after replay evidence justifies them.
 
-### Phase 4 — causal graph and demand convergence integration
+### Phase 4 — causal graph and demand convergence integration — IN PROGRESS
 
 Goal: find the points where branches become a common constrained trunk.
 
 Implementation:
 
-- persist explicit root-demand-shock artifacts;
-- use the existing append-only approved graph-edge store;
-- traverse depth-bounded, cycle-safe paths;
-- convert paths to `DemandBranch` artifacts;
-- deduplicate paths sharing one root shock;
-- join each target node with the latest strictly pre-trigger state;
-- rank `pre_shock_bottleneck`, `multi_branch_convergence`, and `priority_convergence`;
-- feed promoted nodes into the existing pre-news node assessment.
+- **DONE:** persist explicit, evidence-gated root-demand-shock revisions;
+- **DONE:** use the existing append-only approved graph-edge store at an exact `as_of`;
+- **DONE:** traverse depth-bounded, cycle-safe paths;
+- **DONE:** convert paths to stable `DemandBranch` artifacts;
+- **DONE:** deduplicate paths sharing one root shock for convergence breadth;
+- **DONE:** join each target node with the latest strictly pre-trigger state;
+- **DONE:** rank `pre_shock_bottleneck`, `multi_branch_convergence`, and `priority_convergence`;
+- **IN PROGRESS:** feed real promoted nodes into the existing pre-news node assessment and
+  calibrate using the frozen historical replay.
 
 ### Phase 5 — historical pre-news replay
 

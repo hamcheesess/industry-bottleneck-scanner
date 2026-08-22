@@ -35,6 +35,7 @@ This document prevents the architecture pivot from turning into a rewrite. It de
 | Causal diagnosis | `causal_diagnosis.py` | ACTIVE | joins market trigger with provider-independent `OperatingSupport`; legacy acceleration input remains compatible |
 | Causal node ranking | `causal_expansion.py` | ACTIVE | pre-news research-priority dimensions and hard gates |
 | Causal graph | `causal_graph.py` | ACTIVE | append-only approved economic dependency edges and bounded traversal |
+| Root shock / path orchestration | `root_demand_shock.py`, `causal_orchestration.py` | ACTIVE | append-only shock approval, as-of graph composition, `DemandBranch` and convergence artifacts |
 | Industry state | `industry_state.py` | ACTIVE | append-only pre-shock supply-state memory |
 | Industry-state updater | `industry_state_updater.py`, `industry_state_update_cli.py` | ACTIVE | explicit economic-node assignments, deterministic AtomicSignal mapping, external observations, evidence/source-diversity gate |
 | Demand convergence | `demand_convergence.py` | ACTIVE | new-shock x pre-shock constraint x independent-root convergence |
@@ -129,6 +130,9 @@ Do not silently replace GICS-like grouping with hand-written causal nodes in the
 Causal graph approvals and industry-state snapshots should preserve history. Historical replay must retrieve what was known at an earlier `as_of`, not reconstruct the past from today's latest state.
 
 Future root-demand-shock, expectation-gap, convergence, and company-exposure artifacts should follow the same rule when historical validation begins.
+
+Root-demand-shock, branch, and convergence artifacts now follow this append-only/as-of rule.
+Expectation-gap and company-exposure artifacts remain future work.
 
 ### 9. Repo B remains isolated
 
