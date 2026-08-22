@@ -6,7 +6,7 @@ The active architecture starts from observable market anomalies, checks whether 
 
 The system does **not** try to predict every quiet industry before the market reacts, does not require complete earnings-call transcript coverage, and does not treat a lagging stock as automatically cheap.
 
-The canonical roadmap is [`docs/current_roadmap.md`](docs/current_roadmap.md). The module migration/compatibility rules are [`docs/implementation_compatibility.md`](docs/implementation_compatibility.md).
+Architecture consolidation is complete. The single source of truth is [`docs/current_roadmap.md`](docs/current_roadmap.md); module ownership and compatibility rules are in [`docs/implementation_compatibility.md`](docs/implementation_compatibility.md). If an older design document conflicts with those files, the current roadmap wins.
 
 ## Canonical discovery universe
 
@@ -131,15 +131,19 @@ Repo A does **not** own full financial underwriting, DCF, final valuation, or fi
 
 ## Current development sequence
 
-1. consolidate the active architecture and legacy boundaries;
-2. connect free/low-cost EOD adjusted price history;
-3. generate real bottom-up market triggers;
-4. ingest source-agnostic public disclosures into the existing evidence contracts;
-5. update persistent industry-state snapshots;
-6. persist root-demand shocks and approved causal paths;
-7. replay an early AI-cycle case with frozen `as_of` timestamps and later confirmation held out;
-8. map listed-company exposure;
-9. freeze the Repo-A -> Repo-B thesis manifest only after upstream validation.
+Architecture consolidation / legacy-boundary work is **complete**. The active sequence is now:
+
+1. connect a free/low-cost EOD adjusted-price source;
+2. generate real broad-US bottom-up Market Trigger artifacts;
+3. ingest earnings releases / SEC filings / presentations into existing evidence contracts;
+4. add provider-independent operating-support and industry-state update jobs;
+5. persist root-demand-shock/path artifacts and integrate the existing causal graph/convergence cores;
+6. replay an early AI-cycle case with frozen `as_of` timestamps and later confirmation held out;
+7. map listed-company exposure;
+8. freeze the Repo-A -> Repo-B thesis manifest only after upstream validation;
+9. add production cadence only after the replay and handoff boundary are stable.
+
+Do not extend the frozen transcript `validation_*` workflow into the new end-to-end product path. The new historical replay will get a separate orchestration/validation entry point.
 
 ## Commands
 
