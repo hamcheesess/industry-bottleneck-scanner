@@ -43,6 +43,14 @@ def _local_import_roots(path: Path) -> set[str]:
     return roots
 
 
+def _active_policy() -> dict[str, object]:
+    return json.loads(
+        (REPO_ROOT / "experiments" / "market_triggered_discovery_policy.draft.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+
 def test_active_causal_modules_do_not_depend_on_parked_quartr_path() -> None:
     violations: dict[str, list[str]] = {}
     for name in ACTIVE_CAUSAL_MODULES:
@@ -54,11 +62,7 @@ def test_active_causal_modules_do_not_depend_on_parked_quartr_path() -> None:
 
 
 def test_active_policy_supersedes_transcript_v2_without_rewriting_frozen_v1() -> None:
-    active = json.loads(
-        (REPO_ROOT / "experiments" / "market_triggered_discovery_policy.draft.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    active = _active_policy()
     legacy = json.loads(
         (REPO_ROOT / "experiments" / "v2_validation_policy.draft.json").read_text(
             encoding="utf-8"
@@ -77,12 +81,29 @@ def test_active_policy_supersedes_transcript_v2_without_rewriting_frozen_v1() ->
 
 
 def test_current_roadmap_is_declared_source_of_truth() -> None:
-    active = json.loads(
-        (REPO_ROOT / "experiments" / "market_triggered_discovery_policy.draft.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    active = _active_policy()
     roadmap = REPO_ROOT / active["architecture_source_of_truth"]
     compatibility = REPO_ROOT / active["compatibility_map"]
     assert roadmap.exists()
     assert compatibility.exists()
+
+
+def test_architecture_consolidation_is_complete_and_phase_one_is_next() -> None:
+    active = _active_policy()
+    assert active["architecture_consolidation_complete"] is True
+
+    phases = {item["phase"]: item for item in active["development_phases"]}
+    assert phases[0]["name"] == "architecture_consolidation"
+    assert phases[0]["status"] == "complete"
+    assert phases[1]["name"] == "real_market_trigger"
+    assert phases[1]["status"] == "next"
+
+
+def test_provider_and_validation_boundaries_are_machine_readable() -> None:
+    active = _active_policy()
+    boundaries = active["integration_boundaries"]
+    assert boundaries["provider_specific_code_below_normalization"] is True
+    assert boundaries["atomic_signal_remains_operating_signal_contract"] is True
+    assert boundaries["new_operating_support_is_adapter_not_replacement_schema"] is True
+    assert boundaries["new_end_to_end_replay_must_not_extend_frozen_validation_cli_family"] is True
+    assert boundaries["physical_package_reorganization_before_interface_stability"] is False
