@@ -54,12 +54,14 @@ These should reference each other through provenance IDs rather than duplicating
 
 Comparable-window acceleration remains valuable when both windows are available and source-comparable. It is especially useful for earnings-call/release operating acceleration.
 
-However, the active discovery path must not require complete transcript pairs for every issuer. Future causal diagnosis should accept a broader operating-support interface so it can combine:
+However, the active discovery path must not require complete transcript pairs for every issuer. Future causal diagnosis should accept a broader provider-independent `OperatingSupport` interface that can combine:
 
 - old `AccelerationSnapshot` when available;
 - recent one-sided operating evidence;
 - since-last-earnings public updates;
 - source coverage/freshness diagnostics.
+
+`OperatingSupport` should wrap/reference these outputs. It must not replace `AtomicSignal`, duplicate the scanner taxonomy, or mutate `AccelerationSnapshot` merely to satisfy the new architecture.
 
 Until that adapter is implemented, `causal_diagnosis.py` is an interim compatibility bridge, not the final evidence-fusion contract.
 
@@ -84,6 +86,8 @@ provider adapter
   -> causal logic
 ```
 
+A future EOD vendor or SEC client may be replaced without changing `market_trigger`, `causal_graph`, `industry_state`, `demand_convergence`, or pre-news scoring contracts.
+
 ### 5. Quartr-era code is parked, not deleted
 
 The Quartr adapter and transcript fallback resolver were technically valid experiments and may be useful if access changes later. Deleting them would lose tested work; making the current architecture depend on them would recreate the coverage bottleneck.
@@ -93,7 +97,8 @@ Therefore:
 - keep their tests;
 - do not add new active imports from market/causal/state modules into Quartr/fallback modules;
 - do not make Quartr availability a validation gate;
-- do not modify frozen v1 to use them.
+- do not modify frozen v1 to use them;
+- do not extend `v2_source_provenance.py` into the general evidence-provenance model.
 
 ### 6. Economic node identity must not equal ticker identity
 
@@ -113,11 +118,42 @@ Do not silently replace GICS-like grouping with hand-written causal nodes in the
 
 Causal graph approvals and industry-state snapshots should preserve history. Historical replay must retrieve what was known at an earlier `as_of`, not reconstruct the past from today's latest state.
 
-Future expectation-gap and company-exposure artifacts should follow the same rule when historical validation begins.
+Future root-demand-shock, expectation-gap, convergence, and company-exposure artifacts should follow the same rule when historical validation begins.
 
 ### 9. Repo B remains isolated
 
 Repo A must not import Repo B valuation/financial-risk logic. Repo B must not become a discovery dependency. The only future coupling is a small versioned thesis manifest.
+
+### 10. One orchestration layer, no new monolith
+
+Do not turn `batch_cli.py`, a frozen `validation_*` CLI, or any provider adapter into the new top-level application.
+
+The future market-triggered workflow should have a new orchestration entry point that composes stable contracts in this order:
+
+```text
+market artifacts
+  + normalized operating support
+  -> diagnosis / root shock
+  -> approved graph paths
+  + pre-shock state
+  -> convergence
+  -> node ranking
+  -> company exposure
+```
+
+The orchestration layer may depend on the domain modules. Domain modules must not depend back on orchestration.
+
+### 11. New validation must not mutate the frozen validation namespace
+
+The large existing `validation_*` family belongs to transcript Phase-1/frozen-v1 history. Reusing its lessons and low-level helpers is fine, but new end-to-end market-triggered replay should get a separate entry point/module family.
+
+This prevents an old transcript validation state machine from becoming an accidental dependency of the new product architecture.
+
+### 12. Do not physically reorganize working modules yet
+
+The conceptual architecture may eventually justify `sources/`, `market/`, `causal/`, `state/`, or `validation/` packages. Do not perform that directory migration now.
+
+First make the canonical pipeline work with compatibility adapters. A package move is justified only after interfaces are stable and can be migrated with import aliases/tests. This keeps existing CLIs, tests, and frozen fingerprints from breaking for cosmetic reasons.
 
 ## Immediate refactoring policy
 
@@ -132,3 +168,15 @@ Refactor only when one of these is true:
 5. a stable handoff boundary is ready to freeze.
 
 Until then, compatibility adapters are preferred over broad rewrites.
+
+## Next allowed interface changes
+
+In roadmap order, the next new interfaces should be limited to:
+
+1. an EOD market-data adapter that outputs the already-defined daily-bar input contract;
+2. source-agnostic disclosure adapters that output `SourceDocument`;
+3. `OperatingSupport` as a thin provider-independent causal-diagnosis input;
+4. root-demand-shock/path persistence contracts;
+5. company exposure mapping only after historical node-level replay succeeds.
+
+Anything outside this order should require an explicit architectural reason rather than being added opportunistically.
