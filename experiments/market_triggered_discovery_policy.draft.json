@@ -3,6 +3,7 @@
   "policy_id": "market-triggered-causal-discovery-v0",
   "architecture_source_of_truth": "docs/current_roadmap.md",
   "compatibility_map": "docs/implementation_compatibility.md",
+  "architecture_consolidation_complete": true,
   "objective": "Start from broad market anomalies, validate a concrete structural demand shock, expand through evidence-backed value-chain paths, and prioritize shared downstream nodes where new demand converges with pre-existing supply constraints and other independent demand roots before obvious confirmation events.",
   "architecture": {
     "top_level_flow": [
@@ -23,6 +24,15 @@
     "real_time_required": false,
     "llm_can_approve_causal_edges": false,
     "repo_b_modification_allowed_before_manifest_freeze": false
+  },
+  "integration_boundaries": {
+    "provider_specific_code_below_normalization": true,
+    "atomic_signal_remains_operating_signal_contract": true,
+    "physical_data_uses_causal_evidence_not_forced_atomic_signal": true,
+    "new_operating_support_is_adapter_not_replacement_schema": true,
+    "new_end_to_end_replay_must_not_extend_frozen_validation_cli_family": true,
+    "physical_package_reorganization_before_interface_stability": false,
+    "one_new_orchestration_layer_required": true
   },
   "legacy_compatibility": {
     "atomic_signal_contract": "keep",
@@ -51,7 +61,12 @@
     "single_stock_spike_is_sufficient": false
   },
   "causal_diagnosis": {
-    "operating_signal_families": ["demand", "scarcity", "capex", "pricing"],
+    "operating_signal_families": [
+      "demand",
+      "scarcity",
+      "capex",
+      "pricing"
+    ],
     "document_sources_are_pluggable": true,
     "source_roles": [
       "pre_existing_operating_state",
@@ -60,8 +75,14 @@
     ],
     "transcript_completeness_is_discovery_gate": false,
     "missing_operating_documents_count_as_negative_evidence": false,
-    "classifications": ["structural_operating", "narrative_led", "mixed_or_early", "unresolved"],
-    "current_acceleration_snapshot_interface": "interim_compatibility_bridge"
+    "classifications": [
+      "structural_operating",
+      "narrative_led",
+      "mixed_or_early",
+      "unresolved"
+    ],
+    "current_acceleration_snapshot_interface": "interim_compatibility_bridge",
+    "planned_provider_independent_interface": "OperatingSupport"
   },
   "persistent_industry_state": {
     "purpose": "Maintain low-frequency, evidence-backed supply state for economically meaningful value-chain nodes before a later market trigger arrives.",
@@ -70,14 +91,20 @@
     "node_identity_is_company_ticker": false,
     "dimensions": {
       "supply_inelasticity": 0.25,
-      "lead_time_pressure": 0.20,
-      "capacity_tightness": 0.20,
+      "lead_time_pressure": 0.2,
+      "capacity_tightness": 0.2,
       "capacity_expansion_difficulty": 0.15,
-      "qualification_barrier": 0.10,
-      "pricing_pressure": 0.10
+      "qualification_barrier": 0.1,
+      "pricing_pressure": 0.1
     },
     "minimum_independent_evidence_classes_for_known_state": 2,
-    "stages": ["unknown", "normal", "tightening", "constrained", "severely_constrained"],
+    "stages": [
+      "unknown",
+      "normal",
+      "tightening",
+      "constrained",
+      "severely_constrained"
+    ],
     "constraint_thresholds": {
       "tightening_min_score": 45,
       "constrained_min_score": 65,
@@ -105,7 +132,10 @@
     "same_root_multiple_paths_count_as_multiple_independent_roots": false,
     "new_trigger_branch_transmission_min": 3,
     "pre_shock_state_required_for_promotion": true,
-    "pre_shock_stage_for_promotion": ["constrained", "severely_constrained"],
+    "pre_shock_stage_for_promotion": [
+      "constrained",
+      "severely_constrained"
+    ],
     "stages": [
       "hypothesis",
       "pre_shock_bottleneck",
@@ -118,12 +148,12 @@
   },
   "pre_news_selector": {
     "dimensions": {
-      "demand_transmission": 0.20,
-      "bottleneck_strength": 0.20,
-      "economic_capture": 0.20,
+      "demand_transmission": 0.2,
+      "bottleneck_strength": 0.2,
+      "economic_capture": 0.2,
       "reinvestment_runway": 0.15,
       "triangulation": 0.15,
-      "expectation_gap": 0.10
+      "expectation_gap": 0.1
     },
     "hard_gates": {
       "demand_transmission_min": 3,
@@ -131,7 +161,12 @@
       "external_corroboration_required": true,
       "look_ahead_allowed": false
     },
-    "stages": ["hypothesis", "evidence_backed", "priority_research", "pre_news_candidate"],
+    "stages": [
+      "hypothesis",
+      "evidence_backed",
+      "priority_research",
+      "pre_news_candidate"
+    ],
     "large_contract_required_for_promotion": false,
     "explosive_reported_earnings_required_for_promotion": false,
     "score_is_buy_signal": false
@@ -164,7 +199,7 @@
     {
       "phase": 0,
       "name": "architecture_consolidation",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "phase": 1,
@@ -200,6 +235,11 @@
       "phase": 7,
       "name": "repo_a_to_repo_b_manifest",
       "status": "blocked_until_upstream_stable"
+    },
+    {
+      "phase": 8,
+      "name": "production_cadence",
+      "status": "later"
     }
   ]
 }
