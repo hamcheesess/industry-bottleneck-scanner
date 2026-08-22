@@ -36,6 +36,7 @@ This document prevents the architecture pivot from turning into a rewrite. It de
 | Causal node ranking | `causal_expansion.py` | ACTIVE | pre-news research-priority dimensions and hard gates |
 | Causal graph | `causal_graph.py` | ACTIVE | append-only approved economic dependency edges and bounded traversal |
 | Industry state | `industry_state.py` | ACTIVE | append-only pre-shock supply-state memory |
+| Industry-state updater | `industry_state_updater.py`, `industry_state_update_cli.py` | ACTIVE | explicit economic-node assignments, deterministic AtomicSignal mapping, external observations, evidence/source-diversity gate |
 | Demand convergence | `demand_convergence.py` | ACTIVE | new-shock x pre-shock constraint x independent-root convergence |
 | Repo B | `investment-research-automation` | DOWNSTREAM | financial gate, deep research, DCF, final report |
 

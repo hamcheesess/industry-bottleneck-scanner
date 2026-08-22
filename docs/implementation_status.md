@@ -17,7 +17,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Source-agnostic operating evidence | **PARTIAL** | generic disclosure normalization/scanning, freshness/coverage, `operating-support-v1`, SEC submissions/archive adapter and CLIs | trigger-scoped live SEC run; automated non-SEC IR/presentation discovery |
 | Frozen transcript validation v1 | **LEGACY** | preserved audit/regression CLIs and artifacts | frozen; no product extension allowed |
 | Quartr transcript v2 | **LEGACY** | parked adapter/fallback/provenance experiments | `superseded_historical_only`; never a product gate |
-| Persistent industry state core | **PARTIAL** | append-only snapshots and strict `latest_before` lookup | automatic evidence-to-state updater |
+| Persistent industry state core | **PARTIAL** | append-only snapshots, strict `latest_before`, explicit issuer-to-node mapping, AtomicSignal/external observation updater, evidence/source diversity gate | production node assignments and physical-data observations; replay-based decay policy later |
 | Causal graph core | **PARTIAL** | evidence approval history and bounded traversal | root-shock/path orchestration and production edge evidence |
 | Demand convergence core | **PARTIAL** | independent-root deduplication and pre-shock constraint join | persisted real graph/state integration |
 | Pre-news ranking core | **PARTIAL** | six dimensions and hard gates | real-data scoring calibration |

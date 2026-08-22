@@ -187,6 +187,7 @@ A two-month-old earnings call may be strong pre-news evidence. It must not be mi
 - `causal_expansion.py` — demand transmission / bottleneck / capture / reinvestment / triangulation / expectation-gap ranking;
 - `causal_graph.py` — append-only edge approval history and bounded traversal;
 - `industry_state.py` — append-only pre-shock node-state memory;
+- `industry_state_updater.py` — explicit node mapping and evidence-diverse state observations;
 - `demand_convergence.py` — new-shock x pre-shock constraint x independent-root convergence.
 
 `causal_diagnosis.py` still accepts the older `AccelerationSnapshot` interface for compatibility,

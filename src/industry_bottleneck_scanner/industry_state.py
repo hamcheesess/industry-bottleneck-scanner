@@ -172,6 +172,11 @@ class FileIndustryStateRegistry:
         self.path = path
 
     def append(self, snapshot: IndustryStateSnapshot) -> None:
+        if any(
+            item.node_id == snapshot.node_id and item.as_of == snapshot.as_of
+            for item in self.load()
+        ):
+            raise ValueError("industry-state snapshot already exists for node_id and as_of")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(snapshot_to_dict(snapshot), sort_keys=True) + "\n")

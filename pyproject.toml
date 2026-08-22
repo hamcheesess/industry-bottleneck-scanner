@@ -40,6 +40,7 @@ ibs-market-trigger-replay = "industry_bottleneck_scanner.market_trigger_replay_c
 ibs-massive-universe = "industry_bottleneck_scanner.massive_universe_cli:main"
 ibs-operating-evidence = "industry_bottleneck_scanner.operating_evidence_cli:main"
 ibs-sec-disclosures = "industry_bottleneck_scanner.sec_edgar_cli:main"
+ibs-industry-state-update = "industry_bottleneck_scanner.industry_state_update_cli:main"
 
 [project.optional-dependencies]
 dev = [

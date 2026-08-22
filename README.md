@@ -115,6 +115,7 @@ Current provider-independent core:
 - `causal_expansion.py` — pre-news research-priority scoring and gates;
 - `causal_graph.py` — append-only evidence-backed dependency edges;
 - `industry_state.py` — append-only pre-shock supply-state memory;
+- `industry_state_updater.py` — explicit issuer-to-node mapping plus evidence-diverse state updates;
 - `demand_convergence.py` — new-shock x pre-shock constraint x independent-root convergence.
 
 Raw full transcripts are not sent to an LLM. Cheap deterministic work remains local-first; later model calls are reserved for already-filtered research tasks and cannot approve causal evidence by themselves.
@@ -222,6 +223,20 @@ ibs-sec-disclosures \
 
 See [`docs/source_agnostic_operating_evidence.md`](docs/source_agnostic_operating_evidence.md)
 for the normalization, freshness, coverage, and replay contracts.
+
+Update append-only economic-node state from issuer signals and optional external observations:
+
+```bash
+ibs-industry-state-update \
+  --atomic-signals-jsonl artifacts/operating/atomic_signals.jsonl \
+  --node-assignments-csv artifacts/research/company_node_assignments.csv \
+  --observations-jsonl artifacts/industry/physical_observations.jsonl \
+  --as-of 2026-08-21T23:59:59+00:00 \
+  --registry artifacts/industry/industry_state.jsonl \
+  --decisions artifacts/industry/state_update_decisions.json
+```
+
+See [`docs/industry_state_update_contract.md`](docs/industry_state_update_contract.md).
 
 Legacy bounded transcript workflows remain available for regression/audit work:
 

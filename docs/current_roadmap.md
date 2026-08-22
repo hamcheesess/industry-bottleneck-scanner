@@ -164,7 +164,7 @@ This is the code status after architecture consolidation.
 | Market trigger | **EXECUTABLE / CALIBRATION PENDING** | `market_trigger.py`, bottom-up breadth, dated v1 trigger artifact, live CLI and strict-as-of replay CLI | real historical calibration and trigger-quality assessment |
 | Causal diagnosis | **PROVIDER-INDEPENDENT BOUNDARY IMPLEMENTED** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot` | real source coverage calibration |
 | Causal graph | **CORE IMPLEMENTED** | `causal_graph.py`, evidence approval, append-only history, bounded traversal | root-shock/path orchestration and real edge evidence |
-| Pre-shock industry state | **CORE IMPLEMENTED** | `industry_state.py`, append-only snapshots, strict pre-trigger lookup | automatic state-observation derivation from public evidence |
+| Pre-shock industry state | **UPDATER EXECUTABLE / REAL EVIDENCE PENDING** | append-only snapshots, strict pre-trigger lookup, explicit company-to-node assignments, AtomicSignal/external observation updater, diversity gate | real node assignments and physical/industry observations |
 | Demand convergence | **CORE IMPLEMENTED** | `demand_convergence.py`, root deduplication, pre-shock constraint gate | real graph/state integration and persisted assessments |
 | Pre-news node ranking | **CORE IMPLEMENTED** | `causal_expansion.py`, six dimensions + hard gates | real-data scoring policy validation |
 | Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
@@ -257,16 +257,19 @@ Implementation:
 
 The existing comparable current-vs-baseline engine remains available where like-for-like windows exist. `OperatingSupport` should be an adapter/output contract, not a replacement for `AtomicSignal` or `AccelerationSnapshot`.
 
-### Phase 3 — persistent industry-state updater
+### Phase 3 — persistent industry-state updater — IN PROGRESS
 
 Goal: build a reusable memory of pre-shock bottlenecks.
 
 Implementation:
 
-- define stable economic-node IDs independent of tickers;
-- derive candidate state observations from AtomicSignals and external physical evidence;
-- require evidence diversity before a known state is recorded;
-- append snapshots rather than overwrite;
+- **DONE:** define stable economic-node IDs independent of tickers and require explicit
+  many-to-many company-to-node assignments;
+- **DONE:** derive candidate state observations from eligible AtomicSignals and accept the same
+  observation contract from external physical evidence;
+- **DONE:** require both evidence-class and source-entity diversity before a known state is recorded;
+- **DONE:** append snapshots rather than overwrite and reject duplicate `(node_id, as_of)` keys;
+- **IN PROGRESS:** supply real node assignments and public physical/industry observations;
 - add decay/staleness rules later only after replay evidence justifies them.
 
 ### Phase 4 — causal graph and demand convergence integration
