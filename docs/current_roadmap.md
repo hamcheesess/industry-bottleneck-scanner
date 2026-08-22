@@ -1,6 +1,6 @@
 # Current roadmap — market-triggered causal bottleneck discovery
 
-Status: **active design source of truth** for Repo A. Frozen transcript validation v1 remains an audit artifact; the old Quartr-centered transcript-v2 draft is historical only.
+Status: **active design source of truth** for Repo A. Architecture consolidation is complete. Frozen transcript validation v1 remains an audit artifact; the old Quartr-centered transcript-v2 draft is historical only.
 
 ## Objective
 
@@ -34,7 +34,7 @@ new demand shock
 
 The old transcript-first Phase-1 implementation is not deleted. Its reliable components become reusable operating-evidence infrastructure:
 
-- `SourceDocument` and `AtomicSignal` remain the canonical local evidence/signal contracts.
+- `SourceDocument` and `AtomicSignal` remain the canonical local issuer-evidence/signal contracts.
 - Capex / Demand / Scarcity / Pricing scanners remain the operating-language extractor.
 - direction, negation, resolution, speaker-role exclusion, provenance, and evidence timestamps remain correctness invariants.
 - current-vs-baseline aggregation remains available for operating acceleration when comparable windows exist.
@@ -120,6 +120,58 @@ candidate thesis manifest
   -> final report
 ```
 
+## Canonical integration boundary
+
+The architecture must be assembled by composition, not by rewriting legacy modules into one giant pipeline.
+
+```text
+provider adapters
+   |-- market bars ----------------------> market_history -> market_trigger
+   |
+   |-- issuer documents -> SourceDocument -> existing scanner -> AtomicSignal
+   |                                                  |             |
+   |                                                  |             +-> operating support
+   |                                                  +----------------> state evidence
+   |
+   `-- physical / industry data -> CausalEvidence ---------------------> state / graph evidence
+
+market trigger + normalized operating support
+   -> causal diagnosis
+   -> root-demand-shock artifact
+   -> causal graph traversal
+   -> pre-shock state lookup
+   -> demand convergence
+   -> pre-news node ranking
+   -> company exposure mapping
+```
+
+Provider-specific code must stay below normalization. Causal/state/ranking modules must never import Alpha Vantage, Quartr, SEC transport, or a price vendor directly.
+
+The future top-level orchestration layer should call the existing modules through stable contracts. Do **not** physically move or rename the mature scanner/validation modules merely to make the directory tree match the new conceptual architecture; that would create unnecessary import/CLI churn.
+
+## Current implementation checkpoint
+
+This is the code status after architecture consolidation.
+
+| Layer | Current status | Reused / implemented pieces | Missing before real execution |
+|---|---|---|---|
+| Universe / identity | **REUSE** | dated broad-US universe contracts, issuer/security identity | production-quality current universe refresh path later |
+| Transcript evidence | **REUSE OPTIONAL** | Alpha Vantage adapter, cache, transcript normalization, analyst exclusion | no universal transcript fallback required |
+| Operating scanner | **KEEP** | `SourceDocument`, `AtomicSignal`, four scanners, adjudication, aggregation | source-agnostic non-transcript document adapters |
+| Frozen transcript validation | **FROZEN** | v1 audit trail and regression lessons | nothing; do not retrofit |
+| Quartr-era v2 | **PARKED** | adapter/fallback/provenance code and tests | no active work unless access situation changes |
+| Market features | **CORE IMPLEMENTED** | `market_history.py`, explicit `as_of` features | real EOD source adapter and persisted history |
+| Market trigger | **CORE IMPLEMENTED** | `market_trigger.py`, bottom-up breadth | real universe data + historical calibration |
+| Causal diagnosis | **INTERIM BRIDGE** | `causal_diagnosis.py` consumes old `AccelerationSnapshot` | broader `OperatingSupport` interface for one-sided/recent evidence |
+| Causal graph | **CORE IMPLEMENTED** | `causal_graph.py`, evidence approval, append-only history, bounded traversal | root-shock/path orchestration and real edge evidence |
+| Pre-shock industry state | **CORE IMPLEMENTED** | `industry_state.py`, append-only snapshots, strict pre-trigger lookup | automatic state-observation derivation from public evidence |
+| Demand convergence | **CORE IMPLEMENTED** | `demand_convergence.py`, root deduplication, pre-shock constraint gate | real graph/state integration and persisted assessments |
+| Pre-news node ranking | **CORE IMPLEMENTED** | `causal_expansion.py`, six dimensions + hard gates | real-data scoring policy validation |
+| Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
+| Repo-A -> Repo-B manifest | **NOT FROZEN** | conceptual boundary only | implement only after upstream historical replay works |
+
+This table is the implementation checkpoint. New work should advance the next missing column rather than create parallel replacements for already working contracts.
+
 ## Source strategy
 
 There is no longer a requirement to solve universal earnings-call transcript coverage.
@@ -151,18 +203,22 @@ Older earnings calls may prove that a condition existed before the market reacte
 
 ## Development phases
 
-### Phase 0 — architecture consolidation — current
+### Phase 0 — architecture consolidation — COMPLETE
 
 Goal: one active roadmap and explicit compatibility boundaries.
 
-- preserve frozen v1 and old transcript code as an audit/reusable subsystem;
-- supersede the Quartr-centered v2 draft as an active plan;
-- establish current module ownership and forbidden dependencies;
-- keep Repo B untouched.
+Completed:
 
-Exit: documentation, policy, and tests agree on the active architecture.
+- frozen v1 remains frozen and auditable;
+- Quartr-centered transcript-v2 is explicitly superseded as the active plan;
+- old scanner/transcript code has KEEP / REUSE / FROZEN / PARKED roles;
+- active modules are prohibited from depending on parked Quartr-era provider code;
+- active policy, architecture docs, README, compatibility map, and regression tests agree on one control flow;
+- Repo B remains untouched.
 
-### Phase 1 — real market trigger
+Exit condition is satisfied. Further architecture changes must update this roadmap and compatibility contract before code is redirected.
+
+### Phase 1 — real market trigger — NEXT
 
 Goal: generate real bottom-up market triggers from broad-US end-of-day history.
 
@@ -187,9 +243,9 @@ Implementation:
 - run the existing deterministic scanner over all eligible document types;
 - add source freshness / coverage diagnostics;
 - keep analyst-question exclusion where speaker structure exists;
-- produce operating-support snapshots for triggered clusters.
+- introduce one provider-independent `OperatingSupport` boundary for causal diagnosis.
 
-The existing comparable current-vs-baseline engine remains available where like-for-like windows exist, but causal diagnosis must also support event-period evidence without requiring perfect paired transcripts.
+The existing comparable current-vs-baseline engine remains available where like-for-like windows exist. `OperatingSupport` should be an adapter/output contract, not a replacement for `AtomicSignal` or `AccelerationSnapshot`.
 
 ### Phase 3 — persistent industry-state updater
 
@@ -203,18 +259,20 @@ Implementation:
 - append snapshots rather than overwrite;
 - add decay/staleness rules later only after replay evidence justifies them.
 
-### Phase 4 — causal graph and demand convergence
+### Phase 4 — causal graph and demand convergence integration
 
 Goal: find the points where branches become a common constrained trunk.
 
 Implementation:
 
-- persist approved graph edges;
-- create explicit root-demand-shock artifacts;
+- persist explicit root-demand-shock artifacts;
+- use the existing append-only approved graph-edge store;
 - traverse depth-bounded, cycle-safe paths;
+- convert paths to `DemandBranch` artifacts;
 - deduplicate paths sharing one root shock;
 - join each target node with the latest strictly pre-trigger state;
-- rank `pre_shock_bottleneck`, `multi_branch_convergence`, and `priority_convergence`.
+- rank `pre_shock_bottleneck`, `multi_branch_convergence`, and `priority_convergence`;
+- feed promoted nodes into the existing pre-news node assessment.
 
 ### Phase 5 — historical pre-news replay
 
@@ -263,6 +321,17 @@ Candidate manifest should contain at minimum:
 
 Then connect to Repo B without changing Repo B's underwriting semantics.
 
+### Phase 8 — production cadence
+
+Only after historical replay and the handoff contract are stable:
+
+- EOD/weekly market sensing over the broad universe;
+- incremental public-disclosure ingestion;
+- append-only industry-state updates;
+- graph evidence updates when new evidence changes an edge;
+- deep causal/company research only for triggered or convergent nodes;
+- cache-first/local-first execution and bounded paid-model usage.
+
 ## Validation roadmap
 
 The old transcript-v2 validation plan is no longer the active system validation contract. Its useful extraction tests may be reused as subsystem tests.
@@ -277,6 +346,8 @@ The active system needs separate gates for:
 6. pre-news node ranking quality;
 7. listed-company exposure mapping;
 8. end-to-end historical replay without post-event leakage.
+
+Do not extend the old `validation_*` CLI family into the new end-to-end architecture. When historical market-triggered replay becomes executable, create a separate replay/validation entry point that consumes the new normalized artifacts while leaving frozen-v1 CLIs unchanged.
 
 Thresholds remain draft until historical cases are frozen before outcomes are inspected.
 
