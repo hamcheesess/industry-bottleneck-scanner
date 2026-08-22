@@ -102,8 +102,10 @@ See [`docs/v2_validation_contract_draft.md`](docs/v2_validation_contract_draft.m
 
 Current provider-independent core:
 
+- `eod_market_data.py` — cache-first Massive grouped-daily normalization into the existing daily-bar contract;
 - `market_history.py` — adjusted daily-bar features with explicit `as_of` safety;
 - `market_trigger.py` — bottom-up industry/economic-bucket breadth trigger;
+- `market_trigger_artifacts.py` — dated normalized history and versioned market-trigger artifacts;
 - `causal_diagnosis.py` — market trigger + operating-support compatibility bridge;
 - `causal_expansion.py` — pre-news research-priority scoring and gates;
 - `causal_graph.py` — append-only evidence-backed dependency edges;
@@ -152,6 +154,26 @@ Install the package in editable mode:
 ```bash
 pip install -e .
 ```
+
+Run the current Phase-1 market path with a dated CSV containing `ticker`, `sector`, and
+`bucket` columns. `IWB` is used only as the broad-market benchmark; company membership,
+not an ETF, defines each industry bucket.
+
+```bash
+export MASSIVE_API_KEY="..."
+ibs-market-trigger \
+  --universe-csv data/market_universe.csv \
+  --as-of 2026-08-21 \
+  --benchmark IWB \
+  --cache-dir data/cache/massive-grouped-daily \
+  --output-dir artifacts/market-trigger \
+  --request-interval-seconds 13
+```
+
+The initial backfill is provider-quota-sensitive. Raw daily responses are cached by date,
+so normal incremental EOD runs fetch only uncached dates. Outputs are written below an
+`as_of=YYYY-MM-DD` directory and include explicit missing/insufficient-history coverage;
+the cohort is never silently shrunk.
 
 Legacy bounded transcript workflows remain available for regression/audit work:
 

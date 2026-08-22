@@ -35,6 +35,7 @@ ibs-neutral-cohort-plan = "industry_bottleneck_scanner.cohort_cli:main"
 ibs-neutral-proxy-iwv = "industry_bottleneck_scanner.iwv_proxy_cli:main"
 ibs-phase1-proxy-plan = "industry_bottleneck_scanner.proxy_plan_cli:main"
 ibs-review-language = "industry_bottleneck_scanner.novel_language_cli:main"
+ibs-market-trigger = "industry_bottleneck_scanner.market_trigger_cli:main"
 
 [project.optional-dependencies]
 dev = [

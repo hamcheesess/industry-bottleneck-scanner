@@ -160,8 +160,8 @@ This is the code status after architecture consolidation.
 | Operating scanner | **KEEP** | `SourceDocument`, `AtomicSignal`, four scanners, adjudication, aggregation | source-agnostic non-transcript document adapters |
 | Frozen transcript validation | **FROZEN** | v1 audit trail and regression lessons | nothing; do not retrofit |
 | Quartr-era v2 | **PARKED** | adapter/fallback/provenance code and tests | no active work unless access situation changes |
-| Market features | **CORE IMPLEMENTED** | `market_history.py`, explicit `as_of` features | real EOD source adapter and persisted history |
-| Market trigger | **CORE IMPLEMENTED** | `market_trigger.py`, bottom-up breadth | real universe data + historical calibration |
+| Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, cache-first persisted normalized history | production universe run and provider entitlement/retention verification |
+| Market trigger | **EXECUTABLE / CALIBRATION PENDING** | `market_trigger.py`, bottom-up breadth, dated v1 trigger artifact and CLI | historical calibration and trigger-quality replay |
 | Causal diagnosis | **INTERIM BRIDGE** | `causal_diagnosis.py` consumes old `AccelerationSnapshot` | broader `OperatingSupport` interface for one-sided/recent evidence |
 | Causal graph | **CORE IMPLEMENTED** | `causal_graph.py`, evidence approval, append-only history, bounded traversal | root-shock/path orchestration and real edge evidence |
 | Pre-shock industry state | **CORE IMPLEMENTED** | `industry_state.py`, append-only snapshots, strict pre-trigger lookup | automatic state-observation derivation from public evidence |
@@ -218,17 +218,18 @@ Completed:
 
 Exit condition is satisfied. Further architecture changes must update this roadmap and compatibility contract before code is redirected.
 
-### Phase 1 — real market trigger — NEXT
+### Phase 1 — real market trigger — IN PROGRESS
 
 Goal: generate real bottom-up market triggers from broad-US end-of-day history.
 
 Implementation:
 
-- connect a free/low-cost adjusted daily-price source to `market_history.py`;
+- **DONE:** connect Massive grouped-daily adjusted US-stock bars through a cache-first adapter to `market_history.py`;
 - map universe companies into sector / industry / economic-subcluster buckets;
-- compute market-relative and sector-relative breadth;
-- persist dated `IndustryMarketTrigger` artifacts;
-- historical trigger replay with strict `as_of`.
+- **DONE:** compute market-relative and bottom-up sector-relative breadth;
+- **DONE:** persist normalized history plus dated, versioned `IndustryMarketTrigger` artifacts with explicit coverage diagnostics;
+- **DONE:** enforce strict `as_of` in feature calculation and dated artifact paths;
+- **PENDING:** run a production broad-US membership/classification snapshot and calibrate thresholds through historical trigger replay.
 
 No LLM is required.
 

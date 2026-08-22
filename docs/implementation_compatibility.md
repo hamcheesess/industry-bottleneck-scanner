@@ -25,6 +25,8 @@ This document prevents the architecture pivot from turning into a rewrite. It de
 | Quartr-era v2 provenance | `v2_source_provenance.py` | PARKED | historical transcript-provider provenance utility; do not extend as the new source model |
 | Market history | `market_history.py` | ACTIVE | provider-independent EOD feature calculation with `as_of` safety |
 | Market trigger | `market_trigger.py` | ACTIVE | bottom-up industry/economic-bucket market breadth trigger |
+| EOD normalization | `eod_market_data.py` | ACTIVE | Massive grouped-daily provider boundary, raw date cache, normalized `DailyBar` histories and explicit coverage |
+| Market artifacts / CLI | `market_trigger_artifacts.py`, `market_trigger_cli.py` | ACTIVE | dated v1 history/trigger persistence and the new non-legacy orchestration entry point |
 | Causal diagnosis | `causal_diagnosis.py` | ACTIVE | joins market trigger with operating support; current adapter still reuses old acceleration snapshots |
 | Causal node ranking | `causal_expansion.py` | ACTIVE | pre-news research-priority dimensions and hard gates |
 | Causal graph | `causal_graph.py` | ACTIVE | append-only approved economic dependency edges and bounded traversal |
