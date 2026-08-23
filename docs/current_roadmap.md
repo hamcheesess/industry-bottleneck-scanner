@@ -234,6 +234,8 @@ Implementation:
 - **DONE:** persist normalized history plus dated, versioned `IndustryMarketTrigger` artifacts with explicit coverage diagnostics;
 - **DONE:** enforce strict `as_of` in feature calculation and dated artifact paths;
 - **DONE:** preserve dated universe provenance/classification gaps and support provider-free strict-as-of replay from normalized history;
+- **DONE:** separate historical `universe_as_of` from the later `market_as_of` archive cutoff so
+  calibration never uses a future membership snapshot;
 - **IN PROGRESS:** enrich the frozen `2026-08-21` production snapshot, backfill from
   `2024-11-01`, and calibrate thresholds through valid dated historical trigger replay.
 

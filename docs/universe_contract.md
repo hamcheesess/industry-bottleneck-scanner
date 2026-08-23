@@ -85,6 +85,11 @@ The GitHub bootstrap workflow runs seven sequential jobs of at most 800 uncached
 requests each. Each job stays below the hosted-runner timeout; the final job starts the
 market backfill only when no overview requests remain.
 
+Manual historical calibration runs accept separate `universe_as_of` and `market_as_of` inputs.
+This permits a genuine dated membership/classification snapshot to remain frozen while the
+normalized price archive extends to a later cutoff. `market_as_of < universe_as_of` is rejected
+before provider collection starts.
+
 Every run writes:
 
 - `market_universe.csv`, including pending/unclassified members rather than shrinking the

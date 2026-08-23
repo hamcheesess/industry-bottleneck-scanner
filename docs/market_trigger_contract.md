@@ -59,6 +59,11 @@ snapshots at or before each replay cutoff.
 The first record is a manifest; remaining records are normalized benchmark or constituent
 bars. This archive is the replay input and contains no provider-specific response schema.
 
+For historical calibration, universe and market cutoffs are deliberately separate. A dated
+historical membership/classification snapshot may be held fixed while normalized price history
+continues through a later market cutoff. Replay dates must be on or after `universe.as_of` and on
+or before the archive `as_of`; the system never substitutes a future membership snapshot.
+
 ## Trigger artifact
 
 `industry_market_triggers.json` uses schema `industry-market-trigger-v1` and contains:

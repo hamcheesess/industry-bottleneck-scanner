@@ -3,8 +3,12 @@ name: Massive Free MVP Bootstrap
 on:
   workflow_dispatch:
     inputs:
-      as_of:
-        description: Frozen market and universe date (YYYY-MM-DD)
+      universe_as_of:
+        description: Frozen universe membership/classification date (YYYY-MM-DD)
+        required: false
+        default: '2026-08-21'
+      market_as_of:
+        description: Frozen market-history cutoff (YYYY-MM-DD; not before universe_as_of)
         required: false
         default: '2026-08-21'
       max_overview_requests:
@@ -47,7 +51,8 @@ jobs:
         batch: [1, 2, 3, 4, 5, 6, 7]
     env:
       MASSIVE_API_KEY: ${{ secrets.MASSIVE_API_KEY }}
-      BOOTSTRAP_AS_OF: ${{ inputs.as_of || '2026-08-21' }}
+      UNIVERSE_AS_OF: ${{ inputs.universe_as_of || '2026-08-21' }}
+      MARKET_AS_OF: ${{ inputs.market_as_of || '2026-08-21' }}
       MAX_OVERVIEW_REQUESTS: ${{ inputs.max_overview_requests || '800' }}
       RUN_BACKFILL: ${{ github.event_name != 'workflow_dispatch' || inputs.run_backfill_when_complete }}
       UNIVERSE_ROOT: var/universe
@@ -68,6 +73,18 @@ jobs:
       - name: Require Massive secret
         run: test -n "$MASSIVE_API_KEY"
 
+      - name: Validate frozen dates
+        run: |
+          python - <<'PY'
+          import os
+          from datetime import date
+
+          universe_as_of = date.fromisoformat(os.environ["UNIVERSE_AS_OF"])
+          market_as_of = date.fromisoformat(os.environ["MARKET_AS_OF"])
+          if market_as_of < universe_as_of:
+              raise SystemExit("MARKET_AS_OF cannot precede UNIVERSE_AS_OF")
+          PY
+
       - name: Restore Massive reference checkpoint
         uses: actions/cache/restore@v4
         with:
@@ -79,10 +96,10 @@ jobs:
       - name: Build or resume canonical universe
         id: universe
         run: |
-          UNIVERSE_DIR="$UNIVERSE_ROOT/as_of=$BOOTSTRAP_AS_OF"
+          UNIVERSE_DIR="$UNIVERSE_ROOT/as_of=$UNIVERSE_AS_OF"
           mkdir -p "$UNIVERSE_DIR"
           ibs-massive-universe \
-            --as-of "$BOOTSTRAP_AS_OF" \
+            --as-of "$UNIVERSE_AS_OF" \
             --cache-dir "$REFERENCE_CACHE_DIR" \
             --output-csv "$UNIVERSE_DIR/market_universe.csv" \
             --manifest "$UNIVERSE_DIR/manifest.json" \
@@ -100,7 +117,7 @@ jobs:
           manifest = json.loads(
               (
                   Path(os.environ["UNIVERSE_ROOT"])
-                  / f"as_of={os.environ['BOOTSTRAP_AS_OF']}"
+                  / f"as_of={os.environ['UNIVERSE_AS_OF']}"
                   / "manifest.json"
               ).read_text()
           )
@@ -125,8 +142,8 @@ jobs:
         if: steps.universe.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: massive-universe-${{ env.BOOTSTRAP_AS_OF }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.batch }}
-          path: ${{ env.UNIVERSE_ROOT }}/as_of=${{ env.BOOTSTRAP_AS_OF }}
+          name: massive-universe-${{ env.UNIVERSE_AS_OF }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.batch }}
+          path: ${{ env.UNIVERSE_ROOT }}/as_of=${{ env.UNIVERSE_AS_OF }}
           if-no-files-found: error
 
       - name: Restore Massive grouped-daily cache
@@ -141,12 +158,12 @@ jobs:
       - name: Backfill market history from 2024-11-01
         if: matrix.batch == 7 && steps.checkpoint.outputs.complete == 'true' && env.RUN_BACKFILL == 'true'
         run: |
-          UNIVERSE_DIR="$UNIVERSE_ROOT/as_of=$BOOTSTRAP_AS_OF"
+          UNIVERSE_DIR="$UNIVERSE_ROOT/as_of=$UNIVERSE_AS_OF"
           ibs-market-trigger \
             --universe-csv "$UNIVERSE_DIR/market_universe.csv" \
-            --universe-as-of "$BOOTSTRAP_AS_OF" \
+            --universe-as-of "$UNIVERSE_AS_OF" \
             --universe-source "Massive reference v3 dated snapshot" \
-            --as-of "$BOOTSTRAP_AS_OF" \
+            --as-of "$MARKET_AS_OF" \
             --start-date 2024-11-01 \
             --benchmark IWB \
             --cache-dir "$MARKET_CACHE_DIR" \
@@ -164,8 +181,8 @@ jobs:
         if: matrix.batch == 7 && steps.checkpoint.outputs.complete == 'true' && env.RUN_BACKFILL == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: market-trigger-${{ env.BOOTSTRAP_AS_OF }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.batch }}
-          path: ${{ env.MARKET_OUTPUT_DIR }}/as_of=${{ env.BOOTSTRAP_AS_OF }}
+          name: market-trigger-u${{ env.UNIVERSE_AS_OF }}-m${{ env.MARKET_AS_OF }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.batch }}
+          path: ${{ env.MARKET_OUTPUT_DIR }}/as_of=${{ env.MARKET_AS_OF }}
           if-no-files-found: error
 
       - name: Write run summary
@@ -174,7 +191,8 @@ jobs:
           {
             echo "## Massive Free MVP Bootstrap"
             echo ""
-            echo "- as_of: $BOOTSTRAP_AS_OF"
+            echo "- universe_as_of: $UNIVERSE_AS_OF"
+            echo "- market_as_of: $MARKET_AS_OF"
             echo "- batch: ${{ matrix.batch }} / 7"
             echo "- universe status: ${{ steps.checkpoint.outputs.status }}"
             echo "- pending overview requests: ${{ steps.checkpoint.outputs.pending }}"
