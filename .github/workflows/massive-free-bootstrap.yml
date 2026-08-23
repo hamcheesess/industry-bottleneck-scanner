@@ -1,6 +1,31 @@
 name: Massive Free MVP Bootstrap
 
 on:
+  workflow_call:
+    inputs:
+      universe_as_of:
+        description: Frozen universe membership/classification date (YYYY-MM-DD)
+        type: string
+        required: false
+        default: '2026-08-21'
+      market_as_of:
+        description: Frozen market-history cutoff (YYYY-MM-DD; not before universe_as_of)
+        type: string
+        required: false
+        default: '2026-08-21'
+      max_overview_requests:
+        description: Maximum uncached ticker-overview requests per sequential batch
+        type: string
+        required: false
+        default: '800'
+      run_backfill_when_complete:
+        description: Run the 2024-11-01 market backfill after universe enrichment completes
+        type: boolean
+        required: false
+        default: true
+    secrets:
+      MASSIVE_API_KEY:
+        required: true
   workflow_dispatch:
     inputs:
       universe_as_of:

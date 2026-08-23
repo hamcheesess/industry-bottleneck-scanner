@@ -90,6 +90,11 @@ This permits a genuine dated membership/classification snapshot to remain frozen
 normalized price archive extends to a later cutoff. `market_as_of < universe_as_of` is rejected
 before provider collection starts.
 
+The first strict historical calibration bootstrap is a reusable-workflow call with
+`universe_as_of=2025-05-30` and `market_as_of=2026-08-21`. The May 2025 cutoff is late enough to
+provide the 127 trading-session feature minimum from the approved 2024-11-01 history start while
+avoiding the future 2026 membership snapshot in replay.
+
 Every run writes:
 
 - `market_universe.csv`, including pending/unclassified members rather than shrinking the

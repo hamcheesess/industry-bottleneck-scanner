@@ -9,10 +9,10 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Product layer | Status | Executable boundary | Current gap |
 |---|---:|---|---|
 | Architecture consolidation | **DONE** | canonical roadmap, architecture and compatibility regression rules | none |
-| Broad-US identity snapshot | **PARTIAL** | dated `UniverseSnapshot`; Massive active-common-stock adapter; CIK/FIGI identity; batch checkpoint; terminal per-ticker overview-gap diagnostics | resume first production enrichment after one observed HTTP-400 ticker; refresh cadence remains future work |
-| Market classification snapshot | **PARTIAL** | SEC-SIC division/bucket mapping and explicit unclassified denominator | measure provider SIC gaps in the first production run |
-| Real EOD normalization | **DONE** | Massive adjusted grouped-daily adapter, validated raw date cache, normalized `DailyBar` history | execute 2024-11-01 through 2026-08-21 after universe enrichment completes |
-| Market trigger generation | **PARTIAL** | versioned dated trigger artifact, coverage diagnostics, `ibs-market-trigger` | production broad-US run and threshold calibration |
+| Broad-US identity snapshot | **PARTIAL** | production `2026-08-21` snapshot completed with 5,323 members; dated `UniverseSnapshot`; CIK/FIGI identity; batch checkpoint; terminal overview-gap diagnostics | historical `2025-05-30` snapshot and refresh cadence |
+| Market classification snapshot | **PARTIAL** | 4,389/5,323 production members classified by SEC SIC with explicit 934-member gap denominator | historical snapshot coverage and later classification enrichment policy |
+| Real EOD normalization | **DONE** | 1,740,696 normalized bars from 2024-11-01 through 2026-08-21; 4,071 tickers satisfy the 127-session minimum; no future bars | retain dated artifact and add historical-universe archive |
+| Market trigger generation | **PARTIAL** | 378 bucket assessments and 44 raw triggers at 2026-08-21; versioned artifact, coverage diagnostics, `ibs-market-trigger` | threshold calibration before promotion to causal research |
 | Market trigger replay | **DONE** | self-contained normalized archive, separate historical universe/market cutoffs, and strict-as-of `ibs-market-trigger-replay` | real historical cases not yet calibrated |
 | Source-agnostic operating evidence | **PARTIAL** | generic disclosure normalization/scanning, freshness/coverage, `operating-support-v1`, SEC submissions/archive adapter and CLIs | trigger-scoped live SEC run; automated non-SEC IR/presentation discovery |
 | Frozen transcript validation v1 | **LEGACY** | preserved audit/regression CLIs and artifacts | frozen; no product extension allowed |
