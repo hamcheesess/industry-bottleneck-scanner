@@ -257,6 +257,22 @@ ibs-causal-convergence \
 
 See [`docs/causal_convergence_contract.md`](docs/causal_convergence_contract.md).
 
+Run the separate frozen historical pre-news replay after supplying explicit research judgments
+for every promoted convergence node. The runner fingerprints every input and rejects later
+confirmation leakage; it does not infer economic-capture or expectation-gap scores.
+
+```bash
+ibs-pre-news-replay \
+  --input artifacts/replay/early-ai-electrical/input.json \
+  --market-trigger-artifact artifacts/market-trigger/replay-2024-11-15.json \
+  --root-shock-registry artifacts/causal/root_shocks.jsonl \
+  --causal-graph-registry artifacts/causal/graph.jsonl \
+  --industry-state-registry artifacts/industry/industry_state.jsonl \
+  --output-dir artifacts/replay/early-ai-electrical/output
+```
+
+See [`docs/historical_pre_news_replay.md`](docs/historical_pre_news_replay.md).
+
 Legacy bounded transcript workflows remain available for regression/audit work:
 
 ```text
@@ -270,4 +286,4 @@ ibs-review-language
 
 They should not be interpreted as the top-level current product workflow.
 
-See also [`docs/architecture.md`](docs/architecture.md), [`docs/current_roadmap.md`](docs/current_roadmap.md), [`docs/implementation_status.md`](docs/implementation_status.md), [`docs/implementation_compatibility.md`](docs/implementation_compatibility.md), [`docs/market_trigger_contract.md`](docs/market_trigger_contract.md), [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md), and [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md).
+See also [`docs/architecture.md`](docs/architecture.md), [`docs/current_roadmap.md`](docs/current_roadmap.md), [`docs/implementation_status.md`](docs/implementation_status.md), [`docs/implementation_compatibility.md`](docs/implementation_compatibility.md), [`docs/market_trigger_contract.md`](docs/market_trigger_contract.md), [`docs/market_triggered_causal_discovery.md`](docs/market_triggered_causal_discovery.md), [`docs/historical_pre_news_replay.md`](docs/historical_pre_news_replay.md), and [`docs/signal_taxonomy.md`](docs/signal_taxonomy.md).

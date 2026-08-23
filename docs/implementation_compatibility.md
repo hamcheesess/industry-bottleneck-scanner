@@ -39,6 +39,7 @@ This document prevents the architecture pivot from turning into a rewrite. It de
 | Industry state | `industry_state.py` | ACTIVE | append-only pre-shock supply-state memory |
 | Industry-state updater | `industry_state_updater.py`, `industry_state_update_cli.py` | ACTIVE | explicit economic-node assignments, deterministic AtomicSignal mapping, external observations, evidence/source-diversity gate |
 | Demand convergence | `demand_convergence.py` | ACTIVE | new-shock x pre-shock constraint x independent-root convergence |
+| Historical pre-news replay | `pre_news_replay.py`, `pre_news_replay_cli.py` | ACTIVE | fail-closed promoted-node join, frozen input fingerprints, holdout gate, existing node ranker orchestration |
 | Repo B | `investment-research-automation` | DOWNSTREAM | financial gate, deep research, DCF, final report |
 
 ## Compatibility rules
@@ -132,7 +133,8 @@ Causal graph approvals and industry-state snapshots should preserve history. His
 Future root-demand-shock, expectation-gap, convergence, and company-exposure artifacts should follow the same rule when historical validation begins.
 
 Root-demand-shock, branch, and convergence artifacts now follow this append-only/as-of rule.
-Expectation-gap and company-exposure artifacts remain future work.
+Replay node judgments and outputs now preserve an exact `as_of`, input fingerprints, and explicit
+held-out evidence IDs. Company-exposure artifacts remain future work.
 
 ### 9. Repo B remains isolated
 
@@ -191,6 +193,6 @@ In roadmap order, the next new interfaces should be limited to:
 2. source-agnostic disclosure adapters that output `SourceDocument`;
 3. `OperatingSupport` as a thin provider-independent causal-diagnosis input;
 4. root-demand-shock/path persistence contracts;
-5. company exposure mapping only after historical node-level replay succeeds.
+5. company exposure mapping only after the real historical node-level replay succeeds.
 
 Anything outside this order should require an explicit architectural reason rather than being added opportunistically.

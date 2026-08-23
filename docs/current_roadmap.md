@@ -166,7 +166,8 @@ This is the code status after architecture consolidation.
 | Causal graph | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | edge approval/history, append-only Root Demand Shock approval, bounded path expansion, `DemandBranch` artifacts | real root/edge evidence |
 | Pre-shock industry state | **UPDATER EXECUTABLE / REAL EVIDENCE PENDING** | append-only snapshots, strict pre-trigger lookup, explicit company-to-node assignments, AtomicSignal/external observation updater, diversity gate | real node assignments and physical/industry observations |
 | Demand convergence | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | root deduplication, strict pre-shock constraint join, versioned convergence artifacts | real graph/state integration and replay calibration |
-| Pre-news node ranking | **CORE IMPLEMENTED** | `causal_expansion.py`, six dimensions + hard gates | real-data scoring policy validation |
+| Pre-news node ranking | **REPLAY ORCHESTRATION EXECUTABLE / CALIBRATION PENDING** | `causal_expansion.py`, six dimensions + hard gates, promoted-convergence join, explicit frozen judgments | real frozen-case scoring policy validation |
+| Historical pre-news replay | **EXECUTABLE CONTRACT / REAL CASE PENDING** | exact `as_of`, input fingerprints, held-out evidence gate, fail-closed promoted-node coverage, versioned ranking artifact | populate and run the first early-AI electrical-infrastructure case |
 | Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
 | Repo-A -> Repo-B manifest | **NOT FROZEN** | conceptual boundary only | implement only after upstream historical replay works |
 
@@ -285,8 +286,9 @@ Implementation:
 - **DONE:** deduplicate paths sharing one root shock for convergence breadth;
 - **DONE:** join each target node with the latest strictly pre-trigger state;
 - **DONE:** rank `pre_shock_bottleneck`, `multi_branch_convergence`, and `priority_convergence`;
-- **IN PROGRESS:** feed real promoted nodes into the existing pre-news node assessment and
-  calibrate using the frozen historical replay.
+- **DONE:** feed promoted convergence nodes into the existing pre-news node assessment without
+  inventing economic-capture, reinvestment, triangulation, expectation-gap, or bottleneck scores;
+- **IN PROGRESS:** calibrate using the frozen historical replay.
 
 ### Phase 5 — historical pre-news replay
 
@@ -304,6 +306,17 @@ Freeze before running:
 Primary question: could the system reach the economically important downstream node using only information available at that time?
 
 Secondary questions: how early, with what evidence diversity, and with what market-attention gap? Later stock returns are diagnostic, not the primary correctness target.
+
+Implementation:
+
+- **DONE:** separate `ibs-pre-news-replay` from the frozen transcript validation CLI family;
+- **DONE:** fingerprint the replay input plus root, graph, and state registries;
+- **DONE:** require exact trigger-root/market-trigger identity and one frozen `as_of`;
+- **DONE:** reject later evidence and explicitly held-out confirmation IDs;
+- **DONE:** require explicit research judgments for every promoted node and reject injections for
+  non-promoted nodes;
+- **IN PROGRESS:** populate the first real early-AI electrical-infrastructure evidence package
+  after the production market backfill artifact is available.
 
 ### Phase 6 — company exposure mapping
 

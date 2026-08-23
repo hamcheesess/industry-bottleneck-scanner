@@ -21,6 +21,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, append-only root-shock approvals, versioned path orchestration | production root/edge evidence |
 | Demand convergence core | **PARTIAL** | approved roots/edges -> `DemandBranch`, independent-root deduplication, strict pre-shock state join, persisted assessments | real graph/state integration and replay calibration |
 | Pre-news ranking core | **PARTIAL** | six dimensions and hard gates | real-data scoring calibration |
+| Historical pre-news replay | **PARTIAL** | promoted-convergence join, exact frozen `as_of`, input fingerprints, held-out evidence gate, `ibs-pre-news-replay` | first real early-AI electrical-infrastructure replay package |
 | Company exposure mapping | **NOT STARTED** | architecture boundary only | evidence-backed node-to-company contract and mapper |
 | Repo A thesis manifest | **NOT STARTED** | conceptual Repo A/Repo B boundary only | freeze only after node-level historical replay succeeds |
 | Production cadence | **NOT STARTED** | none | begin only after replay and handoff stability |

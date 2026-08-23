@@ -43,6 +43,7 @@ ibs-sec-disclosures = "industry_bottleneck_scanner.sec_edgar_cli:main"
 ibs-industry-state-update = "industry_bottleneck_scanner.industry_state_update_cli:main"
 ibs-root-shock-append = "industry_bottleneck_scanner.root_shock_cli:main"
 ibs-causal-convergence = "industry_bottleneck_scanner.causal_convergence_cli:main"
+ibs-pre-news-replay = "industry_bottleneck_scanner.pre_news_replay_cli:main"
 
 [project.optional-dependencies]
 dev = [

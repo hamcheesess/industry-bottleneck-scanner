@@ -266,6 +266,10 @@ Repo B remains untouched until the upstream manifest is stable.
 8. company exposure mapping;
 9. Repo-A -> Repo-B manifest freeze and integration.
 
+The Phase-5 replay has a separate provider-independent CLI and fingerprints its frozen root,
+graph, state, and judgment inputs. It calls the existing node ranker and cannot derive missing
+economic-capture, reinvestment, triangulation, expectation-gap, or bottleneck judgments.
+
 ## Design principles
 
 ### Market-triggered, not headline-speed
