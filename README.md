@@ -220,6 +220,22 @@ ibs-market-trigger-calibrate \
   --output-dir artifacts/market-trigger/calibration
 ```
 
+Review the dated series using market data only, then build SEC-ready issuer batches from
+latest persistent buckets. Emerging one-date triggers remain visible in the review but are not
+silently promoted into the initial evidence-collection queue:
+
+```bash
+ibs-market-trigger-quality \
+  --calibration-dir artifacts/market-trigger/calibration \
+  --output artifacts/market-trigger/calibration/market_trigger_quality_review.json
+
+ibs-market-trigger-research-queue \
+  --quality-review artifacts/market-trigger/calibration/market_trigger_quality_review.json \
+  --universe-csv var/universe/as_of=2025-05-30/market_universe.csv \
+  --output-dir artifacts/market-trigger/calibration/research_queue \
+  --batch-size 100
+```
+
 Collect trigger-scoped SEC disclosures. SEC does not require an API key, but its fair-access
 policy requires a declared organization/contact User-Agent:
 

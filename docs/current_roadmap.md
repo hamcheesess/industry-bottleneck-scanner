@@ -161,7 +161,7 @@ This is the code status after architecture consolidation.
 | Frozen transcript validation | **FROZEN** | v1 audit trail and regression lessons | nothing; do not retrofit |
 | Quartr-era v2 | **PARKED** | adapter/fallback/provenance code and tests | no active work unless access situation changes |
 | Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, self-contained cache-first normalized history archive | production universe run and provider entitlement/retention verification |
-| Market trigger | **EXECUTABLE / CALIBRATION PENDING** | `market_trigger.py`, bottom-up breadth, dated v1 trigger artifact, live CLI and strict-as-of replay CLI | real historical calibration and trigger-quality assessment |
+| Market trigger | **CALIBRATED / RESEARCH QUEUE READY** | bottom-up breadth, strict-as-of 16-date calibration, outcome-blind stability review, deterministic SEC issuer batches | operating-evidence validation of persistent buckets |
 | Causal diagnosis | **PROVIDER-INDEPENDENT BOUNDARY IMPLEMENTED** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot` | real source coverage calibration |
 | Causal graph | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | edge approval/history, append-only Root Demand Shock approval, bounded path expansion, `DemandBranch` artifacts | real root/edge evidence |
 | Pre-shock industry state | **UPDATER EXECUTABLE / REAL EVIDENCE PENDING** | append-only snapshots, strict pre-trigger lookup, explicit company-to-node assignments, AtomicSignal/external observation updater, diversity gate | real node assignments and physical/industry observations |
@@ -240,6 +240,9 @@ Implementation:
   `universe_as_of=2025-05-30`, `market_as_of=2026-08-21`, and history beginning `2024-11-01`;
 - **DONE:** produce a provider-free 16-date monthly calibration series with explicit per-date
   eligibility, frozen thresholds, artifact hashes, and no post-cutoff bars;
+- **DONE:** classify latest triggers without outcome data into 28 persistent and 22 emerging
+  buckets, preserving all 50 results and leaving thresholds frozen;
+- **DONE:** join the 28 persistent buckets to 479 unique SEC issuers in five bounded batches;
 - **IN PROGRESS:** enrich the frozen `2026-08-21` production snapshot, backfill from
   `2024-11-01`, and calibrate thresholds through valid dated historical trigger replay.
 

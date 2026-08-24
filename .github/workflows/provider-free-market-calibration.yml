@@ -58,6 +58,29 @@ jobs:
             --end-as-of 2026-08-21 \
             --output-dir artifacts/calibration
 
+      - name: Review trigger stability without outcomes
+        run: |
+          ibs-market-trigger-quality \
+            --calibration-dir artifacts/calibration \
+            --output artifacts/calibration/market_trigger_quality_review.json
+
+      - name: Download final dated universe snapshot
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          pattern: massive-universe-2025-05-30-*-7
+          path: artifacts/universe
+          merge-multiple: true
+
+      - name: Build bounded persistent-trigger SEC research queue
+        run: |
+          ibs-market-trigger-research-queue \
+            --quality-review artifacts/calibration/market_trigger_quality_review.json \
+            --universe-csv artifacts/universe/market_universe.csv \
+            --output-dir artifacts/calibration/research_queue \
+            --batch-size 100
+
       - name: Upload calibration artifacts
         uses: actions/upload-artifact@v4
         with:

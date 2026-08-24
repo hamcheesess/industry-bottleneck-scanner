@@ -12,6 +12,8 @@ ACTIVE_CAUSAL_MODULES = (
     "market_history.py",
     "market_trigger.py",
     "market_trigger_calibration.py",
+    "market_trigger_quality.py",
+    "market_trigger_research_queue.py",
     "causal_diagnosis.py",
     "causal_expansion.py",
     "causal_graph.py",

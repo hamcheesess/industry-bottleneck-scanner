@@ -104,3 +104,18 @@ The command rejects a calibration start before `universe.as_of`, an end after ar
 and any benchmark or constituent bar after the archive cutoff. Eligibility is recomputed at
 every date using the 127-session minimum; later history is never used to make an earlier ticker
 eligible.
+
+## Outcome-blind quality review and research queue
+
+`ibs-market-trigger-quality` verifies every dated artifact hash, policy, universe provenance,
+date ordering, and bucket identity before calculating trigger prevalence, adjacent-date Jaccard,
+and bucket persistence. It does not consume outcomes, news, filings, or later prices and cannot
+change the frozen trigger policy. A latest trigger is classified as `persistent` only when it is
+present on at least two consecutive calibration dates; otherwise it remains `emerging`.
+
+`ibs-market-trigger-research-queue` joins every latest persistent bucket back to the dated
+universe CSV and emits SEC-compatible issuer batches of at most 100 rows. All issuers in the
+selected buckets are retained; the batching rule does not handpick companies. Multiple share
+classes sharing one CIK are collected once at the SEC issuer boundary, with skipped security
+tickers recorded in the queue manifest. Missing CIKs are also explicit and never counted as
+selected issuers.
