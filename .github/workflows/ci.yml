@@ -24,9 +24,6 @@ jobs:
         run: pytest -q
 
   frozen-market-calibration:
-    if: >-
-      github.ref == 'refs/heads/phase1-scanner-foundation' &&
-      contains(github.event.head_commit.message, '[calibrate-market]')
     uses: ./.github/workflows/provider-free-market-calibration.yml
     with:
       source_run_id: '32620277256'
