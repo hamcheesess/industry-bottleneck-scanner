@@ -208,6 +208,18 @@ ibs-market-trigger-replay \
   --output artifacts/market-trigger/replay-2026-06-30.json
 ```
 
+Produce a provider-free monthly calibration series from the same frozen archive. The command
+selects the last available benchmark session in each month, applies the dated universe cutoff,
+and records per-date eligibility and output hashes without tuning the policy thresholds:
+
+```bash
+ibs-market-trigger-calibrate \
+  --history-jsonl artifacts/market-trigger/as_of=2026-08-21/market_history.jsonl \
+  --start-as-of 2025-05-30 \
+  --end-as-of 2026-08-21 \
+  --output-dir artifacts/market-trigger/calibration
+```
+
 Collect trigger-scoped SEC disclosures. SEC does not require an API key, but its fair-access
 policy requires a declared organization/contact User-Agent:
 

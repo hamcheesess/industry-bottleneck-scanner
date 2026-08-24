@@ -116,33 +116,42 @@ def write_market_history_jsonl(
 
 
 def load_market_history_jsonl(path: Path) -> MarketHistoryArchive:
-    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
-    if not records or records[0].get("record_type") != "manifest":
-        raise ValueError("market history archive must start with a manifest record")
-    manifest = records[0]
-    if manifest.get("schema_version") != "normalized-market-history-v1":
-        raise ValueError("unsupported market history schema_version")
+    with path.open("r", encoding="utf-8") as handle:
+        first_line = next((line for line in handle if line.strip()), None)
+        if first_line is None:
+            raise ValueError("market history archive must start with a manifest record")
+        manifest = json.loads(first_line)
+        if manifest.get("record_type") != "manifest":
+            raise ValueError("market history archive must start with a manifest record")
+        if manifest.get("schema_version") != "normalized-market-history-v1":
+            raise ValueError("unsupported market history schema_version")
 
-    benchmark_ticker = str(manifest["benchmark_ticker"])
-    benchmark_bars: list[DailyBar] = []
-    grouped: dict[tuple[str, str, str], list[DailyBar]] = {}
-    for record in records[1:]:
-        if record.get("record_type") != "bar":
-            raise ValueError("unexpected market history record_type")
-        bar = DailyBar(
-            trading_date=date.fromisoformat(record["trading_date"]),
-            adjusted_close=float(record["adjusted_close"]),
-            volume=float(record["volume"]),
-        )
-        if record.get("role") == "benchmark":
-            if record.get("ticker") != benchmark_ticker:
-                raise ValueError("benchmark ticker does not match archive manifest")
-            benchmark_bars.append(bar)
-        elif record.get("role") == "constituent":
-            key = (str(record["ticker"]), str(record["sector"]), str(record["bucket"]))
-            grouped.setdefault(key, []).append(bar)
-        else:
-            raise ValueError("market history bar must have benchmark or constituent role")
+        benchmark_ticker = str(manifest["benchmark_ticker"])
+        benchmark_bars: list[DailyBar] = []
+        grouped: dict[tuple[str, str, str], list[DailyBar]] = {}
+        for line_number, line in enumerate(handle, start=2):
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"{path}:{line_number}: invalid JSON") from exc
+            if record.get("record_type") != "bar":
+                raise ValueError("unexpected market history record_type")
+            bar = DailyBar(
+                trading_date=date.fromisoformat(record["trading_date"]),
+                adjusted_close=float(record["adjusted_close"]),
+                volume=float(record["volume"]),
+            )
+            if record.get("role") == "benchmark":
+                if record.get("ticker") != benchmark_ticker:
+                    raise ValueError("benchmark ticker does not match archive manifest")
+                benchmark_bars.append(bar)
+            elif record.get("role") == "constituent":
+                key = (str(record["ticker"]), str(record["sector"]), str(record["bucket"]))
+                grouped.setdefault(key, []).append(bar)
+            else:
+                raise ValueError("market history bar must have benchmark or constituent role")
 
     universe_payload = manifest["universe"]
     entries = tuple(MarketUniverseEntry(**item) for item in universe_payload["entries"])

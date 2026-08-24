@@ -86,3 +86,21 @@ It rejects:
 All feature calculation reuses `market_history.build_market_snapshots`, whose normalization
 excludes bars after the replay `as_of`. Replay does not call Massive and does not extend any
 legacy `validation_*` state machine.
+
+## Dated calibration series
+
+`ibs-market-trigger-calibrate` consumes only a persisted normalized archive and makes zero
+provider calls. It emits `industry_market_triggers.json` below an `as_of=YYYY-MM-DD` directory
+for the first eligible session, each last available benchmark session of the month, and the
+requested final session. `calibration_manifest.json` records:
+
+- the normalized-history SHA-256 and frozen universe/archive provenance;
+- the unchanged trigger policy with `frozen_observation_only_no_threshold_tuning` status;
+- per-date benchmark-session, eligible-ticker, insufficient-history, bucket, and trigger counts;
+- each dated artifact path and SHA-256;
+- `provider_calls: 0`.
+
+The command rejects a calibration start before `universe.as_of`, an end after archive `as_of`,
+and any benchmark or constituent bar after the archive cutoff. Eligibility is recomputed at
+every date using the 127-session minimum; later history is never used to make an earlier ticker
+eligible.

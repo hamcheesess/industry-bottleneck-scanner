@@ -11,6 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 ACTIVE_CAUSAL_MODULES = (
     "market_history.py",
     "market_trigger.py",
+    "market_trigger_calibration.py",
     "causal_diagnosis.py",
     "causal_expansion.py",
     "causal_graph.py",

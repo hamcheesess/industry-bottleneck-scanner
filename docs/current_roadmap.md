@@ -236,8 +236,10 @@ Implementation:
 - **DONE:** preserve dated universe provenance/classification gaps and support provider-free strict-as-of replay from normalized history;
 - **DONE:** separate historical `universe_as_of` from the later `market_as_of` archive cutoff so
   calibration never uses a future membership snapshot;
-- **IN PROGRESS:** build the first strict historical snapshot with
+- **DONE:** build the first strict historical snapshot with
   `universe_as_of=2025-05-30`, `market_as_of=2026-08-21`, and history beginning `2024-11-01`;
+- **DONE:** produce a provider-free 16-date monthly calibration series with explicit per-date
+  eligibility, frozen thresholds, artifact hashes, and no post-cutoff bars;
 - **IN PROGRESS:** enrich the frozen `2026-08-21` production snapshot, backfill from
   `2024-11-01`, and calibrate thresholds through valid dated historical trigger replay.
 
