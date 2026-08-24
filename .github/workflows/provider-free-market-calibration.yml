@@ -16,6 +16,10 @@ permissions:
   actions: read
   contents: read
 
+concurrency:
+  group: provider-free-market-calibration
+  cancel-in-progress: false
+
 jobs:
   calibrate:
     runs-on: ubuntu-latest
