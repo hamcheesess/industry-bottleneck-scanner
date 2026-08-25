@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,3 +22,9 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Test
         run: pytest -q
+
+  start-sec-bootstrap:
+    uses: ./.github/workflows/sec-operating-evidence-bootstrap.yml
+    with:
+      research_queue_run_id: '32717805837'
+    secrets: inherit
