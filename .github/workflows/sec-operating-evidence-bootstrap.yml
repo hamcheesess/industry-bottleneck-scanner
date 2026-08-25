@@ -6,6 +6,18 @@ on:
       research_queue_run_id:
         required: true
         type: string
+      batches_json:
+        required: false
+        type: string
+        default: '["001","002","003","004","005"]'
+      resume_run_id:
+        required: false
+        type: string
+        default: ''
+      resume_batch:
+        required: false
+        type: string
+        default: ''
     secrets:
       SEC_USER_AGENT:
         required: true
@@ -15,6 +27,18 @@ on:
         description: Successful provider-free calibration run containing the research queue
         required: true
         default: '32717805837'
+      batches_json:
+        description: JSON array of three-digit batch IDs
+        required: true
+        default: '["001","002","003","004","005"]'
+      resume_run_id:
+        description: Optional failed SEC workflow run containing a cache checkpoint
+        required: false
+        default: ''
+      resume_batch:
+        description: Batch ID whose checkpoint should be restored
+        required: false
+        default: ''
 
 permissions:
   actions: read
@@ -30,9 +54,11 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        batch: ['001', '002', '003', '004', '005']
+        batch: ${{ fromJSON(inputs.batches_json || '["001","002","003","004","005"]') }}
     env:
       RESEARCH_QUEUE_RUN_ID: ${{ inputs.research_queue_run_id || '32717805837' }}
+      RESUME_RUN_ID: ${{ inputs.resume_run_id || '' }}
+      RESUME_BATCH: ${{ inputs.resume_batch || '' }}
       SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
       SEC_SINCE: '2024-11-01'
       SEC_AS_OF: '2026-08-21T23:59:59+00:00'
@@ -71,6 +97,26 @@ jobs:
           key: sec-edgar-u2025-05-30-m2026-08-21-b${{ matrix.batch }}-${{ hashFiles(format('artifacts/research/research_queue/sec_issuers_batch_{0}.csv', matrix.batch)) }}
           restore-keys: |
             sec-edgar-u2025-05-30-m2026-08-21-b${{ matrix.batch }}-
+
+      - name: Download failed-run cache checkpoint
+        if: env.RESUME_RUN_ID != '' && matrix.batch == env.RESUME_BATCH
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.RESUME_RUN_ID }}
+          pattern: sec-operating-evidence-b${{ matrix.batch }}-*-*
+          path: artifacts/resume
+          merge-multiple: true
+
+      - name: Restore failed-run cache checkpoint
+        if: env.RESUME_RUN_ID != '' && matrix.batch == env.RESUME_BATCH
+        run: |
+          if [[ ! -d artifacts/resume/var/cache/sec-edgar ]]; then
+            echo "Requested SEC cache checkpoint is missing" >&2
+            exit 2
+          fi
+          mkdir -p var/cache/sec-edgar
+          cp -a artifacts/resume/var/cache/sec-edgar/. var/cache/sec-edgar/
 
       - name: Collect strict-as-of SEC disclosures
         run: |

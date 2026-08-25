@@ -313,8 +313,9 @@ class SecEdgarClient:
         except HTTPError as exc:
             detail = " (fair-access identity or pacing may be rejected)" if exc.code in {403, 429} else ""
             raise SecEdgarError(f"SEC EDGAR HTTP {exc.code}{detail}") from exc
-        except URLError as exc:
-            raise SecEdgarError(f"SEC EDGAR transport error: {exc.reason}") from exc
+        except (URLError, TimeoutError) as exc:
+            reason = getattr(exc, "reason", str(exc))
+            raise SecEdgarError(f"SEC EDGAR transport error: {reason}") from exc
 
     def _cache_path(self, url: str) -> Path:
         parsed = urlparse(url)

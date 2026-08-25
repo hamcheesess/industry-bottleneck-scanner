@@ -201,3 +201,14 @@ def test_client_rejects_unexpected_provider_host(tmp_path: Path) -> None:
     )
     with pytest.raises(SecEdgarError, match="unexpected provider URL"):
         client._get("https://example.com/filing.json")
+
+
+def test_open_request_classifies_socket_read_timeout_as_transport(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def timeout(*args: object, **kwargs: object) -> object:
+        raise TimeoutError("read operation timed out")
+
+    monkeypatch.setattr("industry_bottleneck_scanner.sec_edgar.urlopen", timeout)
+    with pytest.raises(SecEdgarError, match="transport error: read operation timed out"):
+        SecEdgarClient._open_request(Request("https://data.sec.gov/submissions/test.json"))

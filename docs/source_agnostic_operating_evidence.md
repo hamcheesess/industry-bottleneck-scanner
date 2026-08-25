@@ -78,7 +78,9 @@ at most 100 at four requests per second. Each batch persists normalized disclosu
 cache checkpoints. Failures also persist a `sec-edgar-collection-v1` diagnostic classified as
 `configuration`, `sec_access_policy`, `sec_rate_limit`, `sec_transport`,
 `sec_response_contract`, or `sec_collection_error`; a failed batch is never reported as an
-empty-evidence result.
+empty-evidence result. Raw cache artifacts can be supplied to the workflow as an explicit
+failed-run checkpoint, so transient transport timeouts resume without refetching validated SEC
+responses.
 
 Scan the resulting provider-neutral disclosure artifact:
 
