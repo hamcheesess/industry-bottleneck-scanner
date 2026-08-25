@@ -179,7 +179,12 @@ def main(argv: list[str] | None = None) -> int:
         args.diagnostics,
         {
             "schema_version": "sec-edgar-collection-v1",
-            "status": "complete",
+            "status": (
+                "complete_with_gaps"
+                if collection.diagnostics.failed_issuer_count
+                or collection.diagnostics.failed_document_count
+                else "complete"
+            ),
             "provider": "sec_edgar",
             "since": args.since.isoformat(),
             "as_of": args.as_of.isoformat(),
@@ -187,6 +192,11 @@ def main(argv: list[str] | None = None) -> int:
             **asdict(collection.diagnostics),
         },
     )
+    if (
+        collection.diagnostics.failed_issuer_count == collection.diagnostics.issuer_count
+        and collection.diagnostics.disclosure_count == 0
+    ):
+        raise SystemExit("SEC collection failed [sec_collection_error]: every issuer failed")
     print(
         f"issuers={collection.diagnostics.issuer_count} "
         f"filings={collection.diagnostics.filing_count} "

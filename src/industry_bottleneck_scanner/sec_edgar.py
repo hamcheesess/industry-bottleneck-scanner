@@ -71,6 +71,9 @@ class SecCollectionDiagnostics:
     skipped_unsupported_documents: int
     provider_requests: int
     cache_hits: int
+    failed_issuer_count: int = 0
+    failed_document_count: int = 0
+    failures: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -290,6 +293,7 @@ class SecEdgarClient:
         user_agent: str,
         cache_dir: Path,
         request_interval_seconds: float = 0.2,
+        max_attempts: int = 3,
         transport: Callable[[Request], bytes] | None = None,
     ) -> None:
         declared_identity = user_agent.strip()
@@ -297,10 +301,13 @@ class SecEdgarClient:
             raise ValueError("SEC user agent must declare an organization and contact email")
         if request_interval_seconds < 0.1:
             raise ValueError("SEC request interval must remain at least 0.1 seconds")
+        if max_attempts < 1:
+            raise ValueError("SEC max_attempts must be at least 1")
         self._user_agent = declared_identity
         self._cache_dir = cache_dir
         self._request_interval_seconds = request_interval_seconds
         self._transport = transport or self._open_request
+        self._max_attempts = max_attempts
         self._last_request_at: float | None = None
         self.provider_requests = 0
         self.cache_hits = 0
@@ -342,7 +349,23 @@ class SecEdgarClient:
                 "Accept": "application/json,text/html,text/plain;q=0.9,*/*;q=0.1",
             },
         )
-        content = self._transport(request)
+        content = None
+        for attempt in range(1, self._max_attempts + 1):
+            try:
+                content = self._transport(request)
+                break
+            except SecEdgarError as exc:
+                message = str(exc).casefold()
+                retryable = (
+                    "transport error" in message
+                    or "http 429" in message
+                    or any(f"http {code}" in message for code in range(500, 600))
+                )
+                if not retryable or attempt == self._max_attempts:
+                    raise SecEdgarError(f"{url}: {exc}") from exc
+                time.sleep(max(self._request_interval_seconds, float(2 ** (attempt - 1))))
+        if content is None:  # pragma: no cover - loop either returns content or raises
+            raise SecEdgarError(f"{url}: SEC transport produced no response")
         self._last_request_at = time.monotonic()
         self.provider_requests += 1
         _atomic_write(cache_path, content)
@@ -472,20 +495,44 @@ def collect_sec_disclosures(
     disclosures: list[PublicDisclosure] = []
     filing_count = 0
     skipped = 0
+    failed_issuers: set[str] = set()
+    failed_documents = 0
+    failures: list[str] = []
     for issuer in issuer_items:
-        filings = client.filings(cik=issuer.cik, since=since, as_of=as_of)
+        try:
+            filings = client.filings(cik=issuer.cik, since=since, as_of=as_of)
+        except SecEdgarError as exc:
+            failed_issuers.add(issuer.company_id)
+            failures.append(f"issuer:{issuer.company_id}:{exc}")
+            continue
         filing_count += len(filings)
         for filing in filings:
-            submitted = client.submitted_documents(cik=issuer.cik, filing=filing) if filing.form == "8-K" else ()
+            submitted: tuple[SecSubmittedDocument, ...] = ()
+            if filing.form == "8-K":
+                try:
+                    submitted = client.submitted_documents(cik=issuer.cik, filing=filing)
+                except SecEdgarError as exc:
+                    failed_documents += 1
+                    failures.append(
+                        f"filing-index:{issuer.company_id}:{filing.accession_number}:{exc}"
+                    )
             for document in _documents_to_collect(filing, submitted):
                 if not _is_html_or_text(document.filename):
                     skipped += 1
                     continue
-                source_url, content = client.document_content(
-                    cik=issuer.cik,
-                    filing=filing,
-                    filename=document.filename,
-                )
+                try:
+                    source_url, content = client.document_content(
+                        cik=issuer.cik,
+                        filing=filing,
+                        filename=document.filename,
+                    )
+                except SecEdgarError as exc:
+                    failed_documents += 1
+                    failures.append(
+                        f"document:{issuer.company_id}:{filing.accession_number}:"
+                        f"{document.filename}:{exc}"
+                    )
+                    continue
                 sections = html_to_sections(content)
                 if not sections:
                     skipped += 1
@@ -524,5 +571,8 @@ def collect_sec_disclosures(
             skipped_unsupported_documents=skipped,
             provider_requests=client.provider_requests,
             cache_hits=client.cache_hits,
+            failed_issuer_count=len(failed_issuers),
+            failed_document_count=failed_documents,
+            failures=tuple(failures),
         ),
     )

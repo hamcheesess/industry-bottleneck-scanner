@@ -156,3 +156,47 @@ def test_sec_collection_cli_persists_classified_failure_diagnostics(
     assert diagnostics["failure_kind"] == expected_kind
     assert diagnostics["provider_requests"] == 2
     assert diagnostics["cache_hits"] == 1
+
+
+def test_sec_collection_cli_marks_partial_document_gaps_without_failing_batch(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    class FakeClient:
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+    def partial(*args: object, **kwargs: object) -> SecDisclosureCollection:
+        return SecDisclosureCollection(
+            disclosures=(
+                PublicDisclosure(
+                    provider="sec_edgar",
+                        provider_document_id="accession:filing.htm",
+                        company_id="cik-0000123456",
+                        ticker=None,
+                    document_type="sec_10q",
+                    published_at=datetime(2026, 8, 1, tzinfo=timezone.utc),
+                    retrieved_at=datetime(2026, 8, 2, tzinfo=timezone.utc),
+                    source_url="https://www.sec.gov/Archives/example/filing.htm",
+                    sections=(DisclosureSection("section-0001", "Capacity remains tight."),),
+                ),
+            ),
+            diagnostics=SecCollectionDiagnostics(
+                issuer_count=1,
+                filing_count=2,
+                disclosure_count=1,
+                skipped_unsupported_documents=0,
+                provider_requests=3,
+                cache_hits=0,
+                failed_document_count=1,
+                failures=("document:cik-0000123456:timeout",),
+            ),
+        )
+
+    monkeypatch.setenv("SEC_USER_AGENT", "Bottleneck Research admin@example.com")
+    monkeypatch.setattr("industry_bottleneck_scanner.sec_edgar_cli.SecEdgarClient", FakeClient)
+    monkeypatch.setattr("industry_bottleneck_scanner.sec_edgar_cli.collect_sec_disclosures", partial)
+    assert main(args(tmp_path)) == 0
+    diagnostics = json.loads((tmp_path / "diagnostics.json").read_text(encoding="utf-8"))
+    assert diagnostics["status"] == "complete_with_gaps"
+    assert diagnostics["failed_document_count"] == 1

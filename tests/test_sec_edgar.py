@@ -11,6 +11,7 @@ from industry_bottleneck_scanner.models import Classification
 from industry_bottleneck_scanner.sec_edgar import (
     SecEdgarClient,
     SecEdgarError,
+    SecFiling,
     SecIssuer,
     collect_sec_disclosures,
     html_to_sections,
@@ -212,3 +213,56 @@ def test_open_request_classifies_socket_read_timeout_as_transport(
     monkeypatch.setattr("industry_bottleneck_scanner.sec_edgar.urlopen", timeout)
     with pytest.raises(SecEdgarError, match="transport error: read operation timed out"):
         SecEdgarClient._open_request(Request("https://data.sec.gov/submissions/test.json"))
+
+
+def test_client_retries_transient_transport_error_before_caching(tmp_path: Path) -> None:
+    attempts = 0
+
+    def flaky(request: Request) -> bytes:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise SecEdgarError("SEC EDGAR transport error: timeout")
+        return submissions_payload(recent={key: [] for key in filing_columns()})
+
+    client = SecEdgarClient(
+        user_agent="Bottleneck Research admin@example.com",
+        cache_dir=tmp_path,
+        request_interval_seconds=0.1,
+        max_attempts=2,
+        transport=flaky,
+    )
+    assert client.filings(cik=CIK, since=date(2024, 11, 1), as_of=AS_OF) == ()
+    assert attempts == 2
+    assert client.provider_requests == 1
+
+
+def test_collection_records_one_document_failure_and_continues() -> None:
+    filing = SecFiling(
+        accession_number=ACCESSION,
+        form="10-Q",
+        filing_date=date(2026, 8, 1),
+        accepted_at=datetime(2026, 8, 1, tzinfo=timezone.utc),
+        primary_document="form10-q.htm",
+    )
+
+    class PartialClient:
+        provider_requests = 2
+        cache_hits = 0
+
+        def filings(self, **kwargs: object) -> tuple[SecFiling, ...]:
+            return (filing,)
+
+        def document_content(self, **kwargs: object) -> tuple[str, bytes]:
+            raise SecEdgarError("https://www.sec.gov/example: SEC EDGAR transport error: timeout")
+
+    result = collect_sec_disclosures(
+        PartialClient(),
+        issuers=(SecIssuer(company_id=f"cik-{CIK}", cik=CIK),),
+        since=date(2024, 11, 1),
+        as_of=AS_OF,
+    )
+    assert result.disclosures == ()
+    assert result.diagnostics.failed_issuer_count == 0
+    assert result.diagnostics.failed_document_count == 1
+    assert "form10-q.htm" in result.diagnostics.failures[0]
