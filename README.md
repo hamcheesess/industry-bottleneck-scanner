@@ -250,6 +250,12 @@ ibs-sec-disclosures \
   --diagnostics artifacts/operating/sec-collection.json
 ```
 
+For the full persistent-trigger queue, `.github/workflows/sec-operating-evidence-bootstrap.yml`
+downloads the five frozen issuer batches and processes them sequentially at four requests per
+second. `SEC_USER_AGENT` must be a repository secret containing an organization and contact
+email. Each batch uploads normalized disclosures, classified failure diagnostics, and its raw
+response-cache checkpoint even when collection fails.
+
 See [`docs/source_agnostic_operating_evidence.md`](docs/source_agnostic_operating_evidence.md)
 for the normalization, freshness, coverage, and replay contracts.
 

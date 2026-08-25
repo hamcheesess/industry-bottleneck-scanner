@@ -10,7 +10,7 @@ from pathlib import Path
 
 from .disclosure_documents import PublicDisclosure
 from .models import Classification
-from .sec_edgar import SecEdgarClient, SecIssuer, collect_sec_disclosures
+from .sec_edgar import SecEdgarClient, SecEdgarError, SecIssuer, collect_sec_disclosures
 
 
 def _date(value: str) -> date:
@@ -84,6 +84,24 @@ def _atomic_json(path: Path, payload: dict[str, object]) -> None:
     os.replace(temporary, path)
 
 
+def _failure_kind(error: Exception) -> str:
+    message = str(error).casefold()
+    if isinstance(error, ValueError):
+        return "configuration"
+    if "http 429" in message:
+        return "sec_rate_limit"
+    if "http 401" in message or "http 403" in message:
+        return "sec_access_policy"
+    if "transport error" in message:
+        return "sec_transport"
+    if any(
+        marker in message
+        for marker in ("invalid json", "json root", "filings object", "recent filings", "inconsistent")
+    ):
+        return "sec_response_contract"
+    return "sec_collection_error"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Collect trigger-scoped 8-K, 10-Q, and 10-K disclosures from SEC EDGAR"
@@ -122,17 +140,37 @@ def main(argv: list[str] | None = None) -> int:
             "SEC_USER_AGENT is required (format: organization contact@example.com); "
             "SEC EDGAR does not require an API key"
         )
-    client = SecEdgarClient(
-        user_agent=user_agent,
-        cache_dir=args.cache_dir,
-        request_interval_seconds=args.request_interval_seconds,
-    )
-    collection = collect_sec_disclosures(
-        client,
-        issuers=issuers,
-        since=args.since,
-        as_of=args.as_of,
-    )
+    client = None
+    try:
+        client = SecEdgarClient(
+            user_agent=user_agent,
+            cache_dir=args.cache_dir,
+            request_interval_seconds=args.request_interval_seconds,
+        )
+        collection = collect_sec_disclosures(
+            client,
+            issuers=issuers,
+            since=args.since,
+            as_of=args.as_of,
+        )
+    except (SecEdgarError, ValueError) as exc:
+        _atomic_json(
+            args.diagnostics,
+            {
+                "schema_version": "sec-edgar-collection-v1",
+                "status": "failed",
+                "failure_kind": _failure_kind(exc),
+                "error": str(exc),
+                "provider": "sec_edgar",
+                "since": args.since.isoformat(),
+                "as_of": args.as_of.isoformat(),
+                "companies_source": str(args.companies_csv),
+                "issuer_count": len(issuers),
+                "provider_requests": getattr(client, "provider_requests", 0),
+                "cache_hits": getattr(client, "cache_hits", 0),
+            },
+        )
+        raise SystemExit(f"SEC collection failed [{_failure_kind(exc)}]: {exc}") from exc
     _atomic_jsonl(
         args.output_jsonl,
         tuple(_disclosure_payload(item) for item in collection.disclosures),
@@ -141,6 +179,7 @@ def main(argv: list[str] | None = None) -> int:
         args.diagnostics,
         {
             "schema_version": "sec-edgar-collection-v1",
+            "status": "complete",
             "provider": "sec_edgar",
             "since": args.since.isoformat(),
             "as_of": args.as_of.isoformat(),

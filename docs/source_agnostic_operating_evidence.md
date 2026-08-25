@@ -73,6 +73,13 @@ ibs-sec-disclosures \
 The company CSV requires `cik` plus `company_id` or `issuer_id`. Optional `ticker`, `sector`,
 `industry`/`bucket`, and `subindustry` fields preserve the Market Trigger classification join.
 
+The production bootstrap processes the frozen research queue sequentially in issuer batches of
+at most 100 at four requests per second. Each batch persists normalized disclosures and raw
+cache checkpoints. Failures also persist a `sec-edgar-collection-v1` diagnostic classified as
+`configuration`, `sec_access_policy`, `sec_rate_limit`, `sec_transport`,
+`sec_response_contract`, or `sec_collection_error`; a failed batch is never reported as an
+empty-evidence result.
+
 Scan the resulting provider-neutral disclosure artifact:
 
 ```bash

@@ -1,0 +1,97 @@
+name: SEC Operating Evidence Bootstrap
+
+on:
+  workflow_call:
+    inputs:
+      research_queue_run_id:
+        required: true
+        type: string
+    secrets:
+      SEC_USER_AGENT:
+        required: true
+  workflow_dispatch:
+    inputs:
+      research_queue_run_id:
+        description: Successful provider-free calibration run containing the research queue
+        required: true
+        default: '32717805837'
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: sec-operating-evidence-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        batch: ['001', '002', '003', '004', '005']
+    env:
+      RESEARCH_QUEUE_RUN_ID: ${{ inputs.research_queue_run_id || '32717805837' }}
+      SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+      SEC_SINCE: '2024-11-01'
+      SEC_AS_OF: '2026-08-21T23:59:59+00:00'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Verify declared SEC identity is configured
+        shell: bash
+        run: |
+          if [[ -z "$SEC_USER_AGENT" || "$SEC_USER_AGENT" != *" "* || "$SEC_USER_AGENT" != *"@"* ]]; then
+            echo "SEC_USER_AGENT is missing or does not contain an organization and contact email" >&2
+            exit 2
+          fi
+
+      - name: Download frozen trigger research queue
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.RESEARCH_QUEUE_RUN_ID }}
+          pattern: provider-free-market-calibration-*-1
+          path: artifacts/research
+          merge-multiple: true
+
+      - name: Restore SEC response cache
+        uses: actions/cache@v4
+        with:
+          path: var/cache/sec-edgar
+          key: sec-edgar-u2025-05-30-m2026-08-21-b${{ matrix.batch }}-${{ hashFiles(format('artifacts/research/research_queue/sec_issuers_batch_{0}.csv', matrix.batch)) }}
+          restore-keys: |
+            sec-edgar-u2025-05-30-m2026-08-21-b${{ matrix.batch }}-
+
+      - name: Collect strict-as-of SEC disclosures
+        run: |
+          mkdir -p "artifacts/sec/batch-${{ matrix.batch }}"
+          ibs-sec-disclosures \
+            --companies-csv "artifacts/research/research_queue/sec_issuers_batch_${{ matrix.batch }}.csv" \
+            --since "$SEC_SINCE" \
+            --as-of "$SEC_AS_OF" \
+            --cache-dir var/cache/sec-edgar \
+            --output-jsonl "artifacts/sec/batch-${{ matrix.batch }}/disclosures.jsonl" \
+            --diagnostics "artifacts/sec/batch-${{ matrix.batch }}/collection_diagnostics.json" \
+            --max-issuers 100 \
+            --request-interval-seconds 0.25
+
+      - name: Upload replayable SEC batch and cache checkpoint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-operating-evidence-b${{ matrix.batch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/sec/batch-${{ matrix.batch }}
+            var/cache/sec-edgar
+          if-no-files-found: warn
+          retention-days: 30

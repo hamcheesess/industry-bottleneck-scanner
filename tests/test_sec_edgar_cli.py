@@ -10,6 +10,7 @@ from industry_bottleneck_scanner.disclosure_documents import DisclosureSection, 
 from industry_bottleneck_scanner.sec_edgar import (
     SecCollectionDiagnostics,
     SecDisclosureCollection,
+    SecEdgarError,
 )
 from industry_bottleneck_scanner.sec_edgar_cli import main
 
@@ -90,6 +91,7 @@ def test_sec_collection_cli_writes_replayable_disclosure_and_diagnostics(
     assert disclosure["provider_document_id"] == "accession:earnings.htm"
     assert disclosure["sections"][0]["text"] == "Backlog is at a record."
     assert diagnostics["schema_version"] == "sec-edgar-collection-v1"
+    assert diagnostics["status"] == "complete"
     assert diagnostics["provider_requests"] == 3
     assert captured["user_agent"] == "Bottleneck Research admin@example.com"
     issuers = captured["issuers"]
@@ -115,3 +117,42 @@ def test_sec_collection_cli_fails_instead_of_silently_truncating(tmp_path: Path)
     invocation.extend(["--max-issuers", "1"])
     with pytest.raises(SystemExit, match="exceeds --max-issuers"):
         main(invocation)
+
+
+@pytest.mark.parametrize(
+    ("message", "expected_kind"),
+    (
+        ("SEC EDGAR HTTP 403 (fair-access identity or pacing may be rejected)", "sec_access_policy"),
+        ("SEC EDGAR HTTP 429 (fair-access identity or pacing may be rejected)", "sec_rate_limit"),
+        ("SEC EDGAR transport error: timeout", "sec_transport"),
+        ("SEC EDGAR returned invalid JSON", "sec_response_contract"),
+    ),
+)
+def test_sec_collection_cli_persists_classified_failure_diagnostics(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    message: str,
+    expected_kind: str,
+) -> None:
+    class FakeClient:
+        provider_requests = 2
+        cache_hits = 1
+
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+    def fail(*args: object, **kwargs: object) -> SecDisclosureCollection:
+        raise SecEdgarError(message)
+
+    monkeypatch.setenv("SEC_USER_AGENT", "Bottleneck Research admin@example.com")
+    monkeypatch.setattr("industry_bottleneck_scanner.sec_edgar_cli.SecEdgarClient", FakeClient)
+    monkeypatch.setattr("industry_bottleneck_scanner.sec_edgar_cli.collect_sec_disclosures", fail)
+
+    invocation = args(tmp_path)
+    with pytest.raises(SystemExit, match=expected_kind):
+        main(invocation)
+    diagnostics = json.loads((tmp_path / "diagnostics.json").read_text(encoding="utf-8"))
+    assert diagnostics["status"] == "failed"
+    assert diagnostics["failure_kind"] == expected_kind
+    assert diagnostics["provider_requests"] == 2
+    assert diagnostics["cache_hits"] == 1
