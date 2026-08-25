@@ -44,10 +44,6 @@ permissions:
   actions: read
   contents: read
 
-concurrency:
-  group: sec-operating-evidence-bootstrap
-  cancel-in-progress: false
-
 jobs:
   collect:
     runs-on: ubuntu-latest
