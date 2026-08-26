@@ -10,6 +10,12 @@ RESULT_PATH = (
     REPO_ROOT / "experiments" / "root_shock_research" / "18026c3fad8436f03022.json"
 )
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "root-shock-adjudication.yml"
+EDGE_PATH = (
+    REPO_ROOT
+    / "experiments"
+    / "causal_edges"
+    / "ai-data-center-load-to-grid-interconnection.json"
+)
 
 
 def test_first_curated_root_shock_result_is_provider_free_and_pre_cutoff() -> None:
@@ -57,3 +63,19 @@ def test_registry_workflow_keeps_adjudication_before_append() -> None:
     assert "continue-on-error" not in workflow
     assert "actions: read" in workflow
     assert "contents: read" in workflow
+
+
+def test_reused_root_and_edge_evidence_has_one_canonical_payload() -> None:
+    root = json.loads(RESULT_PATH.read_text(encoding="utf-8"))["root_shock"]
+    edge = json.loads(EDGE_PATH.read_text(encoding="utf-8"))["edge"]
+    root_by_id = {item["evidence_id"]: item for item in root["evidence"]}
+
+    for item in edge["evidence"]:
+        root_item = root_by_id[item["evidence_id"]]
+        assert item["evidence_class"] == root_item["evidence_class"]
+        assert item["summary"] == root_item["summary"]
+        if "source_id" in root_item:
+            assert item["source_id"] == root_item["source_id"]
+            assert item["observed_at"] == root_item["observed_at"]
+        else:
+            assert item["source_id"] == f"packet-signal:{root_item['packet_signal_id']}"
