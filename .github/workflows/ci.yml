@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,3 +22,9 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Test
         run: pytest -q
+
+  rebuild-canonical-causal-graph:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/causal-edge-adjudication.yml
+    with:
+      edge_input_path: 'experiments/causal_edges/ai-data-center-load-to-grid-interconnection.json'
