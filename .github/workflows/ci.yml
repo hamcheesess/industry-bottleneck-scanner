@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,3 +22,10 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Test
         run: pytest -q
+
+  build-causal-diagnosis:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/causal-diagnosis-build.yml
+    with:
+      market_calibration_run_id: '32717805837'
+      operating_evidence_run_id: '32923546556'
