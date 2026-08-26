@@ -163,7 +163,7 @@ This is the code status after architecture consolidation.
 | Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, self-contained cache-first normalized history archive | production universe run and provider entitlement/retention verification |
 | Market trigger | **CALIBRATED / RESEARCH QUEUE READY** | bottom-up breadth, strict-as-of 16-date calibration, outcome-blind stability review, deterministic SEC issuer batches | operating-evidence validation of persistent buckets |
 | Causal diagnosis | **REAL PROVIDER-INDEPENDENT RUN COMPLETE** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot`; 28 dated bucket diagnoses, bounded research packets, and the first strict-as-of eligible research result | investigate remaining concrete mechanisms and external corroboration without automatic approval |
-| Causal graph | **ORCHESTRATION EXECUTABLE / FIRST REAL ROOT READY** | edge approval/history, append-only Root Demand Shock approval, first reproducible AI data-center electric-load root, bounded path expansion, `DemandBranch` artifacts | real value-chain edge evidence |
+| Causal graph | **ORCHESTRATION EXECUTABLE / FIRST REAL PATH SEGMENT READY** | edge approval/history, append-only Root Demand Shock approval, reproducible AI data-center electric-load root and grid-interconnection edge, bounded path expansion, `DemandBranch` artifacts | deeper value-chain edge evidence |
 | Pre-shock industry state | **UPDATER EXECUTABLE / REAL EVIDENCE PENDING** | append-only snapshots, strict pre-trigger lookup, explicit company-to-node assignments, AtomicSignal/external observation updater, diversity gate | real node assignments and physical/industry observations |
 | Demand convergence | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | root deduplication, strict pre-shock constraint join, versioned convergence artifacts | real graph/state integration and replay calibration |
 | Pre-news node ranking | **REPLAY ORCHESTRATION EXECUTABLE / CALIBRATION PENDING** | `causal_expansion.py`, six dimensions + hard gates, promoted-convergence join, explicit frozen judgments | real frozen-case scoring policy validation |
@@ -313,6 +313,8 @@ Implementation:
   inventing economic-capture, reinvestment, triangulation, expectation-gap, or bottleneck scores;
 - **DONE:** add a reproducible adjudicate-then-append workflow for the first real approved root
   while preserving zero upstream automatic approvals and append-only revision history;
+- **DONE:** approve the first provider-free causal edge from AI data-center load growth to
+  large-load grid-interconnection capacity using three dated evidence classes;
 - **IN PROGRESS:** calibrate using the frozen historical replay.
 
 ### Phase 5 — historical pre-news replay

@@ -20,7 +20,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Frozen transcript validation v1 | **LEGACY** | preserved audit/regression CLIs and artifacts | frozen; no product extension allowed |
 | Quartr transcript v2 | **LEGACY** | parked adapter/fallback/provenance experiments | `superseded_historical_only`; never a product gate |
 | Persistent industry state core | **PARTIAL** | append-only snapshots, strict `latest_before`, explicit issuer-to-node mapping, AtomicSignal/external observation updater, evidence/source diversity gate | production node assignments and physical-data observations; replay-based decay policy later |
-| Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, reproducible append-only workflow for the first real root shock, versioned path orchestration | production value-chain edge evidence |
+| Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, reproducible append-only workflows for the first real root shock and its grid-interconnection edge, versioned path orchestration | deeper production value-chain edges |
 | Demand convergence core | **PARTIAL** | approved roots/edges -> `DemandBranch`, independent-root deduplication, strict pre-shock state join, persisted assessments | real graph/state integration and replay calibration |
 | Pre-news ranking core | **PARTIAL** | six dimensions and hard gates | real-data scoring calibration |
 | Historical pre-news replay | **PARTIAL** | promoted-convergence join, exact frozen `as_of`, input fingerprints, held-out evidence gate, `ibs-pre-news-replay` | first real early-AI electrical-infrastructure replay package |
@@ -31,6 +31,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 The user approved `broad_us_common_stocks_v1`, supplied the Massive repository secret, and
 accepted `2024-11-01` as the earliest MVP research date. Market replay and the trigger-scoped
 SEC pass are complete. The first external causal result is eligible for append from the exact
-`2026-08-21` packet; the current execution gate is evidence-backed value-chain edges and real
-pre-shock node state. This work must not redefine Phase-1 outputs, change frozen thresholds, or
+`2026-08-21` packet, and its first grid-interconnection edge is evidence-eligible. The current
+execution gate is real pre-shock grid-capacity state and deeper value-chain edges. This work must
+not redefine Phase-1 outputs, change frozen thresholds, or
 approve a root shock without independent evidence and strict-as-of provenance.

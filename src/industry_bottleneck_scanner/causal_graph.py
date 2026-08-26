@@ -151,6 +151,32 @@ def approval_from_dict(payload: dict[str, object]) -> EdgeApproval:
     )
 
 
+def edge_input_from_dict(payload: dict[str, object]) -> tuple[str, datetime, ValueChainEdge]:
+    if payload.get("schema_version") != "causal-edge-input-v1":
+        raise ValueError(f"unsupported causal-edge input schema: {payload.get('schema_version')!r}")
+    raw_edge = payload.get("edge")
+    if not isinstance(raw_edge, dict):
+        raise ValueError("causal-edge input requires edge object")
+    raw_evidence = raw_edge.get("evidence")
+    if not isinstance(raw_evidence, list):
+        raise ValueError("edge evidence must be a list")
+    edge = ValueChainEdge(
+        upstream_node=str(raw_edge["upstream_node"]),
+        downstream_node=str(raw_edge["downstream_node"]),
+        relation=str(raw_edge["relation"]),  # type: ignore[arg-type]
+        mechanism=str(raw_edge["mechanism"]),
+        demand_sensitivity=int(raw_edge["demand_sensitivity"]),
+        lag_months_min=(
+            None if raw_edge.get("lag_months_min") is None else int(raw_edge["lag_months_min"])
+        ),
+        lag_months_max=(
+            None if raw_edge.get("lag_months_max") is None else int(raw_edge["lag_months_max"])
+        ),
+        evidence=tuple(_evidence_from_dict(raw) for raw in raw_evidence if isinstance(raw, dict)),
+    )
+    return str(payload["edge_id"]), datetime.fromisoformat(str(payload["as_of"])), edge
+
+
 class FileCausalGraphStore:
     """Append-only approval history for reusable economic dependency edges."""
 
@@ -158,6 +184,11 @@ class FileCausalGraphStore:
         self.path = path
 
     def append(self, approval: EdgeApproval) -> None:
+        if any(
+            item.edge_id == approval.edge_id and item.as_of == approval.as_of
+            for item in self.load()
+        ):
+            raise ValueError("causal-edge revision already exists for edge_id and as_of")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(approval_to_dict(approval), sort_keys=True) + "\n")

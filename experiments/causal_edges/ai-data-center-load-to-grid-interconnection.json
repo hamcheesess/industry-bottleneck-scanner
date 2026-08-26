@@ -1,0 +1,43 @@
+{
+  "schema_version": "causal-edge-input-v1",
+  "edge_id": "ai-data-center-load-requires-grid-interconnection",
+  "as_of": "2026-08-21T23:59:59+00:00",
+  "edge": {
+    "upstream_node": "ai-data-center-electric-load-growth",
+    "downstream_node": "large-load-grid-interconnection-capacity",
+    "relation": "requires_capacity",
+    "mechanism": "Incremental AI data-center electric load cannot be served before utilities and system operators complete large-load interconnection studies, reliability planning, and any required transmission or grid-capacity additions.",
+    "demand_sensitivity": 4,
+    "lag_months_min": null,
+    "lag_months_max": null,
+    "evidence": [
+      {
+        "evidence_id": "doe-data-center-load-outlook-2024",
+        "evidence_class": "physical_industry_data",
+        "source_id": "doe-lbnl-us-data-center-energy-use-2024",
+        "observed_at": "2024-12-20T00:00:00+00:00",
+        "summary": "DOE's LBNL-backed report projected substantial U.S. data-center electricity-load growth through 2028 and identified AI applications as a demand driver.",
+        "beneficiary_company_id": null,
+        "source_company_id": null
+      },
+      {
+        "evidence_id": "nerc-large-load-grid-integration-2025",
+        "evidence_class": "regulatory_or_permitting",
+        "source_id": "nerc-ferc-large-load-comments-el25-49-2025-04",
+        "observed_at": "2025-04-23T00:00:00+00:00",
+        "summary": "NERC's FERC filing documented rapidly increasing data-center-type loads and the need for interconnection, grid-planning, reliability-analysis, and information-sharing processes before those loads can be integrated safely.",
+        "beneficiary_company_id": null,
+        "source_company_id": null
+      },
+      {
+        "evidence_id": "arcosa-utility-structures-backlog",
+        "evidence_class": "backlog_or_orders",
+        "source_id": "packet-signal:500fbd0c0eb3a17aa6579bd2",
+        "observed_at": "2026-08-05T20:19:02+00:00",
+        "summary": "Arcosa reported record utility-and-related-structures backlog of $648.1 million, up 49% from the start of 2026, corroborating elevated utility infrastructure orders.",
+        "beneficiary_company_id": "cik-0001739445",
+        "source_company_id": "cik-0001739445"
+      }
+    ]
+  }
+}

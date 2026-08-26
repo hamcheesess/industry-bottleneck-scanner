@@ -29,6 +29,29 @@ ibs-root-shock-append \
 The input uses `root-demand-shock-input-v1`. Creating the concrete shock and supplying its
 evidence remains a research decision; an LLM may propose it but cannot bypass approval.
 
+## Causal-edge approval
+
+`ibs-causal-edge-append` evaluates one dated `causal-edge-input-v1` revision and appends the
+approved or rejected decision to the graph history. Approval requires at least two independent
+evidence classes, external corroboration, a concrete economic mechanism, and no evidence observed
+after the revision `as_of`. Duplicate `(edge_id, as_of)` revisions are rejected.
+
+The first curated edge is
+`experiments/causal_edges/ai-data-center-load-to-grid-interconnection.json`. It connects the
+approved `ai-data-center-electric-load-growth` root to the economic node
+`large-load-grid-interconnection-capacity`, using dated DOE physical-load evidence, the NERC large-
+load integration filing, and Arcosa utility-structure backlog. It does not infer a second edge to
+a specific equipment or company node.
+
+```bash
+ibs-causal-edge-append \
+  --input experiments/causal_edges/ai-data-center-load-to-grid-interconnection.json \
+  --registry artifacts/causal/graph.jsonl
+```
+
+`.github/workflows/causal-edge-adjudication.yml` reproduces that evaluation and can optionally
+extend an exact prior graph artifact without weakening the append-only or strict-as-of gates.
+
 ## Approved path expansion
 
 `ibs-causal-convergence` composes existing stores without modifying their domain logic:

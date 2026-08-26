@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -6,12 +7,15 @@ import pytest
 from industry_bottleneck_scanner.causal_expansion import CausalEvidence, ValueChainEdge
 from industry_bottleneck_scanner.causal_graph import (
     FileCausalGraphStore,
+    edge_input_from_dict,
     evaluate_edge,
     reachable_paths,
 )
+from industry_bottleneck_scanner.causal_edge_cli import main
 
 
 AS_OF = datetime(2023, 4, 1, tzinfo=timezone.utc)
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def evidence(
@@ -137,6 +141,8 @@ def test_graph_store_uses_latest_approval_state_as_of_cutoff(tmp_path: Path) -> 
 
     assert len(store.approved_edges_as_of(as_of=AS_OF)) == 1
     assert store.approved_edges_as_of(as_of=later) == ()
+    with pytest.raises(ValueError, match="already exists"):
+        store.append(approved)
 
 
 def test_reachable_paths_support_branching_and_avoid_cycles() -> None:
@@ -152,3 +158,52 @@ def test_reachable_paths_support_branching_and_avoid_cycles() -> None:
     assert ("ai", "data-center", "power", "transformers") in paths
     assert ("ai", "data-center", "cooling") in paths
     assert all(len(path) == len(set(path)) for path in paths)
+
+
+def test_curated_edge_cli_appends_provider_free_approved_revision(tmp_path: Path) -> None:
+    input_path = (
+        REPO_ROOT
+        / "experiments"
+        / "causal_edges"
+        / "ai-data-center-load-to-grid-interconnection.json"
+    )
+    registry_path = tmp_path / "graph.jsonl"
+    payload = json.loads(input_path.read_text(encoding="utf-8"))
+    edge_id, as_of, parsed_edge = edge_input_from_dict(payload)
+
+    assert edge_id == "ai-data-center-load-requires-grid-interconnection"
+    assert parsed_edge.upstream_node == "ai-data-center-electric-load-growth"
+    assert parsed_edge.downstream_node == "large-load-grid-interconnection-capacity"
+    assert {item.evidence_class for item in parsed_edge.evidence} == {
+        "backlog_or_orders",
+        "physical_industry_data",
+        "regulatory_or_permitting",
+    }
+    assert all(item.observed_at <= as_of for item in parsed_edge.evidence)
+
+    assert main(["--input", str(input_path), "--registry", str(registry_path)]) == 0
+    approvals = FileCausalGraphStore(registry_path).latest_as_of(as_of=as_of)
+    assert len(approvals) == 1
+    assert approvals[0].approved is True
+    assert approvals[0].reasons == ()
+
+
+def test_causal_edge_cli_rejects_unsupported_input_schema(tmp_path: Path) -> None:
+    input_path = tmp_path / "edge.json"
+    input_path.write_text(json.dumps({"schema_version": "wrong"}), encoding="utf-8")
+
+    with pytest.raises(SystemExit, match="unsupported causal-edge input schema"):
+        main(["--input", str(input_path), "--registry", str(tmp_path / "graph.jsonl")])
+
+
+def test_causal_edge_workflow_is_bounded_and_fail_closed() -> None:
+    workflow = (
+        REPO_ROOT / ".github" / "workflows" / "causal-edge-adjudication.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "ibs-causal-edge-append" in workflow
+    assert "causal-graph-registry-${{ github.run_id }}" in workflow
+    assert "edge_input_path must stay inside" in workflow
+    assert "actions: read" in workflow
+    assert "contents: read" in workflow
+    assert "continue-on-error" not in workflow
