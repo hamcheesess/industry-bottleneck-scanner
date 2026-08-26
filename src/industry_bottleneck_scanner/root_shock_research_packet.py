@@ -129,7 +129,7 @@ def _evidence_row(signal: dict[str, object]) -> dict[str, object]:
         "published_at": signal["published_at"],
         "source_url": signal["source_url"],
         "source_section": signal.get("source_section"),
-        "evidence_class": "issuer_operating_disclosure",
+        "source_category": "issuer_operating_disclosure",
         "evidence_sha256": hashlib.sha256(evidence.casefold().encode("utf-8")).hexdigest(),
         "excerpt": evidence[:EXCERPT_LIMIT],
     }
@@ -259,12 +259,12 @@ def build_root_shock_research_packets(
             "research_status": "awaiting_external_research",
             "approval_ready": False,
             "automatic_root_shock_approval": False,
-            "known_evidence_classes": ["issuer_operating_disclosure"],
+            "known_source_categories": ["issuer_operating_disclosure"],
             "missing_requirements": sorted(requirements),
             "research_questions": [
                 "What concrete exogenous demand mechanism explains the dated market trigger?",
                 "Which stable economic node receives that demand before issuer mapping?",
-                "What independent non-issuer evidence class existed by as_of?",
+                "What independent evidence class from a non-issuer source existed by as_of?",
                 "Which external source corroborates the mechanism without post-cutoff leakage?",
             ],
             "selected_direct_evidence_count": len(selected),

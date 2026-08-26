@@ -14,7 +14,7 @@ Every packet is deliberately incomplete. Approval remains false until research s
 
 - a concrete exogenous demand mechanism;
 - a stable economic-node assignment independent of ticker classification;
-- a second evidence class beyond issuer operating disclosures;
+- a second independent evidence class and at least one non-issuer source;
 - external corroboration published no later than the packet `as_of`.
 
 The builder rejects mismatched candidate sets, incomplete active-signal references, timezone-free
