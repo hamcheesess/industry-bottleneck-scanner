@@ -73,6 +73,14 @@ jobs:
             --operating-evidence-dir artifacts/operating \
             --output artifacts/causal-diagnosis/operating_signal_quality.json
 
+      - name: Build bounded root-shock research packets
+        run: |
+          ibs-root-shock-research-packets \
+            --causal-diagnosis-dir artifacts/causal-diagnosis \
+            --operating-evidence-dir artifacts/operating \
+            --quality-audit artifacts/causal-diagnosis/operating_signal_quality.json \
+            --output-dir artifacts/causal-diagnosis/root-shock-research
+
       - name: Upload causal diagnosis artifacts
         uses: actions/upload-artifact@v4
         with:

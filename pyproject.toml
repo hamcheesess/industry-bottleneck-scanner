@@ -45,6 +45,7 @@ ibs-operating-evidence = "industry_bottleneck_scanner.operating_evidence_cli:mai
 ibs-operating-evidence-batch = "industry_bottleneck_scanner.operating_evidence_batch_cli:main"
 ibs-causal-diagnosis-batch = "industry_bottleneck_scanner.causal_diagnosis_batch_cli:main"
 ibs-operating-signal-quality = "industry_bottleneck_scanner.operating_signal_quality_cli:main"
+ibs-root-shock-research-packets = "industry_bottleneck_scanner.root_shock_research_packet_cli:main"
 ibs-sec-disclosures = "industry_bottleneck_scanner.sec_edgar_cli:main"
 ibs-industry-state-update = "industry_bottleneck_scanner.industry_state_update_cli:main"
 ibs-root-shock-append = "industry_bottleneck_scanner.root_shock_cli:main"

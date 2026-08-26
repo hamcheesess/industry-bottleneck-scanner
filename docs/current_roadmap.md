@@ -270,6 +270,8 @@ Implementation:
   `mixed_or_early` and automatically approve zero root shocks;
 - **DONE:** preserve all extracted signals while separately flagging repeated same-company
   evidence and speculative risk-factor language before root-shock research prioritization;
+- **DONE:** build provider-free, bounded candidate research packets that preserve direct SEC
+  provenance, maximize issuer/signal-family diversity, and keep every approval field fail-closed;
 - **IN PROGRESS:** use the bounded root-shock research queue to obtain concrete mechanisms,
   economic-node assignments, a second independent evidence class, and external corroboration.
 

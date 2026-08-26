@@ -41,6 +41,28 @@ def _is_speculative_risk(text: str) -> bool:
     return any(marker in normalized for marker in SPECULATIVE_RISK_MARKERS)
 
 
+def signal_quality_flags(
+    signals: list[dict[str, object]],
+) -> dict[str, tuple[str, ...]]:
+    """Classify signal-level quality without changing the canonical signal artifact."""
+
+    company_evidence_counts: Counter[tuple[str, str]] = Counter(
+        (str(item["company_id"]), _normalize(str(item["evidence_text"])))
+        for item in signals
+    )
+    flags_by_signal: dict[str, tuple[str, ...]] = {}
+    for item in signals:
+        evidence = str(item["evidence_text"])
+        key = (str(item["company_id"]), _normalize(evidence))
+        flags: list[str] = []
+        if _is_speculative_risk(evidence):
+            flags.append("speculative_risk_language")
+        if company_evidence_counts[key] > 1:
+            flags.append("repeated_company_evidence")
+        flags_by_signal[str(item["signal_id"])] = tuple(flags)
+    return flags_by_signal
+
+
 def audit_operating_signal_quality(
     *,
     causal_diagnosis_dir: Path,
@@ -82,21 +104,10 @@ def audit_operating_signal_quality(
             if signal.get("signal_id") in active_ids:
                 active.append(signal)
 
-        company_evidence_counts: Counter[tuple[str, str]] = Counter(
-            (str(item["company_id"]), _normalize(str(item["evidence_text"]))) for item in active
-        )
-        flags_by_signal: dict[str, tuple[str, ...]] = {}
+        flags_by_signal = signal_quality_flags(active)
         direct: list[dict] = []
         for item in active:
-            evidence = str(item["evidence_text"])
-            key = (str(item["company_id"]), _normalize(evidence))
-            flags: list[str] = []
-            if _is_speculative_risk(evidence):
-                flags.append("speculative_risk_language")
-            if company_evidence_counts[key] > 1:
-                flags.append("repeated_company_evidence")
-            flags_by_signal[str(item["signal_id"])] = tuple(flags)
-            if not flags:
+            if not flags_by_signal[str(item["signal_id"])]:
                 direct.append(item)
 
         direct_companies = sorted({str(item["company_id"]) for item in direct})

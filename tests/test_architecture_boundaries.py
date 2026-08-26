@@ -25,6 +25,7 @@ ACTIVE_CAUSAL_MODULES = (
     "operating_evidence_batch.py",
     "causal_diagnosis_batch.py",
     "operating_signal_quality.py",
+    "root_shock_research_packet.py",
 )
 
 PARKED_PROVIDER_MODULES = {
