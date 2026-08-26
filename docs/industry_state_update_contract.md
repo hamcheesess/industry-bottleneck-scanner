@@ -72,3 +72,21 @@ ibs-industry-state-update \
 The external-observation file is optional when issuer signals are supplied, and vice versa.
 The decisions artifact records approvals, rejection reasons, source/evidence diversity, the
 prior snapshot reference, and the complete candidate snapshot.
+
+## First curated pre-trigger snapshot
+
+`experiments/industry_state/large-load-grid-interconnection-capacity.jsonl` records the first
+provider-free observations for the graph node `large-load-grid-interconnection-capacity`. The
+observations use two regional system-operator sources published before the trigger: PJM's
+August 12, 2025 large-load resource-adequacy initiative and ERCOT's December 12, 2025 report of
+more than 225 GW in its large-load process and related queue remediation.
+
+The score mapping is deliberately conservative and explicit: PJM supports moderate supply-
+response difficulty, transition-queue lead-time pressure, high capacity tightness, and moderate
+pricing pressure; ERCOT supports high capacity-expansion/process difficulty. It produces a
+`tightening` snapshot at `2026-08-20T23:59:59+00:00`, one second before root-shock detection. The
+two regions corroborate a node-level constraint but do not imply uniform conditions in every U.S.
+balancing area.
+
+`.github/workflows/industry-state-adjudication.yml` requires exactly one approved node and rejects
+any snapshot cutoff that is not strictly before `2026-08-21T00:00:00+00:00`.

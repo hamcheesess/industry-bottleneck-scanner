@@ -17,6 +17,7 @@ from industry_bottleneck_scanner.models import AtomicSignal, Classification
 
 AS_OF = datetime(2026, 8, 21, 20, 0, tzinfo=timezone.utc)
 NODE = "large-power-transformers"
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def observation(name: str, dimension: str, evidence_class: str) -> IndustryStateObservation:
@@ -142,3 +143,53 @@ def test_cli_derives_observations_from_atomic_signals_only_after_node_assignment
         "capacity_utilization",
         "lead_time_constraint",
     )
+
+
+def test_curated_grid_state_is_strictly_pre_trigger_and_source_diverse(tmp_path: Path) -> None:
+    observations = (
+        REPO_ROOT
+        / "experiments"
+        / "industry_state"
+        / "large-load-grid-interconnection-capacity.jsonl"
+    )
+    registry = tmp_path / "industry-state.jsonl"
+    decisions = tmp_path / "decisions.json"
+    state_as_of = "2026-08-20T23:59:59+00:00"
+
+    assert main(
+        [
+            "--observations-jsonl",
+            str(observations),
+            "--as-of",
+            state_as_of,
+            "--registry",
+            str(registry),
+            "--decisions",
+            str(decisions),
+        ]
+    ) == 0
+
+    payload = json.loads(decisions.read_text(encoding="utf-8"))
+    snapshot = FileIndustryStateRegistry(registry).load()[0]
+    assert payload["approved_count"] == 1
+    assert snapshot.node_id == "large-load-grid-interconnection-capacity"
+    assert snapshot.as_of < datetime(2026, 8, 21, tzinfo=timezone.utc)
+    assert snapshot.stage == "tightening"
+    assert snapshot.constraint_score == 61.0
+    assert snapshot.supply_inelasticity == 3
+    assert snapshot.capacity_tightness == 4
+    assert snapshot.capacity_expansion_difficulty == 4
+    assert len({item.source_id for item in snapshot.evidence}) == 2
+    assert all(item.observed_at <= snapshot.as_of for item in snapshot.evidence)
+
+
+def test_industry_state_workflow_requires_approved_strict_pre_trigger_node() -> None:
+    workflow = (
+        REPO_ROOT / ".github" / "workflows" / "industry-state-adjudication.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "approved_count" in workflow
+    assert "cutoff >= trigger" in workflow
+    assert "ibs-industry-state-update" in workflow
+    assert "observations_path must stay inside" in workflow
+    assert "continue-on-error" not in workflow

@@ -19,7 +19,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Causal diagnosis | **PARTIAL** | 28 provider-free dated diagnoses, bounded strict-as-of research packets, non-appending adjudication, and one eligible AI data-center electric-load result using three evidence classes | research and adjudicate the remaining economically coherent candidates |
 | Frozen transcript validation v1 | **LEGACY** | preserved audit/regression CLIs and artifacts | frozen; no product extension allowed |
 | Quartr transcript v2 | **LEGACY** | parked adapter/fallback/provenance experiments | `superseded_historical_only`; never a product gate |
-| Persistent industry state core | **PARTIAL** | append-only snapshots, strict `latest_before`, explicit issuer-to-node mapping, AtomicSignal/external observation updater, evidence/source diversity gate | production node assignments and physical-data observations; replay-based decay policy later |
+| Persistent industry state core | **PARTIAL** | append-only snapshots, strict `latest_before`, first source-diverse pre-trigger grid-interconnection snapshot, explicit issuer-to-node mapping, AtomicSignal/external observation updater | deeper node observations and replay-based decay policy later |
 | Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, reproducible append-only workflows for the first real root shock and its grid-interconnection edge, versioned path orchestration | deeper production value-chain edges |
 | Demand convergence core | **PARTIAL** | approved roots/edges -> `DemandBranch`, independent-root deduplication, strict pre-shock state join, persisted assessments | real graph/state integration and replay calibration |
 | Pre-news ranking core | **PARTIAL** | six dimensions and hard gates | real-data scoring calibration |
@@ -31,7 +31,8 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 The user approved `broad_us_common_stocks_v1`, supplied the Massive repository secret, and
 accepted `2024-11-01` as the earliest MVP research date. Market replay and the trigger-scoped
 SEC pass are complete. The first external causal result is eligible for append from the exact
-`2026-08-21` packet, and its first grid-interconnection edge is evidence-eligible. The current
-execution gate is real pre-shock grid-capacity state and deeper value-chain edges. This work must
+`2026-08-21` packet, its first grid-interconnection edge is evidence-eligible, and a regional-source-
+diverse pre-trigger grid-capacity snapshot is ready. The current execution gate is first real
+causal convergence output and deeper value-chain edges. This work must
 not redefine Phase-1 outputs, change frozen thresholds, or
 approve a root shock without independent evidence and strict-as-of provenance.
