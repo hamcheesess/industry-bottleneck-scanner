@@ -43,6 +43,7 @@ ibs-market-trigger-research-queue = "industry_bottleneck_scanner.market_trigger_
 ibs-massive-universe = "industry_bottleneck_scanner.massive_universe_cli:main"
 ibs-operating-evidence = "industry_bottleneck_scanner.operating_evidence_cli:main"
 ibs-operating-evidence-batch = "industry_bottleneck_scanner.operating_evidence_batch_cli:main"
+ibs-causal-diagnosis-batch = "industry_bottleneck_scanner.causal_diagnosis_batch_cli:main"
 ibs-sec-disclosures = "industry_bottleneck_scanner.sec_edgar_cli:main"
 ibs-industry-state-update = "industry_bottleneck_scanner.industry_state_update_cli:main"
 ibs-root-shock-append = "industry_bottleneck_scanner.root_shock_cli:main"

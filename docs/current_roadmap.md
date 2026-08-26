@@ -157,12 +157,12 @@ This is the code status after architecture consolidation.
 |---|---|---|---|
 | Universe / identity | **REUSE + MARKET JOIN IMPLEMENTED** | dated broad-US universe contracts, issuer/security identity, dated sector/bucket classification join with explicit unclassified denominator | production membership/classification snapshot and refresh path |
 | Transcript evidence | **REUSE OPTIONAL** | Alpha Vantage adapter, cache, transcript normalization, analyst exclusion | no universal transcript fallback required |
-| Operating scanner | **KEEP + GENERIC PATH EXECUTABLE** | `SourceDocument`, `AtomicSignal`, four scanners, generic disclosure normalization/scanning, analyst exclusion | real trigger-scoped source artifacts |
+| Operating scanner | **KEEP + REAL TRIGGER-SCOPED RUN COMPLETE** | `SourceDocument`, `AtomicSignal`, four scanners, generic disclosure normalization/scanning, analyst exclusion; 479 issuers and 22,863 SEC disclosures normalized at `2026-08-21` | calibrate non-SEC corroboration only where root-shock research requires it |
 | Frozen transcript validation | **FROZEN** | v1 audit trail and regression lessons | nothing; do not retrofit |
 | Quartr-era v2 | **PARKED** | adapter/fallback/provenance code and tests | no active work unless access situation changes |
 | Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, self-contained cache-first normalized history archive | production universe run and provider entitlement/retention verification |
 | Market trigger | **CALIBRATED / RESEARCH QUEUE READY** | bottom-up breadth, strict-as-of 16-date calibration, outcome-blind stability review, deterministic SEC issuer batches | operating-evidence validation of persistent buckets |
-| Causal diagnosis | **PROVIDER-INDEPENDENT BOUNDARY IMPLEMENTED** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot` | real source coverage calibration |
+| Causal diagnosis | **REAL PROVIDER-INDEPENDENT RUN COMPLETE** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot`; 28 dated bucket diagnoses and fail-closed root-shock research queue | investigate concrete mechanisms and external corroboration without automatic approval |
 | Causal graph | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | edge approval/history, append-only Root Demand Shock approval, bounded path expansion, `DemandBranch` artifacts | real root/edge evidence |
 | Pre-shock industry state | **UPDATER EXECUTABLE / REAL EVIDENCE PENDING** | append-only snapshots, strict pre-trigger lookup, explicit company-to-node assignments, AtomicSignal/external observation updater, diversity gate | real node assignments and physical/industry observations |
 | Demand convergence | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | root deduplication, strict pre-shock constraint join, versioned convergence artifacts | real graph/state integration and replay calibration |
@@ -262,8 +262,14 @@ Implementation:
 - **DONE:** add source freshness / coverage diagnostics;
 - **DONE:** keep analyst-question exclusion where speaker structure exists;
 - **DONE:** introduce one provider-independent `OperatingSupport` boundary for causal diagnosis;
-- **IN PROGRESS:** exercise SEC collection on the first real trigger-scoped company set and
-  measure non-SEC IR/presentation coverage gaps before deciding whether another adapter is needed.
+- **DONE:** collect the first real trigger-scoped set: 479 issuers, 13,878 filings, and 22,863
+  SEC disclosures with zero collection failures;
+- **DONE:** normalize 77,749 section documents, extract 7,135 `AtomicSignal` records, and build
+  strict-as-of `OperatingSupport` for all 28 persistent buckets at 94.55% mean fresh coverage;
+- **DONE:** join all 28 supports to the frozen market trigger artifact; keep every result
+  `mixed_or_early` and automatically approve zero root shocks;
+- **IN PROGRESS:** use the bounded root-shock research queue to obtain concrete mechanisms,
+  economic-node assignments, a second independent evidence class, and external corroboration.
 
 The existing comparable current-vs-baseline engine remains available where like-for-like windows exist. `OperatingSupport` should be an adapter/output contract, not a replacement for `AtomicSignal` or `AccelerationSnapshot`.
 

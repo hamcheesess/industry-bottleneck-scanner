@@ -23,6 +23,7 @@ ACTIVE_CAUSAL_MODULES = (
     "demand_convergence.py",
     "pre_news_replay.py",
     "operating_evidence_batch.py",
+    "causal_diagnosis_batch.py",
 )
 
 PARKED_PROVIDER_MODULES = {
