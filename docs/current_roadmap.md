@@ -268,6 +268,8 @@ Implementation:
   strict-as-of `OperatingSupport` for all 28 persistent buckets at 94.55% mean fresh coverage;
 - **DONE:** join all 28 supports to the frozen market trigger artifact; keep every result
   `mixed_or_early` and automatically approve zero root shocks;
+- **DONE:** preserve all extracted signals while separately flagging repeated same-company
+  evidence and speculative risk-factor language before root-shock research prioritization;
 - **IN PROGRESS:** use the bounded root-shock research queue to obtain concrete mechanisms,
   economic-node assignments, a second independent evidence class, and external corroboration.
 

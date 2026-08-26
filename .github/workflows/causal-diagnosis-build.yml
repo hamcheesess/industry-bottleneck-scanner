@@ -66,6 +66,13 @@ jobs:
             --operating-evidence-dir artifacts/operating \
             --output-dir artifacts/causal-diagnosis
 
+      - name: Audit repeated and speculative operating signals
+        run: |
+          ibs-operating-signal-quality \
+            --causal-diagnosis-dir artifacts/causal-diagnosis \
+            --operating-evidence-dir artifacts/operating \
+            --output artifacts/causal-diagnosis/operating_signal_quality.json
+
       - name: Upload causal diagnosis artifacts
         uses: actions/upload-artifact@v4
         with:

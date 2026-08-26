@@ -24,6 +24,7 @@ ACTIVE_CAUSAL_MODULES = (
     "pre_news_replay.py",
     "operating_evidence_batch.py",
     "causal_diagnosis_batch.py",
+    "operating_signal_quality.py",
 )
 
 PARKED_PROVIDER_MODULES = {
