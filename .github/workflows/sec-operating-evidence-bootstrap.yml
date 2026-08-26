@@ -137,3 +137,12 @@ jobs:
             var/cache/sec-edgar
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Upload normalized SEC batch
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-disclosures-b${{ matrix.batch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/sec/batch-${{ matrix.batch }}
+          if-no-files-found: warn
+          retention-days: 90

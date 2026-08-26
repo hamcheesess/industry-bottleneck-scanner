@@ -1,0 +1,88 @@
+name: Build Operating Evidence
+
+on:
+  workflow_call:
+    inputs:
+      sec_run_id:
+        required: true
+        type: string
+      research_queue_run_id:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      sec_run_id:
+        description: Successful SEC collection run
+        required: true
+        default: '32801209738'
+      research_queue_run_id:
+        description: Frozen provider-free research queue run
+        required: true
+        default: '32717805837'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SEC_RUN_ID: ${{ inputs.sec_run_id || '32801209738' }}
+      RESEARCH_QUEUE_RUN_ID: ${{ inputs.research_queue_run_id || '32717805837' }}
+      EVIDENCE_AS_OF: '2026-08-21T23:59:59+00:00'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Download frozen research queue
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.RESEARCH_QUEUE_RUN_ID }}
+          pattern: provider-free-market-calibration-*-1
+          path: artifacts/research
+          merge-multiple: true
+
+      - name: Download completed SEC batches
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.SEC_RUN_ID }}
+          pattern: sec-operating-evidence-b*-*-*
+          path: artifacts/sec-input
+          merge-multiple: true
+
+      - name: Build strict-as-of bucket support
+        shell: bash
+        run: |
+          mapfile -t disclosures < <(find artifacts/sec-input/artifacts/sec -name disclosures.jsonl -type f | sort)
+          mapfile -t diagnostics < <(find artifacts/sec-input/artifacts/sec -name collection_diagnostics.json -type f | sort)
+          mapfile -t companies < <(find artifacts/research/research_queue -name 'sec_issuers_batch_*.csv' -type f | sort)
+          if [[ ${#disclosures[@]} -ne 5 || ${#diagnostics[@]} -ne 5 || ${#companies[@]} -ne 5 ]]; then
+            echo "Expected exactly five disclosure, diagnostics, and company batch files" >&2
+            exit 2
+          fi
+          args=()
+          for path in "${disclosures[@]}"; do args+=(--disclosures-jsonl "$path"); done
+          for path in "${diagnostics[@]}"; do args+=(--collection-diagnostics "$path"); done
+          for path in "${companies[@]}"; do args+=(--expected-companies-csv "$path"); done
+          ibs-operating-evidence-batch \
+            "${args[@]}" \
+            --as-of "$EVIDENCE_AS_OF" \
+            --output-dir artifacts/operating-evidence
+
+      - name: Upload provider-free OperatingSupport artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: operating-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/operating-evidence
+          if-no-files-found: error
+          retention-days: 90
