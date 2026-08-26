@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  actions: read
-  contents: read
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,11 +18,3 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Test
         run: pytest -q
-
-  build-root-shock-registry:
-    if: github.event_name == 'push'
-    uses: ./.github/workflows/root-shock-adjudication.yml
-    with:
-      causal_diagnosis_run_id: '32956603362'
-      packet_id: '18026c3fad8436f03022'
-      research_result_path: 'experiments/root_shock_research/18026c3fad8436f03022.json'
