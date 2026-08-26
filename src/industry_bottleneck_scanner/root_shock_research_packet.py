@@ -272,9 +272,13 @@ def build_root_shock_research_packets(
             "selected_signal_families": sorted({str(item["scanner"]) for item in selected}),
             "direct_evidence": [_evidence_row(item) for item in selected],
             "adjudication_template": {
+                "schema_version": "root-shock-research-result-v1",
+                "packet_id": packet_id,
+                "as_of": as_of_text,
                 "root_shock_id": None,
                 "mechanism": None,
                 "root_node_id": None,
+                "causal_chain": [],
                 "independent_evidence": [],
                 "external_corroboration": [],
                 "decision": "research_required",

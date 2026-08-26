@@ -272,6 +272,8 @@ Implementation:
   evidence and speculative risk-factor language before root-shock research prioritization;
 - **DONE:** build provider-free, bounded candidate research packets that preserve direct SEC
   provenance, maximize issuer/signal-family diversity, and keep every approval field fail-closed;
+- **DONE:** validate completed research results against packet identity, causal evidence taxonomy,
+  non-issuer corroboration, economic-node IDs, and strict cutoff before append eligibility;
 - **IN PROGRESS:** use the bounded root-shock research queue to obtain concrete mechanisms,
   economic-node assignments, a second independent evidence class, and external corroboration.
 

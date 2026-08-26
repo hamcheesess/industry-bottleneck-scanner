@@ -28,3 +28,23 @@ ibs-root-shock-research-packets \
   --quality-audit artifacts/causal-diagnosis/operating_signal_quality.json \
   --output-dir artifacts/causal-diagnosis/root-shock-research
 ```
+
+## Research-result adjudication
+
+`ibs-root-shock-research-adjudicate` validates one completed packet without modifying the
+append-only root-shock registry. It copies the market-trigger identity from the frozen packet,
+rejects ticker-shaped node IDs and post-cutoff sources, and requires both linked packet evidence
+and at least one independent non-issuer source. Evidence classes must use the existing
+`CausalEvidence` taxonomy.
+
+An eligible result produces `root-demand-shock-input-v1`, but still does not append it. An
+ineligible result overwrites the same output path with
+`root-demand-shock-input-ineligible-v1`, which the existing append CLI rejects. This prevents a
+stale proposal from bypassing a failed re-review.
+
+```bash
+ibs-root-shock-research-adjudicate \
+  --packet artifacts/causal-diagnosis/root-shock-research/candidates/<packet-id>.json \
+  --research-result artifacts/research/<packet-id>.json \
+  --output-dir artifacts/causal/adjudication/<packet-id>
+```
