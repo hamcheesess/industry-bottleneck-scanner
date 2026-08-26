@@ -48,3 +48,21 @@ ibs-root-shock-research-adjudicate \
   --research-result artifacts/research/<packet-id>.json \
   --output-dir artifacts/causal/adjudication/<packet-id>
 ```
+
+## First curated production result
+
+`experiments/root_shock_research/18026c3fad8436f03022.json` is the first committed,
+provider-free research result. It is tied to the frozen `2026-08-21` fabricated-structural-metal
+packet and proposes `ai-data-center-electric-load-growth` as the stable economic root node.
+
+The result links two packet signals from separate issuers and adds three pre-cutoff public source
+entities: DOE/LBNL data-center load estimates, EIA regional electricity-demand forecasts, and a
+NERC filing in the FERC large-load proceeding. Deterministic adjudication yields three independent
+evidence classes and no eligibility reason. This is a research-priority result, not a company
+recommendation or a license to infer economic capture downstream.
+
+`.github/workflows/root-shock-adjudication.yml` reproduces the decision from an exact
+causal-diagnosis run. It downloads the frozen packet, validates the committed result, and invokes
+`ibs-root-shock-append` only when the adjudicator emits `root-demand-shock-input-v1`. An optional
+prior registry run may be supplied; duplicate `(root_shock_id, as_of)` revisions remain rejected.
+The upstream queue continues to report zero automatic root-shock approvals.

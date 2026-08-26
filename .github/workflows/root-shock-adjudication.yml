@@ -1,0 +1,128 @@
+name: Adjudicate Root-Shock Research
+
+on:
+  workflow_call:
+    inputs:
+      causal_diagnosis_run_id:
+        required: true
+        type: string
+      packet_id:
+        required: true
+        type: string
+      research_result_path:
+        required: true
+        type: string
+      registry_run_id:
+        required: false
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      causal_diagnosis_run_id:
+        description: Successful causal-diagnosis run containing the frozen research packet
+        required: true
+        default: '32956603362'
+      packet_id:
+        description: Twenty-character research packet identifier
+        required: true
+        default: '18026c3fad8436f03022'
+      research_result_path:
+        description: Committed provider-free research result
+        required: true
+        default: 'experiments/root_shock_research/18026c3fad8436f03022.json'
+      registry_run_id:
+        description: Optional prior successful registry artifact run to extend
+        required: false
+        default: ''
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  adjudicate:
+    runs-on: ubuntu-latest
+    env:
+      CAUSAL_RUN_ID: ${{ inputs.causal_diagnosis_run_id || '32956603362' }}
+      PACKET_ID: ${{ inputs.packet_id || '18026c3fad8436f03022' }}
+      RESEARCH_RESULT_PATH: ${{ inputs.research_result_path || 'experiments/root_shock_research/18026c3fad8436f03022.json' }}
+      REGISTRY_RUN_ID: ${{ inputs.registry_run_id || '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Validate bounded inputs
+        shell: bash
+        run: |
+          if [[ ! "$PACKET_ID" =~ ^[0-9a-f]{20}$ ]]; then
+            echo "packet_id must be exactly 20 lowercase hexadecimal characters" >&2
+            exit 2
+          fi
+          result_path="$(realpath -- "$RESEARCH_RESULT_PATH")"
+          case "$result_path" in
+            "$GITHUB_WORKSPACE"/*) ;;
+            *) echo "research_result_path must stay inside the checked-out repository" >&2; exit 2 ;;
+          esac
+          if [[ ! -f "$result_path" ]]; then
+            echo "Committed research result is missing: $RESEARCH_RESULT_PATH" >&2
+            exit 2
+          fi
+
+      - name: Download frozen causal diagnosis and research packets
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.CAUSAL_RUN_ID }}
+          pattern: causal-diagnosis-${{ env.CAUSAL_RUN_ID }}-*
+          path: artifacts/causal-diagnosis
+          merge-multiple: true
+
+      - name: Download prior append-only registry
+        if: env.REGISTRY_RUN_ID != ''
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.REGISTRY_RUN_ID }}
+          pattern: root-shock-registry-${{ env.REGISTRY_RUN_ID }}-*
+          path: artifacts/prior-registry
+          merge-multiple: true
+
+      - name: Restore prior registry
+        if: env.REGISTRY_RUN_ID != ''
+        shell: bash
+        run: |
+          prior="artifacts/prior-registry/root_shocks.jsonl"
+          if [[ ! -f "$prior" ]]; then
+            echo "Requested prior registry is missing root_shocks.jsonl" >&2
+            exit 2
+          fi
+          mkdir -p artifacts/causal
+          cp "$prior" artifacts/causal/root_shocks.jsonl
+
+      - name: Adjudicate strict-as-of research result
+        run: |
+          ibs-root-shock-research-adjudicate \
+            --packet "artifacts/causal-diagnosis/root-shock-research/candidates/${PACKET_ID}.json" \
+            --research-result "$RESEARCH_RESULT_PATH" \
+            --output-dir "artifacts/causal/adjudication/${PACKET_ID}"
+
+      - name: Append only an eligible approved root shock
+        run: |
+          ibs-root-shock-append \
+            --input "artifacts/causal/adjudication/${PACKET_ID}/root_shock_input.json" \
+            --registry artifacts/causal/root_shocks.jsonl
+
+      - name: Upload adjudication and append-only registry
+        uses: actions/upload-artifact@v4
+        with:
+          name: root-shock-registry-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/causal
+          if-no-files-found: error
+          retention-days: 90

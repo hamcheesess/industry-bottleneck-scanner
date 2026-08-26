@@ -16,11 +16,11 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Market trigger replay | **DONE** | self-contained normalized archive, separate historical universe/market cutoffs, strict-as-of replay, provider-free 16-date series, hashed quality artifact | none for Phase-1 boundary |
 | Trigger-scoped SEC queue | **DONE** | 28 persistent buckets joined to 479 unique CIK issuers; five batches capped at 100; one duplicate share class recorded | none for the bounded production queue |
 | Source-agnostic operating evidence | **PARTIAL** | 22,863 trigger-scoped SEC disclosures, 77,749 normalized documents, 7,135 signals, freshness/coverage, and `operating-support-v1` | non-SEC corroboration only where causal research requires it |
-| Causal diagnosis | **PARTIAL** | 28 provider-free dated diagnoses, bounded strict-as-of research packets, and non-appending research-result adjudication with ineligible-schema fallback | populate concrete mechanisms, economic-node assignments, second evidence classes, and external corroboration |
+| Causal diagnosis | **PARTIAL** | 28 provider-free dated diagnoses, bounded strict-as-of research packets, non-appending adjudication, and one eligible AI data-center electric-load result using three evidence classes | research and adjudicate the remaining economically coherent candidates |
 | Frozen transcript validation v1 | **LEGACY** | preserved audit/regression CLIs and artifacts | frozen; no product extension allowed |
 | Quartr transcript v2 | **LEGACY** | parked adapter/fallback/provenance experiments | `superseded_historical_only`; never a product gate |
 | Persistent industry state core | **PARTIAL** | append-only snapshots, strict `latest_before`, explicit issuer-to-node mapping, AtomicSignal/external observation updater, evidence/source diversity gate | production node assignments and physical-data observations; replay-based decay policy later |
-| Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, append-only root-shock approvals, versioned path orchestration | production root/edge evidence |
+| Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, reproducible append-only workflow for the first real root shock, versioned path orchestration | production value-chain edge evidence |
 | Demand convergence core | **PARTIAL** | approved roots/edges -> `DemandBranch`, independent-root deduplication, strict pre-shock state join, persisted assessments | real graph/state integration and replay calibration |
 | Pre-news ranking core | **PARTIAL** | six dimensions and hard gates | real-data scoring calibration |
 | Historical pre-news replay | **PARTIAL** | promoted-convergence join, exact frozen `as_of`, input fingerprints, held-out evidence gate, `ibs-pre-news-replay` | first real early-AI electrical-infrastructure replay package |
@@ -30,6 +30,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 
 The user approved `broad_us_common_stocks_v1`, supplied the Massive repository secret, and
 accepted `2024-11-01` as the earliest MVP research date. Market replay and the trigger-scoped
-SEC pass are complete. The current execution gate is external causal research over the bounded
-root-shock packets. It must not redefine Phase-1 outputs, change frozen thresholds, or approve a
-root shock without independent evidence and strict-as-of provenance.
+SEC pass are complete. The first external causal result is eligible for append from the exact
+`2026-08-21` packet; the current execution gate is evidence-backed value-chain edges and real
+pre-shock node state. This work must not redefine Phase-1 outputs, change frozen thresholds, or
+approve a root shock without independent evidence and strict-as-of provenance.
