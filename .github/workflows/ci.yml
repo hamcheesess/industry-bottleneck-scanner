@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,3 +22,10 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Test
         run: pytest -q
+
+  build-industry-state-registry:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/industry-state-adjudication.yml
+    with:
+      observations_path: 'experiments/industry_state/large-load-grid-interconnection-capacity.jsonl'
+      state_as_of: '2026-08-20T23:59:59+00:00'
