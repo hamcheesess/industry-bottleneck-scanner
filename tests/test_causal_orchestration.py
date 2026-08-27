@@ -19,6 +19,9 @@ from industry_bottleneck_scanner.root_demand_shock import (
 )
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
 PRE = datetime(2026, 7, 1, tzinfo=timezone.utc)
 TRIGGER = datetime(2026, 8, 10, tzinfo=timezone.utc)
 AS_OF = datetime(2026, 8, 11, tzinfo=timezone.utc)
@@ -188,3 +191,19 @@ def test_causal_convergence_cli_writes_versioned_artifacts(tmp_path: Path) -> No
     payload = json.loads((output / "demand_convergence.json").read_text())
     assert payload["schema_version"] == "causal-convergence-run-v1"
     assert any(item["node_id"] == TARGET for item in payload["assessments"])
+
+
+def test_production_convergence_workflow_is_strict_and_fail_closed() -> None:
+    workflow = (
+        REPO_ROOT / ".github" / "workflows" / "causal-convergence-production.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "ibs-causal-convergence" in workflow
+    assert "pre-shock state must be strictly earlier than trigger detection" in workflow
+    assert 'assessment["stage"] != "hypothesis"' in workflow
+    assert 'assessment["gate_reasons"] != ["pre_shock_state_not_constrained"]' in workflow
+    assert '"automatic_promotion": False' in workflow
+    assert "causal-convergence-${{ github.run_id }}" in workflow
+    assert "actions: read" in workflow
+    assert "contents: read" in workflow
+    assert "continue-on-error" not in workflow
