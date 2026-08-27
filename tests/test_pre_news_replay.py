@@ -16,6 +16,7 @@ from industry_bottleneck_scanner.industry_state import (
 from industry_bottleneck_scanner.pre_news_replay import (
     HistoricalReplaySpec,
     PreNewsNodeJudgment,
+    replay_spec_from_dict,
     run_pre_news_replay,
 )
 from industry_bottleneck_scanner.pre_news_replay_cli import main
@@ -308,3 +309,26 @@ def test_cli_writes_fingerprinted_freeze_and_rankings(tmp_path: Path) -> None:
     assert ["ai-compute", "data-center-power", TARGET] in rankings["rankings"][0][
         "path_node_sequences"
     ]
+
+
+def test_committed_transformer_replay_input_stays_conservative() -> None:
+    payload = json.loads(
+        Path("experiments/pre_news_replay/early-ai-electrical-2026-08-21.json").read_text()
+    )
+
+    frozen = replay_spec_from_dict(payload)
+
+    assert frozen.replay_id == "early-ai-electrical-2026-08-21-v1"
+    assert frozen.as_of == datetime(2026, 8, 21, 23, 59, 59, tzinfo=timezone.utc)
+    assert frozen.held_out_evidence_ids == ()
+    assert len(frozen.node_judgments) == 1
+    judgment = frozen.node_judgments[0]
+    assert judgment.node_id == TARGET
+    assert (
+        judgment.bottleneck_strength,
+        judgment.economic_capture,
+        judgment.reinvestment_runway,
+        judgment.triangulation,
+        judgment.expectation_gap,
+    ) == (5, 2, 4, 5, 1)
+    assert judgment.economic_capture < 3

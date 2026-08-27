@@ -1,0 +1,249 @@
+name: Build Historical Pre-News Replay
+
+on:
+  workflow_call:
+    inputs:
+      market_calibration_run_id:
+        required: true
+        type: string
+      root_registry_run_id:
+        required: true
+        type: string
+      graph_registry_run_id:
+        required: true
+        type: string
+      state_registry_run_id:
+        required: true
+        type: string
+      replay_input_path:
+        required: true
+        type: string
+      validation_profile:
+        required: false
+        type: string
+        default: 'transformer_evidence_backed'
+  workflow_dispatch:
+    inputs:
+      market_calibration_run_id:
+        description: Successful provider-free dated market calibration run
+        required: true
+        default: '32717734277'
+      root_registry_run_id:
+        description: Successful append-only root registry run
+        required: true
+        default: '32957567143'
+      graph_registry_run_id:
+        description: Successful append-only graph registry run
+        required: true
+        default: '33060344295'
+      state_registry_run_id:
+        description: Successful append-only state registry run
+        required: true
+        default: '33060344295'
+      replay_input_path:
+        description: Committed frozen replay judgment input
+        required: true
+        default: 'experiments/pre_news_replay/early-ai-electrical-2026-08-21.json'
+      validation_profile:
+        description: Exact fail-closed replay validation profile
+        required: true
+        type: choice
+        options:
+          - transformer_evidence_backed
+        default: transformer_evidence_backed
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MARKET_RUN_ID: ${{ inputs.market_calibration_run_id || '32717734277' }}
+      ROOT_RUN_ID: ${{ inputs.root_registry_run_id || '32957567143' }}
+      GRAPH_RUN_ID: ${{ inputs.graph_registry_run_id || '33060344295' }}
+      STATE_RUN_ID: ${{ inputs.state_registry_run_id || '33060344295' }}
+      REPLAY_INPUT_PATH: ${{ inputs.replay_input_path || 'experiments/pre_news_replay/early-ai-electrical-2026-08-21.json' }}
+      VALIDATION_PROFILE: ${{ inputs.validation_profile || 'transformer_evidence_backed' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Validate bounded inputs
+        shell: bash
+        run: |
+          for value in "$MARKET_RUN_ID" "$ROOT_RUN_ID" "$GRAPH_RUN_ID" "$STATE_RUN_ID"; do
+            if [[ ! "$value" =~ ^[0-9]+$ ]]; then
+              echo "upstream run IDs must contain only digits" >&2
+              exit 2
+            fi
+          done
+          input_path="$(realpath -- "$REPLAY_INPUT_PATH")"
+          case "$input_path" in
+            "$GITHUB_WORKSPACE"/*) ;;
+            *) echo "replay_input_path must stay inside the checked-out repository" >&2; exit 2 ;;
+          esac
+          if [[ ! -f "$input_path" ]]; then
+            echo "Committed replay input is missing: $REPLAY_INPUT_PATH" >&2
+            exit 2
+          fi
+
+      - name: Download provider-free dated market calibration
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.MARKET_RUN_ID }}
+          pattern: provider-free-market-calibration-${{ env.MARKET_RUN_ID }}-*
+          path: artifacts/input/market
+          merge-multiple: true
+
+      - name: Download approved root registry
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.ROOT_RUN_ID }}
+          pattern: root-shock-registry-${{ env.ROOT_RUN_ID }}-*
+          path: artifacts/input/root
+          merge-multiple: true
+
+      - name: Download approved graph registry
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.GRAPH_RUN_ID }}
+          pattern: causal-graph-registry-${{ env.GRAPH_RUN_ID }}-*
+          path: artifacts/input/graph
+          merge-multiple: true
+
+      - name: Download pre-trigger state registry
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.STATE_RUN_ID }}
+          pattern: industry-state-registry-${{ env.STATE_RUN_ID }}-*
+          path: artifacts/input/state
+          merge-multiple: true
+
+      - name: Run frozen strict-as-of replay
+        run: |
+          ibs-pre-news-replay \
+            --input "$REPLAY_INPUT_PATH" \
+            --market-trigger-artifact artifacts/input/market/as_of=2026-08-21/industry_market_triggers.json \
+            --root-shock-registry artifacts/input/root/root_shocks.jsonl \
+            --causal-graph-registry artifacts/input/graph/graph.jsonl \
+            --industry-state-registry artifacts/input/state/industry_state.jsonl \
+            --output-dir artifacts/replay
+
+      - name: Validate bounded ranking and write provenance
+        shell: python
+        run: |
+          import hashlib
+          import json
+          import os
+          from datetime import datetime
+          from pathlib import Path
+
+          if os.environ["VALIDATION_PROFILE"] != "transformer_evidence_backed":
+              raise SystemExit("unsupported pre-news replay validation profile")
+
+          output = Path("artifacts/replay")
+          freeze = json.loads((output / "replay_freeze.json").read_text())
+          result = json.loads((output / "pre_news_rankings.json").read_text())
+          if result["status"] != "full" or result["promoted_node_count"] != 1:
+              raise SystemExit("replay must contain exactly one fully covered promoted node")
+          if len(result["rankings"]) != 1:
+              raise SystemExit("replay must contain exactly one ranking")
+
+          ranking = result["rankings"][0]
+          expected_scores = {
+              "demand_transmission": 4,
+              "bottleneck_strength": 5,
+              "economic_capture": 2,
+              "reinvestment_runway": 4,
+              "triangulation": 5,
+              "expectation_gap": 1,
+          }
+          if ranking["node_id"] != "large-power-transformers":
+              raise SystemExit("unexpected promoted replay node")
+          if ranking["convergence_stage"] != "pre_shock_bottleneck":
+              raise SystemExit("transformer replay requires pre_shock_bottleneck convergence")
+          if ranking["stage"] != "evidence_backed" or ranking["score"] != 73.0:
+              raise SystemExit("bounded replay must remain evidence_backed at score 73.0")
+          if ranking["gate_reasons"] != [] or ranking["scores"] != expected_scores:
+              raise SystemExit("unexpected transformer replay gates or frozen scores")
+          if ranking["independent_root_shock_ids"] != [
+              "ai-data-center-electric-load-expansion-2026q3"
+          ]:
+              raise SystemExit("replay must not invent an independent demand root")
+          expected_path = [
+              "ai-data-center-electric-load-growth",
+              "large-load-grid-interconnection-capacity",
+              "large-power-transformers",
+          ]
+          if ranking["path_node_sequences"] != [expected_path]:
+              raise SystemExit("unexpected transformer replay path")
+
+          as_of = datetime.fromisoformat(result["as_of"])
+          future = [
+              item["evidence_id"]
+              for item in ranking["evidence"]
+              if datetime.fromisoformat(item["observed_at"]) > as_of
+          ]
+          if future:
+              raise SystemExit("post-cutoff evidence leaked into replay")
+
+          inputs = {
+              "replay_input": Path(os.environ["REPLAY_INPUT_PATH"]),
+              "market_trigger_artifact": Path(
+                  "artifacts/input/market/as_of=2026-08-21/industry_market_triggers.json"
+              ),
+              "root_shock_registry": Path("artifacts/input/root/root_shocks.jsonl"),
+              "causal_graph_registry": Path("artifacts/input/graph/graph.jsonl"),
+              "industry_state_registry": Path("artifacts/input/state/industry_state.jsonl"),
+          }
+          actual_hashes = {
+              name: hashlib.sha256(path.read_bytes()).hexdigest()
+              for name, path in inputs.items()
+          }
+          if freeze["input_sha256"] != actual_hashes:
+              raise SystemExit("replay freeze fingerprints do not match downloaded inputs")
+          if actual_hashes["market_trigger_artifact"] != (
+              "2e89b0daeb31ac81445da3c564d9476f36ad4e2f4d80c4c9d366af263699df57"
+          ):
+              raise SystemExit("unexpected dated market-trigger artifact")
+
+          provenance = {
+              "schema_version": "historical-pre-news-replay-provenance-v1",
+              "replay_id": result["replay_id"],
+              "as_of": result["as_of"],
+              "validation_profile": os.environ["VALIDATION_PROFILE"],
+              "upstream_run_ids": {
+                  "market": os.environ["MARKET_RUN_ID"],
+                  "root": os.environ["ROOT_RUN_ID"],
+                  "graph": os.environ["GRAPH_RUN_ID"],
+                  "state": os.environ["STATE_RUN_ID"],
+              },
+              "input_sha256": actual_hashes,
+              "strict_as_of": True,
+              "automatic_company_mapping": False,
+              "automatic_pre_news_candidate_promotion": False,
+          }
+          (output / "input_provenance.json").write_text(
+              json.dumps(provenance, indent=2, sort_keys=True) + "\n"
+          )
+
+      - name: Upload provider-free replay artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-news-replay-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/replay
+          if-no-files-found: error
+          retention-days: 90
