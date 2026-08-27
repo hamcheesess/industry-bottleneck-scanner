@@ -18,6 +18,10 @@ on:
       as_of:
         required: true
         type: string
+      validation_profile:
+        required: false
+        type: string
+        default: 'first_path_hypothesis'
   workflow_dispatch:
     inputs:
       root_registry_run_id:
@@ -40,6 +44,14 @@ on:
         description: Strict replay cutoff
         required: true
         default: '2026-08-21T23:59:59+00:00'
+      validation_profile:
+        description: Exact fail-closed production path profile
+        required: true
+        type: choice
+        options:
+          - first_path_hypothesis
+          - transformer_pre_shock_bottleneck
+        default: first_path_hypothesis
 
 permissions:
   actions: read
@@ -54,6 +66,7 @@ jobs:
       STATE_RUN_ID: ${{ inputs.state_registry_run_id || '32958871184' }}
       TRIGGER_ROOT_ID: ${{ inputs.trigger_root_shock_id || 'ai-data-center-electric-load-expansion-2026q3' }}
       REPLAY_AS_OF: ${{ inputs.as_of || '2026-08-21T23:59:59+00:00' }}
+      VALIDATION_PROFILE: ${{ inputs.validation_profile || 'first_path_hypothesis' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -124,21 +137,61 @@ jobs:
           output = Path("artifacts/convergence")
           convergence = json.loads((output / "demand_convergence.json").read_text())
           branches = [json.loads(line) for line in (output / "demand_branches.jsonl").read_text().splitlines() if line]
-          if convergence["branch_count"] != 1 or convergence["assessment_count"] != 1:
-              raise SystemExit("first production convergence must contain one path and one assessment")
-          assessment = convergence["assessments"][0]
-          state = assessment.get("pre_shock_state")
-          if state is None:
-              raise SystemExit("first production convergence requires an explicit pre-shock state")
-          if datetime.fromisoformat(state["as_of"]) >= datetime.fromisoformat(assessment["trigger_detected_at"]):
-              raise SystemExit("pre-shock state must be strictly earlier than trigger detection")
-          if assessment["stage"] != "hypothesis" or assessment["gate_reasons"] != ["pre_shock_state_not_constrained"]:
-              raise SystemExit("first path must remain fail-closed until its state is constrained")
-          if branches[0]["path_nodes"] != [
-              "ai-data-center-electric-load-growth",
-              "large-load-grid-interconnection-capacity",
-          ]:
-              raise SystemExit("unexpected first production causal path")
+          assessments = {item["node_id"]: item for item in convergence["assessments"]}
+          for assessment in assessments.values():
+              state = assessment.get("pre_shock_state")
+              if state is not None and datetime.fromisoformat(state["as_of"]) >= datetime.fromisoformat(assessment["trigger_detected_at"]):
+                  raise SystemExit("pre-shock state must be strictly earlier than trigger detection")
+
+          profile = os.environ["VALIDATION_PROFILE"]
+          if profile == "first_path_hypothesis":
+              if convergence["branch_count"] != 1 or convergence["assessment_count"] != 1:
+                  raise SystemExit("first production convergence must contain one path and one assessment")
+              assessment = assessments.get("large-load-grid-interconnection-capacity")
+              if assessment is None or assessment.get("pre_shock_state") is None:
+                  raise SystemExit("first production convergence requires an explicit grid-interconnection state")
+              if assessment["stage"] != "hypothesis" or assessment["gate_reasons"] != ["pre_shock_state_not_constrained"]:
+                  raise SystemExit("first path must remain fail-closed until its state is constrained")
+              expected_paths = [[
+                  "ai-data-center-electric-load-growth",
+                  "large-load-grid-interconnection-capacity",
+              ]]
+          elif profile == "transformer_pre_shock_bottleneck":
+              if convergence["branch_count"] != 2 or convergence["assessment_count"] != 2:
+                  raise SystemExit("transformer production convergence must contain two paths and two assessments")
+              if set(assessments) != {
+                  "large-load-grid-interconnection-capacity",
+                  "large-power-transformers",
+              }:
+                  raise SystemExit("unexpected transformer production assessment nodes")
+              grid = assessments["large-load-grid-interconnection-capacity"]
+              if grid["stage"] != "hypothesis" or grid["gate_reasons"] != ["pre_shock_state_not_constrained"]:
+                  raise SystemExit("grid-interconnection segment must remain fail-closed")
+              transformer = assessments["large-power-transformers"]
+              transformer_state = transformer.get("pre_shock_state")
+              if transformer["stage"] != "pre_shock_bottleneck" or transformer["gate_reasons"] != []:
+                  raise SystemExit("transformer path must resolve only to pre_shock_bottleneck")
+              if transformer_state is None or transformer_state["stage"] != "severely_constrained" or transformer_state["constraint_score"] != 84.0:
+                  raise SystemExit("transformer path requires the exact approved pre-shock state")
+              if transformer["independent_root_shock_ids"] != [os.environ["TRIGGER_ROOT_ID"]]:
+                  raise SystemExit("transformer path must not invent independent demand roots")
+              expected_paths = [
+                  [
+                      "ai-data-center-electric-load-growth",
+                      "large-load-grid-interconnection-capacity",
+                  ],
+                  [
+                      "ai-data-center-electric-load-growth",
+                      "large-load-grid-interconnection-capacity",
+                      "large-power-transformers",
+                  ],
+              ]
+          else:
+              raise SystemExit(f"unsupported convergence validation profile: {profile}")
+
+          actual_paths = sorted(item["path_nodes"] for item in branches)
+          if actual_paths != sorted(expected_paths):
+              raise SystemExit("unexpected production causal paths")
 
           inputs = {
               "root_registry": Path("artifacts/input/root/root_shocks.jsonl"),
@@ -149,6 +202,7 @@ jobs:
               "schema_version": "causal-convergence-provenance-v1",
               "as_of": os.environ["REPLAY_AS_OF"],
               "trigger_root_shock_id": os.environ["TRIGGER_ROOT_ID"],
+              "validation_profile": profile,
               "upstream_run_ids": {
                   "root": os.environ["ROOT_RUN_ID"],
                   "graph": os.environ["GRAPH_RUN_ID"],

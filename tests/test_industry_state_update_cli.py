@@ -183,6 +183,48 @@ def test_curated_grid_state_is_strictly_pre_trigger_and_source_diverse(tmp_path:
     assert all(item.observed_at <= snapshot.as_of for item in snapshot.evidence)
 
 
+def test_curated_transformer_state_is_pre_trigger_and_severely_constrained(
+    tmp_path: Path,
+) -> None:
+    observations = (
+        REPO_ROOT
+        / "experiments"
+        / "industry_state"
+        / "large-power-transformers.jsonl"
+    )
+    registry = tmp_path / "industry-state.jsonl"
+    decisions = tmp_path / "decisions.json"
+    state_as_of = "2026-08-20T23:59:59+00:00"
+
+    assert main(
+        [
+            "--observations-jsonl",
+            str(observations),
+            "--as-of",
+            state_as_of,
+            "--registry",
+            str(registry),
+            "--decisions",
+            str(decisions),
+        ]
+    ) == 0
+
+    payload = json.loads(decisions.read_text(encoding="utf-8"))
+    decision = payload["decisions"][0]
+    snapshot = FileIndustryStateRegistry(registry).load()[0]
+    assert payload["approved_count"] == 1
+    assert snapshot.node_id == "large-power-transformers"
+    assert snapshot.as_of < datetime(2026, 8, 21, tzinfo=timezone.utc)
+    assert snapshot.stage == "severely_constrained"
+    assert snapshot.constraint_score == 84.0
+    assert snapshot.lead_time_pressure == 5
+    assert snapshot.capacity_tightness == 4
+    assert snapshot.capacity_expansion_difficulty == 5
+    assert len(decision["independent_evidence_classes"]) == 5
+    assert len(decision["independent_source_entities"]) == 3
+    assert all(item.observed_at <= snapshot.as_of for item in snapshot.evidence)
+
+
 def test_industry_state_workflow_requires_approved_strict_pre_trigger_node() -> None:
     workflow = (
         REPO_ROOT / ".github" / "workflows" / "industry-state-adjudication.yml"

@@ -90,3 +90,18 @@ balancing area.
 
 `.github/workflows/industry-state-adjudication.yml` requires exactly one approved node and rejects
 any snapshot cutoff that is not strictly before `2026-08-21T00:00:00+00:00`.
+
+## First constrained downstream snapshot
+
+`experiments/industry_state/large-power-transformers.jsonl` records the next bounded node state.
+DOE's July 2024 LPT resilience report supplies long lead times, limited domestic manufacturing,
+factory build difficulty, and manufacturer/custom-design qualification evidence. DOE's December
+2024 energy supply-chain review corroborates a demand/supply gap, and Siemens Energy's February
+2024 Charlotte investment provides an independent supplier capacity response. No pricing score is
+inferred without direct pricing evidence.
+
+At `2026-08-20T23:59:59+00:00`, the deterministic result is 84 points and
+`severely_constrained`: supply inelasticity 5, lead-time pressure 5, capacity tightness 4,
+capacity-expansion difficulty 5, qualification barrier 4, and pricing pressure 0. This snapshot is
+strictly pre-trigger and represents the economic transformer node, not a score for Siemens Energy,
+Hitachi Energy, or another listed issuer.

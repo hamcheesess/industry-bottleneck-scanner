@@ -188,6 +188,37 @@ def test_curated_edge_cli_appends_provider_free_approved_revision(tmp_path: Path
     assert approvals[0].reasons == ()
 
 
+def test_curated_transformer_edge_extends_only_one_evidence_backed_segment(
+    tmp_path: Path,
+) -> None:
+    input_path = (
+        REPO_ROOT
+        / "experiments"
+        / "causal_edges"
+        / "grid-interconnection-to-large-power-transformers.json"
+    )
+    registry_path = tmp_path / "graph.jsonl"
+    payload = json.loads(input_path.read_text(encoding="utf-8"))
+    edge_id, as_of, parsed_edge = edge_input_from_dict(payload)
+
+    assert edge_id == "grid-interconnection-requires-large-power-transformers"
+    assert parsed_edge.upstream_node == "large-load-grid-interconnection-capacity"
+    assert parsed_edge.downstream_node == "large-power-transformers"
+    assert {item.evidence_class for item in parsed_edge.evidence} == {
+        "customer_architecture_dependency",
+        "physical_industry_data",
+        "supplier_capacity_expansion",
+    }
+    assert len({item.source_id for item in parsed_edge.evidence}) == 2
+    assert all(item.observed_at <= as_of for item in parsed_edge.evidence)
+
+    assert main(["--input", str(input_path), "--registry", str(registry_path)]) == 0
+    approvals = FileCausalGraphStore(registry_path).latest_as_of(as_of=as_of)
+    assert len(approvals) == 1
+    assert approvals[0].approved is True
+    assert approvals[0].reasons == ()
+
+
 def test_causal_edge_cli_rejects_unsupported_input_schema(tmp_path: Path) -> None:
     input_path = tmp_path / "edge.json"
     input_path.write_text(json.dumps({"schema_version": "wrong"}), encoding="utf-8")

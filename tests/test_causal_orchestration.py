@@ -202,6 +202,11 @@ def test_production_convergence_workflow_is_strict_and_fail_closed() -> None:
     assert "pre-shock state must be strictly earlier than trigger detection" in workflow
     assert 'assessment["stage"] != "hypothesis"' in workflow
     assert 'assessment["gate_reasons"] != ["pre_shock_state_not_constrained"]' in workflow
+    assert 'profile == "transformer_pre_shock_bottleneck"' in workflow
+    assert 'transformer["stage"] != "pre_shock_bottleneck"' in workflow
+    assert 'transformer_state["constraint_score"] != 84.0' in workflow
+    assert 'transformer["independent_root_shock_ids"] != [os.environ["TRIGGER_ROOT_ID"]]' in workflow
+    assert '"validation_profile": profile' in workflow
     assert '"automatic_promotion": False' in workflow
     assert "causal-convergence-${{ github.run_id }}" in workflow
     assert "actions: read" in workflow

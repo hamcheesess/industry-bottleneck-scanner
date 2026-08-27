@@ -19,9 +19,9 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Causal diagnosis | **PARTIAL** | 28 provider-free dated diagnoses, bounded strict-as-of research packets, non-appending adjudication, and one eligible AI data-center electric-load result using three evidence classes | research and adjudicate the remaining economically coherent candidates |
 | Frozen transcript validation v1 | **LEGACY** | preserved audit/regression CLIs and artifacts | frozen; no product extension allowed |
 | Quartr transcript v2 | **LEGACY** | parked adapter/fallback/provenance experiments | `superseded_historical_only`; never a product gate |
-| Persistent industry state core | **PARTIAL** | append-only snapshots, strict `latest_before`, first source-diverse pre-trigger grid-interconnection snapshot, explicit issuer-to-node mapping, AtomicSignal/external observation updater | deeper node observations and replay-based decay policy later |
-| Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, reproducible append-only workflows for the first real root shock and its grid-interconnection edge, versioned path orchestration | deeper production value-chain edges |
-| Demand convergence core | **PARTIAL** | approved roots/edges -> `DemandBranch`, independent-root deduplication, strict pre-shock state join, persisted assessments | real graph/state integration and replay calibration |
+| Persistent industry state core | **PARTIAL** | append-only snapshots, strict `latest_before`, source-diverse grid-interconnection snapshot, severely constrained pre-trigger large-power-transformer snapshot, explicit issuer-to-node mapping, AtomicSignal/external observation updater | additional node observations and replay-based decay policy later |
+| Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, reproducible append-only workflows for the first real root and its two-edge grid-interconnection-to-transformer path, versioned orchestration | independent demand-root and additional value-chain edges |
+| Demand convergence core | **PARTIAL** | first real production graph/state integration, one fail-closed grid assessment, one `pre_shock_bottleneck` transformer assessment, independent-root deduplication, strict pre-shock join | independent-root convergence and replay calibration |
 | Pre-news ranking core | **PARTIAL** | six dimensions and hard gates | real-data scoring calibration |
 | Historical pre-news replay | **PARTIAL** | promoted-convergence join, exact frozen `as_of`, input fingerprints, held-out evidence gate, `ibs-pre-news-replay` | first real early-AI electrical-infrastructure replay package |
 | Company exposure mapping | **NOT STARTED** | architecture boundary only | evidence-backed node-to-company contract and mapper |
@@ -31,8 +31,9 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 The user approved `broad_us_common_stocks_v1`, supplied the Massive repository secret, and
 accepted `2024-11-01` as the earliest MVP research date. Market replay and the trigger-scoped
 SEC pass are complete. The first external causal result is eligible for append from the exact
-`2026-08-21` packet, its first grid-interconnection edge is evidence-eligible, and a regional-source-
-diverse pre-trigger grid-capacity snapshot is ready. The current execution gate is first real
-causal convergence output and deeper value-chain edges. This work must
+`2026-08-21` packet. Its bounded path now reaches `large-power-transformers` through two
+evidence-backed edges, and a source-diverse pre-trigger transformer snapshot is severely
+constrained without using later outcomes. The current execution gate is the first real historical
+pre-news replay and evidence for independent demand roots. This work must
 not redefine Phase-1 outputs, change frozen thresholds, or
 approve a root shock without independent evidence and strict-as-of provenance.

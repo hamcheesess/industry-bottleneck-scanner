@@ -163,9 +163,9 @@ This is the code status after architecture consolidation.
 | Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, self-contained cache-first normalized history archive | production universe run and provider entitlement/retention verification |
 | Market trigger | **CALIBRATED / RESEARCH QUEUE READY** | bottom-up breadth, strict-as-of 16-date calibration, outcome-blind stability review, deterministic SEC issuer batches | operating-evidence validation of persistent buckets |
 | Causal diagnosis | **REAL PROVIDER-INDEPENDENT RUN COMPLETE** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot`; 28 dated bucket diagnoses, bounded research packets, and the first strict-as-of eligible research result | investigate remaining concrete mechanisms and external corroboration without automatic approval |
-| Causal graph | **ORCHESTRATION EXECUTABLE / FIRST REAL PATH SEGMENT READY** | edge approval/history, append-only Root Demand Shock approval, reproducible AI data-center electric-load root and grid-interconnection edge, bounded path expansion, `DemandBranch` artifacts | deeper value-chain edge evidence |
-| Pre-shock industry state | **UPDATER EXECUTABLE / FIRST REAL SNAPSHOT READY** | append-only snapshots, strict pre-trigger lookup, first source-diverse grid-interconnection snapshot, explicit company-to-node assignments, AtomicSignal/external observation updater | deeper node observations and replay calibration |
-| Demand convergence | **ORCHESTRATION EXECUTABLE / REAL EVIDENCE PENDING** | root deduplication, strict pre-shock constraint join, versioned convergence artifacts | real graph/state integration and replay calibration |
+| Causal graph | **ORCHESTRATION EXECUTABLE / FIRST REAL TWO-EDGE PATH READY** | edge approval/history, append-only Root Demand Shock approval, reproducible AI data-center electric-load -> grid-interconnection -> large-power-transformer path, bounded expansion, `DemandBranch` artifacts | evidence for independent demand roots and additional value-chain branches |
+| Pre-shock industry state | **UPDATER EXECUTABLE / FIRST CONSTRAINED NODE READY** | append-only snapshots, strict pre-trigger lookup, source-diverse grid-interconnection snapshot, severely constrained large-power-transformer snapshot, explicit company-to-node assignments, AtomicSignal/external observation updater | replay calibration and later decay policy |
+| Demand convergence | **FIRST REAL GRAPH/STATE INTEGRATION COMPLETE** | exact production run, root deduplication, strict pre-shock constraint join, one fail-closed grid node and one `pre_shock_bottleneck` transformer node, versioned artifacts | independent-root convergence and replay calibration |
 | Pre-news node ranking | **REPLAY ORCHESTRATION EXECUTABLE / CALIBRATION PENDING** | `causal_expansion.py`, six dimensions + hard gates, promoted-convergence join, explicit frozen judgments | real frozen-case scoring policy validation |
 | Historical pre-news replay | **EXECUTABLE CONTRACT / REAL CASE PENDING** | exact `as_of`, input fingerprints, held-out evidence gate, fail-closed promoted-node coverage, versioned ranking artifact | populate and run the first early-AI electrical-infrastructure case |
 | Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
@@ -293,7 +293,10 @@ Implementation:
   observation contract from external physical evidence;
 - **DONE:** require both evidence-class and source-entity diversity before a known state is recorded;
 - **DONE:** append snapshots rather than overwrite and reject duplicate `(node_id, as_of)` keys;
-- **IN PROGRESS:** supply real node assignments and public physical/industry observations;
+- **DONE:** record a provider-free, pre-trigger `large-power-transformers` snapshot using DOE
+  physical, lead-time, qualification, and factory-expansion evidence plus an independent supplier
+  capacity response;
+- **IN PROGRESS:** supply observations for additional economically meaningful nodes;
 - add decay/staleness rules later only after replay evidence justifies them.
 
 ### Phase 4 — causal graph and demand convergence integration — IN PROGRESS
@@ -315,7 +318,11 @@ Implementation:
   while preserving zero upstream automatic approvals and append-only revision history;
 - **DONE:** approve the first provider-free causal edge from AI data-center load growth to
   large-load grid-interconnection capacity using three dated evidence classes;
-- **IN PROGRESS:** calibrate using the frozen historical replay.
+- **DONE:** approve the next bounded edge from grid-interconnection capacity to large power
+  transformers and combine it with the pre-trigger transformer state without inventing a second root;
+- **DONE:** reproduce one fail-closed grid node and one `pre_shock_bottleneck` transformer node
+  under exact validation profiles;
+- **IN PROGRESS:** calibrate independent-root convergence using the frozen historical replay.
 
 ### Phase 5 — historical pre-news replay
 
@@ -342,8 +349,8 @@ Implementation:
 - **DONE:** reject later evidence and explicitly held-out confirmation IDs;
 - **DONE:** require explicit research judgments for every promoted node and reject injections for
   non-promoted nodes;
-- **IN PROGRESS:** populate the first real early-AI electrical-infrastructure evidence package
-  after the production market backfill artifact is available.
+- **IN PROGRESS:** populate and run the first real early-AI electrical-infrastructure replay package
+  now that the production market archive and constrained transformer path are available.
 
 ### Phase 6 — company exposure mapping
 

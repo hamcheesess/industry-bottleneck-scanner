@@ -52,6 +52,14 @@ ibs-causal-edge-append \
 `.github/workflows/causal-edge-adjudication.yml` reproduces that evaluation and can optionally
 extend an exact prior graph artifact without weakening the append-only or strict-as-of gates.
 
+The second curated edge is
+`experiments/causal_edges/grid-interconnection-to-large-power-transformers.json`. It extends only
+one segment, from `large-load-grid-interconnection-capacity` to `large-power-transformers`.
+DOE's July 2024 LPT report supplies the grid-expansion mechanism, while Hitachi Energy's April
+2024 factory announcement independently identifies LPTs as grid-interconnection and data-center
+components and records a North American capacity response. The edge does not infer any listed
+company exposure or add an independent demand root.
+
 ## Approved path expansion
 
 `ibs-causal-convergence` composes existing stores without modifying their domain logic:
@@ -87,6 +95,13 @@ Outputs:
 - `demand_branches.jsonl` — `demand-branch-v1` path and evidence references;
 - `demand_convergence.json` — `causal-convergence-run-v1` assessments and strict pre-shock
   state references.
+
+`.github/workflows/causal-convergence-production.yml` supports two explicit validation profiles.
+`first_path_hypothesis` preserves the original one-edge fail-closed result.
+`transformer_pre_shock_bottleneck` requires exactly the two approved paths, keeps the
+grid-interconnection assessment at `hypothesis`, requires the transformer state to be exactly
+`severely_constrained` at 84 points, and verifies that only the original demand root is present.
+Unknown profiles fail closed.
 
 Future root, edge, evidence, and industry-state revisions are excluded by their timestamped
 registries. The artifacts are therefore suitable inputs for historical pre-news replay.
