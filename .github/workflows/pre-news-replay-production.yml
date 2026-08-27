@@ -216,7 +216,7 @@ jobs:
           if freeze["input_sha256"] != actual_hashes:
               raise SystemExit("replay freeze fingerprints do not match downloaded inputs")
           if actual_hashes["market_trigger_artifact"] != (
-              "2e89b0daeb31ac81445da3c564d9476f36ad4e2f4d80c4c9d366af263699df57"
+              "b0706b7c3d4960c021bf59eee0ab2220a59603846bbb56ed7ffbf01938a45a16"
           ):
               raise SystemExit("unexpected dated market-trigger artifact")
 
