@@ -22,8 +22,8 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Persistent industry state core | **PARTIAL** | append-only snapshots, strict `latest_before`, source-diverse grid-interconnection snapshot, severely constrained pre-trigger large-power-transformer snapshot, explicit issuer-to-node mapping, AtomicSignal/external observation updater | additional node observations and replay-based decay policy later |
 | Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, reproducible append-only workflows for the first real root and its two-edge grid-interconnection-to-transformer path, versioned orchestration | independent demand-root and additional value-chain edges |
 | Demand convergence core | **PARTIAL** | first real production graph/state integration, one fail-closed grid assessment, one `pre_shock_bottleneck` transformer assessment, independent-root deduplication, strict pre-shock join | independent-root convergence and replay calibration |
-| Pre-news ranking core | **PARTIAL** | six dimensions and hard gates | real-data scoring calibration |
-| Historical pre-news replay | **PARTIAL** | promoted-convergence join, exact frozen `as_of`, input fingerprints, held-out evidence gate, `ibs-pre-news-replay` | first real early-AI electrical-infrastructure replay package |
+| Pre-news ranking core | **PARTIAL** | six dimensions and hard gates plus the first production large-power-transformer score: 73.0 `evidence_backed` | validate economic capture and expectation gap without promoting from supply constraints alone |
+| Historical pre-news replay | **PARTIAL** | first production replay completed from four exact upstream runs; one transformer node, 14 evidence records, eight evidence classes, strict cutoff, fingerprinted freeze and provenance | add an independent demand root and later-confirmation holdouts before any company mapping |
 | Company exposure mapping | **NOT STARTED** | architecture boundary only | evidence-backed node-to-company contract and mapper |
 | Repo A thesis manifest | **NOT STARTED** | conceptual Repo A/Repo B boundary only | freeze only after node-level historical replay succeeds |
 | Production cadence | **NOT STARTED** | none | begin only after replay and handoff stability |
@@ -33,7 +33,9 @@ accepted `2024-11-01` as the earliest MVP research date. Market replay and the t
 SEC pass are complete. The first external causal result is eligible for append from the exact
 `2026-08-21` packet. Its bounded path now reaches `large-power-transformers` through two
 evidence-backed edges, and a source-diverse pre-trigger transformer snapshot is severely
-constrained without using later outcomes. The current execution gate is the first real historical
-pre-news replay and evidence for independent demand roots. This work must
+constrained without using later outcomes. The first production historical replay preserved that
+node at `evidence_backed`, not `pre_news_candidate`, because economic capture and expectation gap
+remain weakly evidenced. The current execution gate is independent-root evidence and explicit
+later-confirmation holdouts. This work must
 not redefine Phase-1 outputs, change frozen thresholds, or
 approve a root shock without independent evidence and strict-as-of provenance.

@@ -62,3 +62,25 @@ The runner:
 A successful artifact has `status=full`. The current contract fails closed instead of emitting
 `limited` when promoted-node judgments or frozen inputs are incomplete. Company exposure mapping
 and the Repo-A -> Repo-B manifest remain outside this replay stage.
+
+## First production case
+
+The first bounded production input is
+`experiments/pre_news_replay/early-ai-electrical-2026-08-21.json`. The reusable and manually
+dispatchable `.github/workflows/pre-news-replay-production.yml` pins the exact provider-free
+market, root, graph, and state run IDs and refuses any unsupported validation profile.
+
+The `2026-08-21` replay produced one ranked economic node:
+
+- `large-power-transformers`;
+- convergence stage `pre_shock_bottleneck` from one approved root;
+- 14 evidence records across eight evidence classes;
+- frozen scores `4/5/2/4/5/1` for demand transmission, bottleneck strength, economic capture,
+  reinvestment runway, triangulation, and expectation gap;
+- final score `73.0`, stage `evidence_backed`;
+- latest accepted evidence at `2026-08-06T20:13:52+00:00`, before the replay cutoff;
+- automatic company mapping and automatic `pre_news_candidate` promotion both disabled.
+
+The first input has no identified post-trigger confirmation evidence yet, so its held-out list is
+empty. That does not weaken the cutoff gate: any evidence after `as_of` is still rejected. It does
+mean later-outcome diagnostics remain incomplete and must not be inferred from `status=full`.

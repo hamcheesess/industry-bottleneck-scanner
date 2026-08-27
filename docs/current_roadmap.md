@@ -166,8 +166,8 @@ This is the code status after architecture consolidation.
 | Causal graph | **ORCHESTRATION EXECUTABLE / FIRST REAL TWO-EDGE PATH READY** | edge approval/history, append-only Root Demand Shock approval, reproducible AI data-center electric-load -> grid-interconnection -> large-power-transformer path, bounded expansion, `DemandBranch` artifacts | evidence for independent demand roots and additional value-chain branches |
 | Pre-shock industry state | **UPDATER EXECUTABLE / FIRST CONSTRAINED NODE READY** | append-only snapshots, strict pre-trigger lookup, source-diverse grid-interconnection snapshot, severely constrained large-power-transformer snapshot, explicit company-to-node assignments, AtomicSignal/external observation updater | replay calibration and later decay policy |
 | Demand convergence | **FIRST REAL GRAPH/STATE INTEGRATION COMPLETE** | exact production run, root deduplication, strict pre-shock constraint join, one fail-closed grid node and one `pre_shock_bottleneck` transformer node, versioned artifacts | independent-root convergence and replay calibration |
-| Pre-news node ranking | **REPLAY ORCHESTRATION EXECUTABLE / CALIBRATION PENDING** | `causal_expansion.py`, six dimensions + hard gates, promoted-convergence join, explicit frozen judgments | real frozen-case scoring policy validation |
-| Historical pre-news replay | **EXECUTABLE CONTRACT / REAL CASE PENDING** | exact `as_of`, input fingerprints, held-out evidence gate, fail-closed promoted-node coverage, versioned ranking artifact | populate and run the first early-AI electrical-infrastructure case |
+| Pre-news node ranking | **FIRST REAL REPLAY COMPLETE / CALIBRATION CONTINUES** | `causal_expansion.py`, six dimensions + hard gates, promoted-convergence join, explicit frozen judgments; transformer remains 73.0 `evidence_backed` | independent-root, economic-capture, and expectation-gap validation |
+| Historical pre-news replay | **FIRST REAL CASE COMPLETE** | exact `as_of`, five input fingerprints, fail-closed promoted-node coverage, 14 dated evidence records across eight classes, versioned production artifact | explicit later-confirmation holdouts and independent-root replay before company mapping |
 | Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
 | Repo-A -> Repo-B manifest | **NOT FROZEN** | conceptual boundary only | implement only after upstream historical replay works |
 
@@ -349,8 +349,15 @@ Implementation:
 - **DONE:** reject later evidence and explicitly held-out confirmation IDs;
 - **DONE:** require explicit research judgments for every promoted node and reject injections for
   non-promoted nodes;
-- **IN PROGRESS:** populate and run the first real early-AI electrical-infrastructure replay package
-  now that the production market archive and constrained transformer path are available.
+- **DONE:** populate and run the first real early-AI electrical-infrastructure replay package
+  from exact market, root, graph, and state run IDs;
+- **DONE:** preserve `large-power-transformers` at 73.0 `evidence_backed` rather than promote it
+  to `pre_news_candidate`, because the frozen evidence supports the bottleneck and runway but not
+  durable economic capture or a direct priced-in expectation gap;
+- **DONE:** reject post-cutoff evidence, fingerprint all five inputs, and keep company mapping and
+  automatic pre-news-candidate promotion disabled in production provenance;
+- **IN PROGRESS:** add an independently adjudicated demand root and explicit later-confirmation
+  holdouts before using the replay to authorize company exposure mapping.
 
 ### Phase 6 — company exposure mapping
 
