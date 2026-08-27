@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -18,3 +22,30 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Test
         run: pytest -q
+
+  append-transformer-edge:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/causal-edge-adjudication.yml
+    with:
+      edge_input_path: 'experiments/causal_edges/grid-interconnection-to-large-power-transformers.json'
+      prior_graph_run_id: '32959261471'
+
+  append-transformer-state:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/industry-state-adjudication.yml
+    with:
+      observations_path: 'experiments/industry_state/large-power-transformers.jsonl'
+      state_as_of: '2026-08-20T23:59:59+00:00'
+      prior_state_run_id: '32958871184'
+
+  build-transformer-convergence:
+    if: github.event_name == 'push'
+    needs: [append-transformer-edge, append-transformer-state]
+    uses: ./.github/workflows/causal-convergence-production.yml
+    with:
+      root_registry_run_id: '32957567143'
+      graph_registry_run_id: ${{ format('{0}', github.run_id) }}
+      state_registry_run_id: ${{ format('{0}', github.run_id) }}
+      trigger_root_shock_id: 'ai-data-center-electric-load-expansion-2026q3'
+      as_of: '2026-08-21T23:59:59+00:00'
+      validation_profile: 'transformer_pre_shock_bottleneck'
