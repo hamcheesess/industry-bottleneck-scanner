@@ -23,10 +23,8 @@ jobs:
       - name: Test
         run: pytest -q
 
-  append-independent-grid-modernization-root:
-    uses: ./.github/workflows/root-shock-adjudication.yml
+  append-grid-modernization-transformer-edge:
+    uses: ./.github/workflows/causal-edge-adjudication.yml
     with:
-      causal_diagnosis_run_id: '32956603362'
-      packet_id: '18026c3fad8436f03022'
-      research_result_path: 'experiments/root_shock_research/18026c3fad8436f03022-grid-modernization.json'
-      registry_run_id: '32957567143'
+      edge_input_path: 'experiments/causal_edges/grid-modernization-to-large-power-transformers.json'
+      prior_graph_run_id: '33060344295'
