@@ -141,3 +141,16 @@ security-level conclusion.
 The first input has no identified post-trigger confirmation evidence yet, so its held-out list is
 empty. That does not weaken the cutoff gate: any evidence after `as_of` is still rejected. It does
 mean later-outcome diagnostics remain incomplete and must not be inferred from `status=full`.
+
+## Later-confirmation boundary
+
+The next step is not to revise the replay with later facts. The committed
+`experiments/later_confirmation/large-power-transformers-2026-08-21.json` plan freezes four
+separate industrial tests—demand realization, bottleneck persistence, supply response and economic
+capture—over 90/180/365-day windows beginning strictly after the replay cutoff. Each test declares
+its source classes, minimum independent entities, confirmation conditions and falsifiers before
+evidence is admitted.
+
+The missing pre-cutoff transformer security basket, valuation and consensus snapshot is recorded
+as a blocked expectation-gap slot. It cannot be reconstructed after outcomes. See
+[`later_confirmation_contract.md`](later_confirmation_contract.md) for the executable contract.

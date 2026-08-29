@@ -373,8 +373,14 @@ Implementation:
   the exact production replay with 17 cutoff-safe records across eight evidence classes;
 - **DONE:** require the Korean reader-facing report to explain both independent demand paths and
   display the structural convergence stage/score separately from the 73.0 node ranking;
-- **IN PROGRESS:** define and freeze explicit later-confirmation holdouts before using the replay
-  to authorize company exposure mapping.
+- **IN PROGRESS:** freeze the explicit later-confirmation plan in production: four post-cutoff
+  industrial checks cover demand realization (90 days), bottleneck persistence (180 days), supply
+  response (365 days), and economic capture (180 days), while the unfrozen security expectation
+  snapshot remains explicitly blocked;
+- **DONE:** add a fail-closed later-confirmation schema/CLI that preserves the original replay,
+  rejects observations outside the predeclared windows and source classes, requires independent
+  source/entity diversity, and emits a reader-facing Korean explanation rather than a score-only
+  result.
 
 ### Phase 6 — company exposure mapping
 

@@ -54,6 +54,7 @@ ibs-causal-edge-append = "industry_bottleneck_scanner.causal_edge_cli:main"
 ibs-causal-convergence = "industry_bottleneck_scanner.causal_convergence_cli:main"
 ibs-pre-news-replay = "industry_bottleneck_scanner.pre_news_replay_cli:main"
 ibs-industry-analysis-report = "industry_bottleneck_scanner.industry_analysis_report_cli:main"
+ibs-later-confirmation = "industry_bottleneck_scanner.later_confirmation_cli:main"
 
 [project.optional-dependencies]
 dev = [

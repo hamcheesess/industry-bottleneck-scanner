@@ -23,7 +23,8 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Causal graph core | **PARTIAL** | evidence approval history, bounded traversal, reproducible append-only workflows for two independent roots and three paths/edges reaching the transformer bottleneck, versioned orchestration | additional value-chain edges only where independently evidenced |
 | Demand convergence core | **PARTIAL** | production two-root integration: three branches, fail-closed grid assessment, transformer 75.07 `priority_convergence`, strict pre-shock join, renamed-root and evidence-reuse rejection | later-confirmation calibration and additional historical cases |
 | Pre-news ranking core | **PARTIAL** | six dimensions and hard gates plus the first production large-power-transformer score: 73.0 `evidence_backed` | validate economic capture and expectation gap without promoting from supply constraints alone |
-| Historical pre-news replay | **PARTIAL** | two-root production replay completed from exact upstream runs; one transformer node, 17 evidence records across eight classes, strict cutoff, fingerprinted freeze/provenance, 73.0 `evidence_backed` ranking | add explicit later-confirmation holdouts before any company mapping |
+| Historical pre-news replay | **PARTIAL** | two-root production replay completed from exact upstream runs; one transformer node, 17 evidence records across eight classes, strict cutoff, fingerprinted freeze/provenance, 73.0 `evidence_backed` ranking | freeze the committed later-confirmation plan in a production artifact |
+| Later-confirmation holdout | **PARTIAL** | fail-closed plan/evidence/diagnostic schemas; four dated industrial validation windows; minimum source/entity diversity; Korean reader explanation; automatic reranking disabled; unfrozen security expectation gap blocked | run the initial production freeze, then append only evidence observed inside each window |
 | Reader-facing industry analysis | **PARTIAL** | mandatory Korean narrative schema/CLI; exact replay/freeze join; evidence-bound facts and inferences; industry structure, demand, value-chain, bottleneck, economics, scenarios, falsifiers and monitoring; first transformer report | repeat the same narrative gate for every later promoted economic node |
 | Company exposure mapping | **NOT STARTED** | architecture boundary only | evidence-backed node-to-company contract and mapper |
 | Repo A thesis manifest | **NOT STARTED** | conceptual Repo A/Repo B boundary only | freeze only after node-level historical replay succeeds |
@@ -39,6 +40,8 @@ three branches and ranks the severely constrained transformer node at 75.07 `pri
 The replay still preserves the node at 73.0 `evidence_backed`, not `pre_news_candidate`, because
 economic capture and expectation gap remain weakly evidenced. Its required Korean industry report
 explains all 17 replay evidence records, both demand mechanisms, limitations, scenarios and
-falsifiers. The current execution gate is explicit later-confirmation holdouts. This work must
+falsifiers. The committed later-confirmation plan predeclares 90/180/365-day industrial tests and
+keeps the missing pre-cutoff security expectation snapshot blocked. The current execution gate is
+the initial production holdout freeze. This work must
 not redefine Phase-1 outputs, change frozen thresholds, or
 approve a root shock without independent evidence and strict-as-of provenance.
