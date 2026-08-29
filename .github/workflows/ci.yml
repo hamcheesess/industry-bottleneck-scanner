@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  actions: read
-  contents: read
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,14 +18,3 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Test
         run: pytest -q
-
-  build-reader-facing-industry-analysis:
-    uses: ./.github/workflows/pre-news-replay-production.yml
-    with:
-      market_calibration_run_id: '32717734277'
-      root_registry_run_id: '32957567143'
-      graph_registry_run_id: '33060344295'
-      state_registry_run_id: '33060344295'
-      replay_input_path: 'experiments/pre_news_replay/early-ai-electrical-2026-08-21.json'
-      analysis_input_path: 'experiments/industry_analysis/large-power-transformers-2026-08-21.ko.json'
-      validation_profile: 'transformer_evidence_backed'
