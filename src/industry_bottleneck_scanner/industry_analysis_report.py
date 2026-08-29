@@ -320,6 +320,7 @@ def build_industry_analysis_report(
             "stage": ranking.get("stage"),
             "score": ranking.get("score"),
             "convergence_stage": ranking.get("convergence_stage"),
+            "convergence_score": ranking.get("convergence_score"),
             "scores": dict(ranking_scores),
             "gate_reasons": list(ranking.get("gate_reasons", [])),
             "independent_root_shock_ids": list(
@@ -361,6 +362,7 @@ def render_industry_analysis_markdown(report: dict[str, object]) -> str:
         f"- 분석 기준시점: `{report['as_of']}`",
         f"- 경제 노드: `{report['node_id']}`",
         f"- 판정 단계: `{ranking['stage']}` / 종합점수 `{ranking['score']}`",
+        f"- 인과 수렴: `{ranking['convergence_stage']}` / 수렴점수 `{ranking['convergence_score']}` / 독립 수요축 `{len(ranking['independent_root_shock_ids'])}`개",
         f"- 엄격한 시점 통제: `{str(report['strict_as_of']).lower()}`",
         "- 개별 종목 결론: 없음 — 이 보고서는 산업 노드 이해를 위한 연구 산출물입니다.",
         "",

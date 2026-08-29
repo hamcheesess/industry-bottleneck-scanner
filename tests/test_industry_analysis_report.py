@@ -16,6 +16,9 @@ from industry_bottleneck_scanner.industry_analysis_report_cli import main
 INPUT_PATH = Path(
     "experiments/industry_analysis/large-power-transformers-2026-08-21.ko.json"
 )
+TWO_ROOT_INPUT_PATH = Path(
+    "experiments/industry_analysis/large-power-transformers-2026-08-21-two-root.ko.json"
+)
 
 
 def analysis_input() -> dict[str, object]:
@@ -80,6 +83,7 @@ def replay_artifacts(
                 "stage": "evidence_backed",
                 "score": 73.0,
                 "convergence_stage": "pre_shock_bottleneck",
+                "convergence_score": 68.4,
                 "gate_reasons": [],
                 "independent_root_shock_ids": [
                     "ai-data-center-electric-load-expansion-2026q3"
@@ -130,6 +134,43 @@ def test_committed_korean_industry_analysis_is_deep_and_evidence_bound() -> None
     assert "## 시장 기대에 반영된 것과 아직 모르는 것" in markdown
     assert "## 점수를 사람의 언어로 해석하기" in markdown
     assert "73점은 성공확률이나 기대수익률" in markdown
+
+
+def test_two_root_industry_analysis_explains_independent_demand_convergence() -> None:
+    payload = json.loads(TWO_ROOT_INPUT_PATH.read_text(encoding="utf-8"))
+    result, freeze = replay_artifacts(payload)
+    ranking = result["rankings"][0]
+    ranking["convergence_stage"] = "priority_convergence"
+    ranking["convergence_score"] = 75.07
+    ranking["independent_root_shock_ids"] = [
+        "ai-data-center-electric-load-expansion-2026q3",
+        "grid-modernization-and-resilience-investment-2026q3",
+    ]
+    ranking["path_node_sequences"] = [
+        [
+            "ai-data-center-electric-load-growth",
+            "large-load-grid-interconnection-capacity",
+            "large-power-transformers",
+        ],
+        [
+            "grid-modernization-and-resilience-investment",
+            "large-power-transformers",
+        ],
+    ]
+
+    report = build_industry_analysis_report(
+        payload,
+        result,
+        freeze,
+        analysis_input_sha256="b" * 64,
+    )
+    markdown = render_industry_analysis_markdown(report)
+
+    assert report["evidence_reference_count"] == 17
+    assert report["ranking"]["convergence_score"] == 75.07
+    assert "독립 수요축 `2`개" in markdown
+    assert "AI와 독립적인 노후 전력망 교체·복원력 투자" in markdown
+    assert "전력망 현대화에서 변압기까지의 두 번째 독립 인과 사슬" in markdown
 
 
 def test_report_rejects_claim_evidence_outside_replay() -> None:

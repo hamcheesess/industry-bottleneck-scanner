@@ -8,6 +8,7 @@ from industry_bottleneck_scanner.causal_expansion import CausalEvidence, ValueCh
 from industry_bottleneck_scanner.causal_graph import FileCausalGraphStore, evaluate_edge
 from industry_bottleneck_scanner.causal_convergence_cli import main
 from industry_bottleneck_scanner.causal_orchestration import (
+    branches_from_root_shocks,
     run_causal_convergence,
     write_causal_convergence_artifacts,
 )
@@ -143,6 +144,37 @@ def test_orchestration_builds_approved_paths_and_priority_convergence(tmp_path: 
     assert all(item["schema_version"] == "demand-branch-v1" for item in branch_rows)
     assert convergence["schema_version"] == "causal-convergence-run-v1"
     assert convergence["assessment_count"] == len(run.assessments)
+
+
+def test_root_independence_rejects_renamed_node_and_reused_root_evidence() -> None:
+    first = root("first-root", "shared-economic-root", PRE)
+    renamed = root("renamed-root", "shared-economic-root", PRE)
+
+    try:
+        branches_from_root_shocks((first, renamed), (), as_of=AS_OF)
+    except ValueError as exc:
+        assert "cannot share one root_node" in str(exc)
+    else:
+        raise AssertionError("renamed root node was counted as independent")
+
+    reused = RootDemandShock(
+        root_shock_id="second-root",
+        root_node="distinct-economic-root",
+        label="Distinct demand expansion",
+        mechanism="A separate demand mechanism reaches constrained equipment capacity.",
+        market_trigger_id="trigger:second-root",
+        market_bucket="Electrical Equipment",
+        detected_at=PRE,
+        as_of=AS_OF,
+        demand_strength=4,
+        evidence=(first.evidence[0], evidence("second-root-physical", "physical_industry_data")),
+    )
+    try:
+        branches_from_root_shocks((first, reused), (), as_of=AS_OF)
+    except ValueError as exc:
+        assert "cannot reuse root evidence" in str(exc)
+    else:
+        raise AssertionError("reused root evidence was counted as independent")
 
 
 def test_graph_revision_after_as_of_cannot_leak_into_replay(tmp_path: Path) -> None:

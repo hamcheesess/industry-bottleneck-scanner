@@ -43,6 +43,29 @@ def _unique_evidence(items: Iterable[CausalEvidence]) -> tuple[CausalEvidence, .
     return tuple(by_id[key] for key in sorted(by_id))
 
 
+def _validate_independent_root_shocks(shocks: tuple[RootDemandShock, ...]) -> None:
+    """Reject renamed or evidence-reused roots before convergence can count them twice."""
+
+    root_by_node: dict[str, str] = {}
+    evidence_owner: dict[str, str] = {}
+    for shock in sorted(shocks, key=lambda item: item.root_shock_id):
+        existing_root = root_by_node.get(shock.root_node)
+        if existing_root is not None and existing_root != shock.root_shock_id:
+            raise ValueError(
+                "distinct root_shock_id values cannot share one root_node: "
+                f"{existing_root},{shock.root_shock_id}"
+            )
+        root_by_node[shock.root_node] = shock.root_shock_id
+        for evidence in shock.evidence:
+            existing_owner = evidence_owner.get(evidence.evidence_id)
+            if existing_owner is not None and existing_owner != shock.root_shock_id:
+                raise ValueError(
+                    "independent root shocks cannot reuse root evidence: "
+                    f"{evidence.evidence_id}"
+                )
+            evidence_owner[evidence.evidence_id] = shock.root_shock_id
+
+
 def branches_from_root_shocks(
     shocks: Iterable[RootDemandShock],
     edges: Iterable[ValueChainEdge],
@@ -52,13 +75,15 @@ def branches_from_root_shocks(
 ) -> tuple[DemandBranch, ...]:
     if as_of.tzinfo is None or as_of.utcoffset() is None:
         raise ValueError("as_of must be timezone-aware")
+    shock_items = tuple(shocks)
+    _validate_independent_root_shocks(shock_items)
     edge_items = tuple(edges)
     by_segment: dict[tuple[str, str], list[ValueChainEdge]] = {}
     for edge in edge_items:
         by_segment.setdefault((edge.upstream_node, edge.downstream_node), []).append(edge)
 
     branches: dict[str, DemandBranch] = {}
-    for shock in shocks:
+    for shock in shock_items:
         if shock.as_of > as_of:
             raise ValueError("root shock as_of cannot exceed branch as_of")
         paths = tuple(dict.fromkeys(reachable_paths(shock.root_node, edge_items, max_depth=max_depth)))

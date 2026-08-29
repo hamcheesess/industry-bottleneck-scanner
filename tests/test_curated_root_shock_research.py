@@ -16,6 +16,18 @@ EDGE_PATH = (
     / "causal_edges"
     / "ai-data-center-load-to-grid-interconnection.json"
 )
+SECOND_RESULT_PATH = (
+    REPO_ROOT
+    / "experiments"
+    / "root_shock_research"
+    / "18026c3fad8436f03022-grid-modernization.json"
+)
+SECOND_EDGE_PATH = (
+    REPO_ROOT
+    / "experiments"
+    / "causal_edges"
+    / "grid-modernization-to-large-power-transformers.json"
+)
 
 
 def test_first_curated_root_shock_result_is_provider_free_and_pre_cutoff() -> None:
@@ -79,3 +91,33 @@ def test_reused_root_and_edge_evidence_has_one_canonical_payload() -> None:
             assert item["observed_at"] == root_item["observed_at"]
         else:
             assert item["source_id"] == f"packet-signal:{root_item['packet_signal_id']}"
+
+
+def test_second_root_is_mechanically_independent_and_provider_free() -> None:
+    first = json.loads(RESULT_PATH.read_text(encoding="utf-8"))["root_shock"]
+    second = json.loads(SECOND_RESULT_PATH.read_text(encoding="utf-8"))["root_shock"]
+    edge = json.loads(SECOND_EDGE_PATH.read_text(encoding="utf-8"))["edge"]
+
+    assert second["root_shock_id"] == "grid-modernization-and-resilience-investment-2026q3"
+    assert second["root_node"] == "grid-modernization-and-resilience-investment"
+    assert second["root_node"] != first["root_node"]
+    assert {item["evidence_id"] for item in second["evidence"]}.isdisjoint(
+        item["evidence_id"] for item in first["evidence"]
+    )
+    assert {item["evidence_class"] for item in second["evidence"]} == {
+        "supplier_capacity_expansion",
+        "physical_industry_data",
+        "regulatory_or_permitting",
+    }
+    assert edge["upstream_node"] == second["root_node"]
+    assert edge["downstream_node"] == "large-power-transformers"
+
+    second_by_id = {item["evidence_id"]: item for item in second["evidence"]}
+    for item in edge["evidence"]:
+        if item["evidence_id"] not in second_by_id:
+            continue
+        root_item = second_by_id[item["evidence_id"]]
+        assert item["evidence_class"] == root_item["evidence_class"]
+        assert item["source_id"] == root_item["source_id"]
+        assert item["observed_at"] == root_item["observed_at"]
+        assert item["summary"] == root_item["summary"]

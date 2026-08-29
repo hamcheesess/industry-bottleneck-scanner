@@ -51,6 +51,7 @@ on:
         options:
           - first_path_hypothesis
           - transformer_pre_shock_bottleneck
+          - transformer_two_root_priority
         default: first_path_hypothesis
 
 permissions:
@@ -183,6 +184,45 @@ jobs:
                   [
                       "ai-data-center-electric-load-growth",
                       "large-load-grid-interconnection-capacity",
+                      "large-power-transformers",
+                  ],
+              ]
+          elif profile == "transformer_two_root_priority":
+              if convergence["branch_count"] != 3 or convergence["assessment_count"] != 2:
+                  raise SystemExit("two-root transformer convergence must contain three paths and two assessments")
+              if set(assessments) != {
+                  "large-load-grid-interconnection-capacity",
+                  "large-power-transformers",
+              }:
+                  raise SystemExit("unexpected two-root transformer assessment nodes")
+              grid = assessments["large-load-grid-interconnection-capacity"]
+              if grid["stage"] != "hypothesis" or grid["gate_reasons"] != ["pre_shock_state_not_constrained"]:
+                  raise SystemExit("grid-interconnection segment must remain fail-closed")
+              transformer = assessments["large-power-transformers"]
+              transformer_state = transformer.get("pre_shock_state")
+              if transformer["stage"] != "priority_convergence" or transformer["score"] != 75.07:
+                  raise SystemExit("two-root transformer path must resolve to exact priority convergence")
+              if transformer["gate_reasons"] != []:
+                  raise SystemExit("two-root transformer convergence has unexpected gate reasons")
+              if transformer_state is None or transformer_state["stage"] != "severely_constrained" or transformer_state["constraint_score"] != 84.0:
+                  raise SystemExit("two-root transformer path requires the exact approved pre-shock state")
+              if transformer["independent_root_shock_ids"] != [
+                  os.environ["TRIGGER_ROOT_ID"],
+                  "grid-modernization-and-resilience-investment-2026q3",
+              ]:
+                  raise SystemExit("two-root transformer path requires the exact independent roots")
+              expected_paths = [
+                  [
+                      "ai-data-center-electric-load-growth",
+                      "large-load-grid-interconnection-capacity",
+                  ],
+                  [
+                      "ai-data-center-electric-load-growth",
+                      "large-load-grid-interconnection-capacity",
+                      "large-power-transformers",
+                  ],
+                  [
+                      "grid-modernization-and-resilience-investment",
                       "large-power-transformers",
                   ],
               ]
