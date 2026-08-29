@@ -154,3 +154,7 @@ evidence is admitted.
 The missing pre-cutoff transformer security basket, valuation and consensus snapshot is recorded
 as a blocked expectation-gap slot. It cannot be reconstructed after outcomes. See
 [`later_confirmation_contract.md`](later_confirmation_contract.md) for the executable contract.
+
+Initial production run `33242835298` used exact replay run `33234820223`. Its artifact contains
+four `pending` industrial slots and one blocked expectation slot, preserves the original 73.0 node
+ranking and 75.07 convergence assessment, and records matching plan/diagnostic provenance hashes.

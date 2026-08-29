@@ -373,14 +373,17 @@ Implementation:
   the exact production replay with 17 cutoff-safe records across eight evidence classes;
 - **DONE:** require the Korean reader-facing report to explain both independent demand paths and
   display the structural convergence stage/score separately from the 73.0 node ranking;
-- **IN PROGRESS:** freeze the explicit later-confirmation plan in production: four post-cutoff
+- **DONE:** freeze the explicit later-confirmation plan in production: four post-cutoff
   industrial checks cover demand realization (90 days), bottleneck persistence (180 days), supply
   response (365 days), and economic capture (180 days), while the unfrozen security expectation
   snapshot remains explicitly blocked;
 - **DONE:** add a fail-closed later-confirmation schema/CLI that preserves the original replay,
   rejects observations outside the predeclared windows and source classes, requires independent
   source/entity diversity, and emits a reader-facing Korean explanation rather than a score-only
-  result.
+  result;
+- **DONE:** run the initial production holdout from exact replay run `33234820223`; artifact run
+  `33242835298` preserves 73.0 `evidence_backed` and 75.07 `priority_convergence`, starts all four
+  industrial checks as `pending`, and keeps the security expectation gap `blocked`.
 
 ### Phase 6 — company exposure mapping
 

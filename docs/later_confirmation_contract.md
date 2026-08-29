@@ -86,3 +86,14 @@ artifact is not accepted.
 checks the unchanged ranking and cutoff, creates the initial empty diagnostic, verifies all four
 industrial slots are pending and the expectation gap is blocked, writes provenance, and uploads a
 90-day artifact. It performs no provider calls and does not authorize company mapping.
+
+## First production freeze
+
+Run `33242835298` consumed replay run `33234820223` and produced artifact
+`later-confirmation-33242835298-1` (artifact ID `9711867763`). The archive digest is
+`sha256:8b0a5696e05361edde5875a6bcc8ba6555aab292e8178798ca88ad6a2cd871fa`.
+The plan fingerprint is
+`4917cd06fd353d6d9425e99e8201ce343bfeda41001da8f2d417928034132eb9`; the diagnostic
+fingerprint is `5ccb3b6c74a17b27c62d8a02927322edf8f5256b3be5fe5b53ce3c6c29dca995`.
+All four required industrial slots are `pending`, the expectation-gap slot is `blocked`, and the
+provenance fingerprint exactly matches the generated diagnostic.
