@@ -13,6 +13,7 @@ REPLAY_FREEZE_SCHEMA = "historical-pre-news-replay-freeze-v1"
 REPLAY_RESULT_SCHEMA = "historical-pre-news-replay-result-v1"
 
 REQUIRED_SECTIONS = (
+    "selection_rationale",
     "industry_structure",
     "demand_drivers",
     "value_chain_transmission",
@@ -35,6 +36,7 @@ REQUIRED_SCENARIOS = {"base", "upside", "downside"}
 ALLOWED_CLAIM_TYPES = {"fact", "inference", "uncertainty", "scenario"}
 
 SECTION_TITLES_KO = {
+    "selection_rationale": "왜 이 산업이 선별되었나",
     "industry_structure": "산업의 구조와 제품의 역할",
     "demand_drivers": "수요는 어디에서 오는가",
     "value_chain_transmission": "수요가 병목으로 전달되는 경로",
@@ -154,8 +156,12 @@ def build_industry_analysis_report(
     analysis_input: dict[str, object],
     replay_result: dict[str, object],
     replay_freeze: dict[str, object],
+    market_trigger_artifact: dict[str, object],
+    market_quality_review: dict[str, object],
     *,
     analysis_input_sha256: str,
+    market_trigger_artifact_sha256: str,
+    market_quality_review_sha256: str,
 ) -> dict[str, object]:
     if analysis_input.get("schema_version") != ANALYSIS_INPUT_SCHEMA:
         raise ValueError("unsupported industry analysis input schema")
@@ -172,6 +178,7 @@ def build_industry_analysis_report(
     replay_id = _required_text(analysis_input, "replay_id")
     node_id = _required_text(analysis_input, "node_id")
     title = _required_text(analysis_input, "title")
+    selection_market_bucket = _required_text(analysis_input, "selection_market_bucket")
     language = _required_text(analysis_input, "language")
     if language != "ko":
         raise ValueError("the first reader-facing industry report must use language=ko")
@@ -185,6 +192,50 @@ def build_industry_analysis_report(
     freeze_as_of = _aware_datetime(replay_freeze.get("as_of"), "replay freeze as_of")
     if input_as_of != result_as_of or input_as_of != freeze_as_of:
         raise ValueError("industry analysis as_of must exactly match replay artifacts")
+
+    if market_trigger_artifact.get("schema_version") != "industry-market-trigger-v1":
+        raise ValueError("unsupported market-trigger artifact schema")
+    if str(market_trigger_artifact.get("as_of")) != input_as_of.date().isoformat():
+        raise ValueError("selection market-trigger date must match analysis as_of date")
+    freeze_hashes = replay_freeze.get("input_sha256")
+    if not isinstance(freeze_hashes, dict) or freeze_hashes.get(
+        "market_trigger_artifact"
+    ) != market_trigger_artifact_sha256:
+        raise ValueError("selection market-trigger artifact does not match replay freeze")
+    raw_triggers = market_trigger_artifact.get("triggers")
+    if not isinstance(raw_triggers, list):
+        raise ValueError("market-trigger artifact triggers must be a list")
+    trigger_matches = [
+        item
+        for item in raw_triggers
+        if isinstance(item, dict) and item.get("bucket") == selection_market_bucket
+    ]
+    if len(trigger_matches) != 1:
+        raise ValueError("selection bucket must match exactly one market-trigger row")
+    trigger_row = trigger_matches[0]
+    if trigger_row.get("triggered") is not True or trigger_row.get("reasons") != []:
+        raise ValueError("selection bucket must pass every frozen market-trigger gate")
+    policy = market_trigger_artifact.get("policy")
+    if not isinstance(policy, dict):
+        raise ValueError("market-trigger artifact policy must be an object")
+
+    if market_quality_review.get("schema_version") != "market-trigger-quality-review-v1":
+        raise ValueError("unsupported market-trigger quality-review schema")
+    if market_quality_review.get("review_mode") != "outcome_blind_market_data_only":
+        raise ValueError("selection persistence review must remain outcome-blind")
+    raw_stability = market_quality_review.get("latest_bucket_stability")
+    if not isinstance(raw_stability, list):
+        raise ValueError("market quality latest_bucket_stability must be a list")
+    stability_matches = [
+        item
+        for item in raw_stability
+        if isinstance(item, dict) and item.get("bucket") == selection_market_bucket
+    ]
+    if len(stability_matches) != 1:
+        raise ValueError("selection bucket must match exactly one quality-review row")
+    stability = stability_matches[0]
+    if stability.get("research_tier") != "persistent":
+        raise ValueError("selection bucket must be persistent before causal research")
 
     raw_rankings = replay_result.get("rankings")
     if not isinstance(raw_rankings, list):
@@ -314,6 +365,36 @@ def build_industry_analysis_report(
         "narrative_required": True,
         "security_level_conclusion": False,
         "automatic_company_mapping": False,
+        "selection_market_signal": {
+            "bucket": selection_market_bucket,
+            "as_of": str(market_trigger_artifact["as_of"]),
+            "company_count": trigger_row.get("company_count"),
+            "score": trigger_row.get("score"),
+            "market_outperform_breadth": trigger_row.get(
+                "market_outperform_breadth"
+            ),
+            "sector_outperform_breadth": trigger_row.get(
+                "sector_outperform_breadth"
+            ),
+            "near_high_breadth": trigger_row.get("near_high_breadth"),
+            "abnormal_volume_breadth": trigger_row.get(
+                "abnormal_volume_breadth"
+            ),
+            "median_market_relative_3m": trigger_row.get(
+                "median_market_relative_3m"
+            ),
+            "median_sector_relative_3m": trigger_row.get(
+                "median_sector_relative_3m"
+            ),
+            "policy": dict(policy),
+            "first_triggered_as_of": stability.get("first_triggered_as_of"),
+            "triggered_date_count": stability.get("triggered_date_count"),
+            "current_consecutive_run": stability.get("current_consecutive_run"),
+            "research_tier": stability.get("research_tier"),
+            "review_mode": market_quality_review.get("review_mode"),
+            "market_trigger_artifact_sha256": market_trigger_artifact_sha256,
+            "market_quality_review_sha256": market_quality_review_sha256,
+        },
         "replay_freeze_sha256": replay_freeze["freeze_sha256"],
         "analysis_input_sha256": analysis_input_sha256,
         "ranking": {
@@ -353,8 +434,19 @@ def render_industry_analysis_markdown(report: dict[str, object]) -> str:
     ranking = report["ranking"]
     sections = report["sections"]
     scores = report["score_explanations"]
-    if not all(isinstance(item, dict) for item in (executive, ranking, sections, scores)):
+    selection = report["selection_market_signal"]
+    if not all(
+        isinstance(item, dict)
+        for item in (executive, ranking, sections, scores, selection)
+    ):
         raise ValueError("invalid normalized industry analysis report")
+
+    policy = selection["policy"]
+    if not isinstance(policy, dict):
+        raise ValueError("invalid normalized market-trigger policy")
+
+    def percent(value: object) -> str:
+        return f"{float(value) * 100:.2f}%"
 
     lines = [
         f"# {report['title']}",
@@ -366,15 +458,59 @@ def render_industry_analysis_markdown(report: dict[str, object]) -> str:
         f"- 엄격한 시점 통제: `{str(report['strict_as_of']).lower()}`",
         "- 개별 종목 결론: 없음 — 이 보고서는 산업 노드 이해를 위한 연구 산출물입니다.",
         "",
-        "## 한눈에 보는 결론",
+        "## 왜 이 산업이 선별되었나",
         "",
-        str(executive["text"]),
+        "최초 탐지는 변압기 종목군이 아니라 아래 구조금속 SIC 버킷에서 발생했습니다. 이 시장 신호는 조사 시작점이며, 그 자체가 변압기 병목이나 개별 종목 결론을 뜻하지 않습니다.",
         "",
-        f"- 구분: {CLAIM_TYPE_LABELS_KO[str(executive['claim_type'])]}",
-        f"- 연결 근거: {_format_evidence_ids(executive['evidence_ids'])}",
+        f"- 최초 시장 버킷: `{selection['bucket']}`",
+        f"- 기준일: `{selection['as_of']}` / 시장 trigger 점수: `{selection['score']}`",
+        f"- 지속성: `{selection['first_triggered_as_of']}` 최초 탐지, 전체 `{selection['triggered_date_count']}`개 관측일, 최신까지 `{selection['current_consecutive_run']}`회 연속 / `{selection['research_tier']}`",
+        f"- 검토 방식: `{selection['review_mode']}`",
+        "",
+        "| 시장 이상 항목 | 실제 관측 | 사전 고정 기준 | 판정 |",
+        "|---|---:|---:|---|",
+        f"| 포함 회사 수 | {selection['company_count']}개 | 최소 {policy['min_companies']}개 | 통과 |",
+        f"| 3개월 시장 상회 기업 비중 | {percent(selection['market_outperform_breadth'])} | {percent(policy['market_outperform_breadth_min'])} 이상 | 통과 |",
+        f"| 3개월 섹터 상회 기업 비중 | {percent(selection['sector_outperform_breadth'])} | {percent(policy['sector_outperform_breadth_min'])} 이상 | 통과 |",
+        f"| 52주 고점 10% 이내 기업 비중 | {percent(selection['near_high_breadth'])} | {percent(policy['near_high_breadth_min'])} 이상 | 통과 |",
+        f"| 20일 평균 대비 거래량 {policy['abnormal_volume_ratio']}배 이상 기업 비중 | {percent(selection['abnormal_volume_breadth'])} | {percent(policy['abnormal_volume_breadth_min'])} 이상 | 통과 |",
+        f"| 3개월 시장 대비 중간 초과수익 | {percent(selection['median_market_relative_3m'])} | 설명 지표 | — |",
+        f"| 3개월 섹터 대비 중간 초과수익 | {percent(selection['median_sector_relative_3m'])} | 설명 지표 | — |",
+        "",
     ]
 
+    selection_claims = sections["selection_rationale"]
+    if not isinstance(selection_claims, list):
+        raise ValueError("invalid selection-rationale claims")
+    for claim in selection_claims:
+        if not isinstance(claim, dict):
+            raise ValueError("invalid normalized selection-rationale claim")
+        lines.extend(
+            [
+                f"### {claim['label']}",
+                "",
+                str(claim["text"]),
+                "",
+                f"- 구분: {CLAIM_TYPE_LABELS_KO[str(claim['claim_type'])]}",
+                f"- 연결 근거: {_format_evidence_ids(claim['evidence_ids'])}",
+                "",
+            ]
+        )
+
+    lines.extend(
+        [
+            "## 한눈에 보는 결론",
+            "",
+            str(executive["text"]),
+            "",
+            f"- 구분: {CLAIM_TYPE_LABELS_KO[str(executive['claim_type'])]}",
+            f"- 연결 근거: {_format_evidence_ids(executive['evidence_ids'])}",
+        ]
+    )
+
     for section_name in REQUIRED_SECTIONS:
+        if section_name == "selection_rationale":
+            continue
         lines.extend(["", f"## {SECTION_TITLES_KO[section_name]}", ""])
         claims = sections[section_name]
         if not isinstance(claims, list):

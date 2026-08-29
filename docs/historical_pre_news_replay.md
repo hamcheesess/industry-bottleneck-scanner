@@ -110,6 +110,34 @@ frozen evidence records, separates facts from inference and uncertainty, include
 downside paths and falsifiers, and explicitly states that the 73.0 score is neither a success
 probability nor a security recommendation.
 
+Every reader-facing report must begin by explaining why the economic node entered research. The
+selection section is not free-form hindsight: it joins the exact market-trigger artifact already
+fingerprinted by the replay freeze with the outcome-blind quality review, shows observed breadth
+and attention metrics against the frozen thresholds, records trigger persistence, and then quotes
+the issuer operating phrases that moved the bucket from market anomaly to causal investigation.
+It must explicitly distinguish the originating market bucket from the downstream bottleneck node.
+
+## Independent-root production replay
+
+The versioned second input is
+`experiments/pre_news_replay/early-ai-electrical-2026-08-21-two-root.json`. It preserves the first
+AI-load path and adds the evidence-disjoint `grid-modernization-and-resilience-investment-2026q3`
+root with a direct path to `large-power-transformers`.
+
+The exact production replay requires:
+
+- convergence stage `priority_convergence` at 75.07 from exactly two independent roots;
+- the unchanged 84-point `severely_constrained` pre-trigger transformer state;
+- exactly two transformer path sequences and no future evidence;
+- 17 evidence records across eight evidence classes;
+- the unchanged frozen node scores `4/5/2/4/5/1`, final score 73.0 and stage
+  `evidence_backed`;
+- a Korean report that explains both demand paths and all 17 admitted evidence records.
+
+Structural convergence does not change the economic-capture or expectation-gap judgments. The
+second replay therefore raises research priority without authorizing company mapping or a
+security-level conclusion.
+
 The first input has no identified post-trigger confirmation evidence yet, so its held-out list is
 empty. That does not weaken the cutoff gate: any evidence after `as_of` is still rejected. It does
 mean later-outcome diagnostics remain incomplete and must not be inferred from `status=full`.

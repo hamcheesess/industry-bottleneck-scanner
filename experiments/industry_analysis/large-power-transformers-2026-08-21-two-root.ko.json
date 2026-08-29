@@ -3,6 +3,7 @@
   "report_id": "large-power-transformers-2026-08-21-ko-two-root-v2",
   "replay_id": "early-ai-electrical-2026-08-21-two-root-v2",
   "node_id": "large-power-transformers",
+  "selection_market_bucket": "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS",
   "as_of": "2026-08-21T23:59:59+00:00",
   "language": "ko",
   "title": "대형 전력변압기 산업: AI 전력부하와 전력망 현대화가 하나의 긴 제조 병목에서 만나는 구조",
@@ -23,6 +24,37 @@
     ]
   },
   "sections": {
+    "selection_rationale": [
+      {
+        "label": "시장 이상 뒤 실제 공시에서 확인된 주문·가시성 문구",
+        "claim_type": "inference",
+        "text": "시장 신호만으로 산업 원인을 단정하지 않고 같은 버킷의 SEC 공시를 확인했다. Arcosa는 ‘We ended the second quarter with record backlog for utility and related structures of $648.1 million, which is up 49% from the start of the year’라고 밝혔다. DBM Global은 ‘backlog growth and visibility into 2027 and 2028’과 함께 technology 및 AI infrastructure의 지속 수요를 언급했다. Valmont의 유틸리티 전략 자료에는 ‘Utility CapEx Tailwinds’, ‘Visible Project Pipeline’, ‘Incremental Utility Sales’, ‘Brownfield Expansion’이 한 화면에 제시됐다. 이 문구들은 주가 움직임과 별도로 주문잔고·장기 가시성·유틸리티 증설이 실제 운영계획으로 전환되고 있음을 보여줬다. [Arcosa SEC 원문](https://www.sec.gov/Archives/edgar/data/1739445/000173944526000124/exh991earningsrelease63020.htm) · [DBM Global SEC 원문](https://www.sec.gov/Archives/edgar/data/1006837/000100683726000061/exhibit991-q22026pressrele.htm) · [Valmont SEC 원문](https://www.sec.gov/Archives/edgar/data/102729/000110465926074241/tm2617542d1_ex99-1.htm)",
+        "evidence_ids": [
+          "arcosa-utility-structures-backlog",
+          "vate-ai-infrastructure-backlog",
+          "valmont-utility-capex-tailwinds-2026"
+        ]
+      },
+      {
+        "label": "구조금속 시장 이상에서 대형 변압기 병목으로 넘어간 논리",
+        "claim_type": "inference",
+        "text": "구조금속 업체의 backlog와 유틸리티 capex 문구는 조사 방향을 알려줬지만 변압기 부족을 직접 증명하지는 않았다. 별도의 DOE·EIA·NERC 자료를 결합했을 때 두 경로가 확인됐다. 첫째는 ‘AI 전력부하 → 계통연계·송변전 증설 → 변압기 발주’이고, 둘째는 ‘노후 전력망 교체·복원력·혼잡완화 투자 → 변전소·송전 프로젝트 → 변압기 생산 슬롯’이다. 두 root가 증거를 공유하지 않으면서 동일한 84점 severely constrained 노드에 도달했기 때문에 대형 변압기가 downstream 공통 병목으로 선별됐다.",
+        "evidence_ids": [
+          "doe-data-center-load-outlook-2024",
+          "nerc-large-load-grid-integration-2025",
+          "eia-grid-infrastructure-investment-2024",
+          "doe-transmission-project-investment-2024",
+          "doe-lpt-grid-expansion-demand-2024",
+          "doe-lpt-lead-time-2024"
+        ]
+      },
+      {
+        "label": "선별의 의미와 해석 경계",
+        "claim_type": "uncertainty",
+        "text": "시장 trigger는 어떤 버킷을 먼저 조사할지를 정하는 이상탐지 신호이지 원인·병목·수혜기업을 자동 확정하는 신호가 아니다. 구조금속 버킷의 움직임이 변압기 제조사 주가의 미반영 기대를 뜻하지도 않는다. 공시 문구, 외부 물리자료, 두 독립 수요 root와 pre-trigger 공급상태가 순차적으로 통과했기 때문에 대형 변압기 산업 연구가 우선순위에 오른 것이다.",
+        "evidence_ids": []
+      }
+    ],
     "industry_structure": [
       {
         "label": "전력망의 전압을 바꾸는 주문형 자본재",
@@ -396,4 +428,3 @@
     "모든 결론은 2026-08-21T23:59:59+00:00 이전에 관측된 근거로 제한되며 이후의 결과는 사용하지 않는다."
   ]
 }
-

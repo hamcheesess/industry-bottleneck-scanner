@@ -19,6 +19,8 @@ INPUT_PATH = Path(
 TWO_ROOT_INPUT_PATH = Path(
     "experiments/industry_analysis/large-power-transformers-2026-08-21-two-root.ko.json"
 )
+MARKET_SHA256 = "m" * 64
+QUALITY_SHA256 = "q" * 64
 
 
 def analysis_input() -> dict[str, object]:
@@ -70,6 +72,7 @@ def replay_artifacts(
         "replay_id": payload["replay_id"],
         "as_of": payload["as_of"],
         "freeze_sha256": "f" * 64,
+        "input_sha256": {"market_trigger_artifact": MARKET_SHA256},
     }
     result = {
         "schema_version": "historical-pre-news-replay-result-v1",
@@ -110,11 +113,77 @@ def replay_artifacts(
     return result, freeze
 
 
+def market_artifacts() -> tuple[dict[str, object], dict[str, object]]:
+    bucket = "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS"
+    market = {
+        "schema_version": "industry-market-trigger-v1",
+        "as_of": "2026-08-21",
+        "policy": {
+            "min_companies": 4,
+            "market_outperform_breadth_min": 0.6,
+            "sector_outperform_breadth_min": 0.5,
+            "near_high_breadth_min": 0.4,
+            "abnormal_volume_breadth_min": 0.35,
+            "near_high_threshold": -0.1,
+            "abnormal_volume_ratio": 1.25,
+        },
+        "triggers": [
+            {
+                "bucket": bucket,
+                "company_count": 6,
+                "market_outperform_breadth": 0.6667,
+                "sector_outperform_breadth": 0.6667,
+                "near_high_breadth": 0.5,
+                "abnormal_volume_breadth": 0.5,
+                "median_market_relative_3m": 0.142339,
+                "median_sector_relative_3m": 0.161535,
+                "score": 60.83,
+                "triggered": True,
+                "reasons": [],
+            }
+        ],
+    }
+    quality = {
+        "schema_version": "market-trigger-quality-review-v1",
+        "review_mode": "outcome_blind_market_data_only",
+        "latest_bucket_stability": [
+            {
+                "bucket": bucket,
+                "current_consecutive_run": 9,
+                "first_triggered_as_of": "2025-08-29",
+                "triggered_date_count": 11,
+                "research_tier": "persistent",
+            }
+        ],
+    }
+    return market, quality
+
+
+def build_report(
+    payload: dict[str, object],
+    result: dict[str, object],
+    freeze: dict[str, object],
+    *,
+    analysis_input_sha256: str,
+) -> dict[str, object]:
+    market, quality = market_artifacts()
+    return build_industry_analysis_report(
+        payload,
+        result,
+        freeze,
+        market,
+        quality,
+        analysis_input_sha256=analysis_input_sha256,
+        market_trigger_artifact_sha256=MARKET_SHA256,
+        market_quality_review_sha256=QUALITY_SHA256,
+    )
+
+
 def test_committed_korean_industry_analysis_is_deep_and_evidence_bound() -> None:
     payload = analysis_input()
     result, freeze = replay_artifacts(payload)
 
-    report = build_industry_analysis_report(
+    report = build_report(
         payload,
         result,
         freeze,
@@ -129,6 +198,10 @@ def test_committed_korean_industry_analysis_is_deep_and_evidence_bound() -> None
     assert report["evidence_reference_count"] == 14
     assert report["evidence_class_count"] == 4
     assert set(report["sections"]) == set(REQUIRED_SECTIONS)
+    assert report["selection_market_signal"]["score"] == 60.83
+    assert report["selection_market_signal"]["current_consecutive_run"] == 9
+    assert "## 왜 이 산업이 선별되었나" in markdown
+    assert "record backlog for utility and related structures" in markdown
     assert "## 한눈에 보는 결론" in markdown
     assert "## 공급이 빨리 늘지 못하는 이유" in markdown
     assert "## 시장 기대에 반영된 것과 아직 모르는 것" in markdown
@@ -158,7 +231,7 @@ def test_two_root_industry_analysis_explains_independent_demand_convergence() ->
         ],
     ]
 
-    report = build_industry_analysis_report(
+    report = build_report(
         payload,
         result,
         freeze,
@@ -171,6 +244,39 @@ def test_two_root_industry_analysis_explains_independent_demand_convergence() ->
     assert "독립 수요축 `2`개" in markdown
     assert "AI와 독립적인 노후 전력망 교체·복원력 투자" in markdown
     assert "전력망 현대화에서 변압기까지의 두 번째 독립 인과 사슬" in markdown
+    assert "Utility CapEx Tailwinds" in markdown
+    assert "최초 탐지는 변압기 종목군이 아니라" in markdown
+
+
+def test_report_rejects_unfrozen_or_nonpersistent_selection_context() -> None:
+    payload = analysis_input()
+    result, freeze = replay_artifacts(payload)
+    market, quality = market_artifacts()
+
+    with pytest.raises(ValueError, match="does not match replay freeze"):
+        build_industry_analysis_report(
+            payload,
+            result,
+            freeze,
+            market,
+            quality,
+            analysis_input_sha256="a" * 64,
+            market_trigger_artifact_sha256="x" * 64,
+            market_quality_review_sha256=QUALITY_SHA256,
+        )
+
+    quality["latest_bucket_stability"][0]["research_tier"] = "emerging"
+    with pytest.raises(ValueError, match="must be persistent"):
+        build_industry_analysis_report(
+            payload,
+            result,
+            freeze,
+            market,
+            quality,
+            analysis_input_sha256="a" * 64,
+            market_trigger_artifact_sha256=MARKET_SHA256,
+            market_quality_review_sha256=QUALITY_SHA256,
+        )
 
 
 def test_report_rejects_claim_evidence_outside_replay() -> None:
@@ -183,7 +289,7 @@ def test_report_rejects_claim_evidence_outside_replay() -> None:
     evidence_ids.append("later-outcome-contract")
 
     with pytest.raises(ValueError, match="outside replay"):
-        build_industry_analysis_report(
+        build_report(
             payload,
             result,
             freeze,
@@ -197,7 +303,7 @@ def test_report_rejects_post_cutoff_replay_evidence() -> None:
     result, freeze = replay_artifacts(payload, future_evidence_id=evidence_id)
 
     with pytest.raises(ValueError, match="post-cutoff"):
-        build_industry_analysis_report(
+        build_report(
             payload,
             result,
             freeze,
@@ -212,7 +318,7 @@ def test_report_rejects_missing_industry_section_and_freeze_mismatch() -> None:
     assert isinstance(sections, dict)
     sections.pop("economic_capture")
     with pytest.raises(ValueError, match="required industry analysis sections"):
-        build_industry_analysis_report(
+        build_report(
             payload,
             result,
             freeze,
@@ -223,7 +329,7 @@ def test_report_rejects_missing_industry_section_and_freeze_mismatch() -> None:
     result, freeze = replay_artifacts(payload)
     result["freeze_sha256"] = "0" * 64
     with pytest.raises(ValueError, match="fingerprints do not match"):
-        build_industry_analysis_report(
+        build_report(
             payload,
             result,
             freeze,
@@ -237,8 +343,17 @@ def test_cli_writes_reader_first_json_and_markdown(tmp_path: Path) -> None:
     input_path = tmp_path / "analysis.json"
     result_path = tmp_path / "rankings.json"
     freeze_path = tmp_path / "freeze.json"
+    market_path = tmp_path / "market.json"
+    quality_path = tmp_path / "quality.json"
+    market, quality = market_artifacts()
     input_path.write_text(json.dumps(payload), encoding="utf-8")
     result_path.write_text(json.dumps(result), encoding="utf-8")
+    freeze_path.write_text(json.dumps(freeze), encoding="utf-8")
+    market_path.write_text(json.dumps(market), encoding="utf-8")
+    quality_path.write_text(json.dumps(quality), encoding="utf-8")
+    freeze["input_sha256"]["market_trigger_artifact"] = __import__(
+        "hashlib"
+    ).sha256(market_path.read_bytes()).hexdigest()
     freeze_path.write_text(json.dumps(freeze), encoding="utf-8")
     output_dir = tmp_path / "output"
 
@@ -250,6 +365,10 @@ def test_cli_writes_reader_first_json_and_markdown(tmp_path: Path) -> None:
             str(result_path),
             "--replay-freeze",
             str(freeze_path),
+            "--market-trigger-artifact",
+            str(market_path),
+            "--market-quality-review",
+            str(quality_path),
             "--output-dir",
             str(output_dir),
         ]
@@ -269,7 +388,7 @@ def test_score_explanations_are_not_allowed_to_replace_narrative() -> None:
     sections["industry_structure"] = []
 
     with pytest.raises(ValueError, match="must contain at least one claim"):
-        build_industry_analysis_report(
+        build_report(
             payload,
             result,
             freeze,
@@ -287,3 +406,6 @@ def test_production_replay_requires_reader_facing_analysis() -> None:
     assert '"narrative_required": True' in workflow
     assert "## 공급이 빨리 늘지 못하는 이유" in workflow
     assert "## 산업의 경제성과 수익 포착 조건" in workflow
+    assert "--market-trigger-artifact" in workflow
+    assert "--market-quality-review" in workflow
+    assert "## 왜 이 산업이 선별되었나" in workflow

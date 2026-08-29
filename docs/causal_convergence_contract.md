@@ -96,11 +96,16 @@ Outputs:
 - `demand_convergence.json` — `causal-convergence-run-v1` assessments and strict pre-shock
   state references.
 
-`.github/workflows/causal-convergence-production.yml` supports two explicit validation profiles.
+`.github/workflows/causal-convergence-production.yml` supports three explicit validation profiles.
 `first_path_hypothesis` preserves the original one-edge fail-closed result.
 `transformer_pre_shock_bottleneck` requires exactly the two approved paths, keeps the
 grid-interconnection assessment at `hypothesis`, requires the transformer state to be exactly
 `severely_constrained` at 84 points, and verifies that only the original demand root is present.
+`transformer_two_root_priority` requires exactly three branches and two independent roots,
+keeps the grid-interconnection segment fail-closed, and requires the transformer assessment to be
+exactly 75.07 `priority_convergence` on the same 84-point pre-trigger state. Distinct root IDs may
+not share a root node or root evidence ID, so renamed or evidence-reused roots cannot inflate
+convergence breadth.
 Unknown profiles fail closed.
 
 Future root, edge, evidence, and industry-state revisions are excluded by their timestamped

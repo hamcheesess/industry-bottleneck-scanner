@@ -163,11 +163,11 @@ This is the code status after architecture consolidation.
 | Market features | **EXECUTABLE / CALIBRATION PENDING** | `market_history.py`, explicit `as_of` features, Massive grouped-daily adjusted adapter, self-contained cache-first normalized history archive | production universe run and provider entitlement/retention verification |
 | Market trigger | **CALIBRATED / RESEARCH QUEUE READY** | bottom-up breadth, strict-as-of 16-date calibration, outcome-blind stability review, deterministic SEC issuer batches | operating-evidence validation of persistent buckets |
 | Causal diagnosis | **REAL PROVIDER-INDEPENDENT RUN COMPLETE** | freshness-aware `OperatingSupport`, one-sided evidence, optional old `AccelerationSnapshot`; 28 dated bucket diagnoses, bounded research packets, and the first strict-as-of eligible research result | investigate remaining concrete mechanisms and external corroboration without automatic approval |
-| Causal graph | **ORCHESTRATION EXECUTABLE / FIRST REAL TWO-EDGE PATH READY** | edge approval/history, append-only Root Demand Shock approval, reproducible AI data-center electric-load -> grid-interconnection -> large-power-transformer path, bounded expansion, `DemandBranch` artifacts | evidence for independent demand roots and additional value-chain branches |
+| Causal graph | **ORCHESTRATION EXECUTABLE / TWO INDEPENDENT ROOTS READY** | append-only approval for AI load and grid-modernization roots, three production branches reaching grid interconnection and large-power transformers, bounded expansion, `DemandBranch` artifacts | additional value-chain branches only where independently evidenced |
 | Pre-shock industry state | **UPDATER EXECUTABLE / FIRST CONSTRAINED NODE READY** | append-only snapshots, strict pre-trigger lookup, source-diverse grid-interconnection snapshot, severely constrained large-power-transformer snapshot, explicit company-to-node assignments, AtomicSignal/external observation updater | replay calibration and later decay policy |
-| Demand convergence | **FIRST REAL GRAPH/STATE INTEGRATION COMPLETE** | exact production run, root deduplication, strict pre-shock constraint join, one fail-closed grid node and one `pre_shock_bottleneck` transformer node, versioned artifacts | independent-root convergence and replay calibration |
-| Pre-news node ranking | **FIRST REAL REPLAY COMPLETE / CALIBRATION CONTINUES** | `causal_expansion.py`, six dimensions + hard gates, promoted-convergence join, explicit frozen judgments; transformer remains 73.0 `evidence_backed` | independent-root, economic-capture, and expectation-gap validation |
-| Historical pre-news replay | **FIRST REAL CASE COMPLETE / NARRATIVE GATE ADDED** | exact `as_of`, five input fingerprints, fail-closed promoted-node coverage, 14 dated evidence records across eight classes, mandatory evidence-bound Korean industry analysis | explicit later-confirmation holdouts and independent-root replay before company mapping |
+| Demand convergence | **TWO-ROOT PRODUCTION CALIBRATION COMPLETE** | exact production run, evidence-disjoint root validation, three branches, strict pre-shock join, fail-closed grid node, transformer 75.07 `priority_convergence` | later-confirmation calibration and additional historical cases |
+| Pre-news node ranking | **TWO-ROOT REPLAY COMPLETE / CALIBRATION CONTINUES** | six dimensions + hard gates, promoted-convergence join, explicit frozen judgments; transformer remains 73.0 `evidence_backed` despite higher structural convergence | economic-capture and expectation-gap validation |
+| Historical pre-news replay | **TWO-ROOT CASE COMPLETE / NARRATIVE GATE ACTIVE** | exact `as_of`, five input fingerprints, 17 dated evidence records across eight classes, mandatory evidence-bound Korean analysis explaining both independent demand paths | explicit later-confirmation holdouts before company mapping |
 | Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
 | Repo-A -> Repo-B manifest | **NOT FROZEN** | conceptual boundary only | implement only after upstream historical replay works |
 
@@ -322,7 +322,11 @@ Implementation:
   transformers and combine it with the pre-trigger transformer state without inventing a second root;
 - **DONE:** reproduce one fail-closed grid node and one `pre_shock_bottleneck` transformer node
   under exact validation profiles;
-- **IN PROGRESS:** calibrate independent-root convergence using the frozen historical replay.
+- **DONE:** adjudicate an evidence-disjoint grid-modernization/resilience root and its direct
+  transformer edge without reusing the AI root evidence;
+- **DONE:** reproduce three production branches and promote the transformer structural assessment
+  to 75.07 `priority_convergence`, while retaining the fail-closed grid-interconnection assessment;
+- **DONE:** reject renamed roots or reused root evidence before independent-root breadth is counted.
 
 ### Phase 5 — historical pre-news replay
 
@@ -362,8 +366,15 @@ Implementation:
   expectations, falsifiers, monitoring, scenario, and plain-language score sections;
 - **DONE:** bind every factual or inferential report claim to evidence IDs already admitted by the
   exact replay, and reject unknown evidence, cutoff leakage, freeze mismatch, or missing sections;
-- **IN PROGRESS:** add an independently adjudicated demand root and explicit later-confirmation
-  holdouts before using the replay to authorize company exposure mapping.
+- **DONE:** make selection provenance the first reader-facing section: exact originating market
+  bucket, observed metrics versus frozen thresholds, outcome-blind persistence, issuer wording,
+  and an explicit boundary between the market anomaly and downstream bottleneck inference;
+- **DONE:** add the independently adjudicated grid-modernization/resilience demand root and rerun
+  the exact production replay with 17 cutoff-safe records across eight evidence classes;
+- **DONE:** require the Korean reader-facing report to explain both independent demand paths and
+  display the structural convergence stage/score separately from the 73.0 node ranking;
+- **IN PROGRESS:** define and freeze explicit later-confirmation holdouts before using the replay
+  to authorize company exposure mapping.
 
 ### Phase 6 — company exposure mapping
 

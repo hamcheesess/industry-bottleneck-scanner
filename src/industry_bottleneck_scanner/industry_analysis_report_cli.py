@@ -18,6 +18,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--analysis-input", type=Path, required=True)
     parser.add_argument("--replay-result", type=Path, required=True)
     parser.add_argument("--replay-freeze", type=Path, required=True)
+    parser.add_argument("--market-trigger-artifact", type=Path, required=True)
+    parser.add_argument("--market-quality-review", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     return parser
 
@@ -35,7 +37,11 @@ def main(argv: list[str] | None = None) -> int:
         _object(args.analysis_input, "analysis input"),
         _object(args.replay_result, "replay result"),
         _object(args.replay_freeze, "replay freeze"),
+        _object(args.market_trigger_artifact, "market-trigger artifact"),
+        _object(args.market_quality_review, "market quality review"),
         analysis_input_sha256=file_sha256(args.analysis_input),
+        market_trigger_artifact_sha256=file_sha256(args.market_trigger_artifact),
+        market_quality_review_sha256=file_sha256(args.market_quality_review),
     )
     json_path, markdown_path = write_industry_analysis_artifacts(args.output_dir, report)
     print(

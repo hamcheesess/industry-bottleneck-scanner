@@ -278,6 +278,8 @@ jobs:
             --analysis-input "$ANALYSIS_INPUT_PATH" \
             --replay-result artifacts/replay/pre_news_rankings.json \
             --replay-freeze artifacts/replay/replay_freeze.json \
+            --market-trigger-artifact artifacts/input/market/as_of=2026-08-21/industry_market_triggers.json \
+            --market-quality-review artifacts/input/market/market_trigger_quality_review.json \
             --output-dir artifacts/replay
 
       - name: Validate reader-facing analysis and extend provenance
@@ -301,6 +303,15 @@ jobs:
               raise SystemExit("industry analysis must remain mandatory and strict-as-of")
           if report["security_level_conclusion"] is not False:
               raise SystemExit("node analysis must not invent a security-level conclusion")
+          selection = report.get("selection_market_signal")
+          if not isinstance(selection, dict):
+              raise SystemExit("industry analysis must explain the originating market anomaly")
+          if selection.get("bucket") != "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS":
+              raise SystemExit("industry analysis selection bucket changed")
+          if selection.get("score") != 60.83 or selection.get("research_tier") != "persistent":
+              raise SystemExit("industry analysis must preserve the exact frozen selection signal")
+          if selection.get("current_consecutive_run") != 9 or selection.get("triggered_date_count") != 11:
+              raise SystemExit("industry analysis must preserve exact trigger persistence")
           expected_evidence_count = (
               17
               if os.environ["VALIDATION_PROFILE"] == "transformer_two_root_evidence_backed"
@@ -310,6 +321,7 @@ jobs:
               raise SystemExit("transformer report must explain every frozen evidence record")
           required_headings = {
               "## 한눈에 보는 결론",
+              "## 왜 이 산업이 선별되었나",
               "## 산업의 구조와 제품의 역할",
               "## 수요는 어디에서 오는가",
               "## 수요가 병목으로 전달되는 경로",
@@ -333,6 +345,9 @@ jobs:
                   "analysis_input_sha256": hashlib.sha256(
                       analysis_input.read_bytes()
                   ).hexdigest(),
+                  "market_quality_review_sha256": selection[
+                      "market_quality_review_sha256"
+                  ],
                   "industry_analysis_report_sha256": report["report_sha256"],
               }
           )
