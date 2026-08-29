@@ -23,8 +23,23 @@ jobs:
       - name: Test
         run: pytest -q
 
-  append-grid-modernization-transformer-edge:
-    uses: ./.github/workflows/causal-edge-adjudication.yml
+  build-two-root-convergence:
+    uses: ./.github/workflows/causal-convergence-production.yml
     with:
-      edge_input_path: 'experiments/causal_edges/grid-modernization-to-large-power-transformers.json'
-      prior_graph_run_id: '33060344295'
+      root_registry_run_id: '33234186699'
+      graph_registry_run_id: '33234234221'
+      state_registry_run_id: '33060344295'
+      trigger_root_shock_id: 'ai-data-center-electric-load-expansion-2026q3'
+      as_of: '2026-08-21T23:59:59+00:00'
+      validation_profile: 'transformer_two_root_priority'
+
+  build-two-root-reader-analysis:
+    uses: ./.github/workflows/pre-news-replay-production.yml
+    with:
+      market_calibration_run_id: '32717734277'
+      root_registry_run_id: '33234186699'
+      graph_registry_run_id: '33234234221'
+      state_registry_run_id: '33060344295'
+      replay_input_path: 'experiments/pre_news_replay/early-ai-electrical-2026-08-21-two-root.json'
+      analysis_input_path: 'experiments/industry_analysis/large-power-transformers-2026-08-21-two-root.ko.json'
+      validation_profile: 'transformer_two_root_evidence_backed'
