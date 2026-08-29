@@ -7,6 +7,12 @@ The replay answers one bounded question: could the approved causal system promot
 economically important downstream node using only evidence available at the frozen `as_of`?
 Later returns and obvious confirmation events are diagnostics, not discovery inputs.
 
+A numerical ranking is not a complete product output. Every production replay must also emit a
+reader-facing Korean industry analysis that explains what the economic node does, where demand
+comes from, how demand reaches the node, why supply is constrained, what can relieve the
+constraint, whether the economics can be captured, what the score does and does not mean, and
+what would falsify the view.
+
 ## Frozen input
 
 `ibs-pre-news-replay` accepts `historical-pre-news-replay-input-v1` with:
@@ -52,12 +58,30 @@ The runner:
 6. rejects evidence after `as_of` and any held-out confirmation leakage;
 7. calls the existing `NodeAssessment` / `rank_nodes` logic without redefining its scores.
 
+The companion `ibs-industry-analysis-report` command then validates a committed
+`industry-analysis-narrative-input-v1` against the exact replay result and freeze. Every factual
+or inferential narrative block references evidence IDs already admitted by the replay. Unknown
+IDs, post-cutoff observations, a mismatched replay/freeze, or a missing required section fail the
+build.
+
+```bash
+ibs-industry-analysis-report \
+  --analysis-input experiments/industry_analysis/large-power-transformers-2026-08-21.ko.json \
+  --replay-result artifacts/replay/pre_news_rankings.json \
+  --replay-freeze artifacts/replay/replay_freeze.json \
+  --output-dir artifacts/replay
+```
+
 ## Outputs
 
 - `replay_freeze.json` — exact IDs, cutoff, holdouts, SHA-256 of every input, and a canonical
   freeze fingerprint;
 - `pre_news_rankings.json` — convergence/path references, explicit scores, evidence references,
   and the existing pre-news ranking result.
+- `industry_analysis.json` — evidence-bound structured narrative, score explanations, scenarios,
+  limitations, and report fingerprint;
+- `industry_analysis.ko.md` — the first-read Korean industry report. The score is a supporting
+  table, not the report's conclusion.
 
 A successful artifact has `status=full`. The current contract fails closed instead of emitting
 `limited` when promoted-node judgments or frozen inputs are incomplete. Company exposure mapping
@@ -80,6 +104,11 @@ The `2026-08-21` replay produced one ranked economic node:
 - final score `73.0`, stage `evidence_backed`;
 - latest accepted evidence at `2026-08-06T20:13:52+00:00`, before the replay cutoff;
 - automatic company mapping and automatic `pre_news_candidate` promotion both disabled.
+
+The same workflow now requires the committed Korean transformer analysis. It explains all 14
+frozen evidence records, separates facts from inference and uncertainty, includes base/upside/
+downside paths and falsifiers, and explicitly states that the 73.0 score is neither a success
+probability nor a security recommendation.
 
 The first input has no identified post-trigger confirmation evidence yet, so its held-out list is
 empty. That does not weaken the cutoff gate: any evidence after `as_of` is still rejected. It does

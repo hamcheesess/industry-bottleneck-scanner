@@ -167,7 +167,7 @@ This is the code status after architecture consolidation.
 | Pre-shock industry state | **UPDATER EXECUTABLE / FIRST CONSTRAINED NODE READY** | append-only snapshots, strict pre-trigger lookup, source-diverse grid-interconnection snapshot, severely constrained large-power-transformer snapshot, explicit company-to-node assignments, AtomicSignal/external observation updater | replay calibration and later decay policy |
 | Demand convergence | **FIRST REAL GRAPH/STATE INTEGRATION COMPLETE** | exact production run, root deduplication, strict pre-shock constraint join, one fail-closed grid node and one `pre_shock_bottleneck` transformer node, versioned artifacts | independent-root convergence and replay calibration |
 | Pre-news node ranking | **FIRST REAL REPLAY COMPLETE / CALIBRATION CONTINUES** | `causal_expansion.py`, six dimensions + hard gates, promoted-convergence join, explicit frozen judgments; transformer remains 73.0 `evidence_backed` | independent-root, economic-capture, and expectation-gap validation |
-| Historical pre-news replay | **FIRST REAL CASE COMPLETE** | exact `as_of`, five input fingerprints, fail-closed promoted-node coverage, 14 dated evidence records across eight classes, versioned production artifact | explicit later-confirmation holdouts and independent-root replay before company mapping |
+| Historical pre-news replay | **FIRST REAL CASE COMPLETE / NARRATIVE GATE ADDED** | exact `as_of`, five input fingerprints, fail-closed promoted-node coverage, 14 dated evidence records across eight classes, mandatory evidence-bound Korean industry analysis | explicit later-confirmation holdouts and independent-root replay before company mapping |
 | Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
 | Repo-A -> Repo-B manifest | **NOT FROZEN** | conceptual boundary only | implement only after upstream historical replay works |
 
@@ -356,6 +356,12 @@ Implementation:
   durable economic capture or a direct priced-in expectation gap;
 - **DONE:** reject post-cutoff evidence, fingerprint all five inputs, and keep company mapping and
   automatic pre-news-candidate promotion disabled in production provenance;
+- **DONE:** make a reader-facing Korean industry analysis a mandatory production output rather
+  than treating the numerical ranking as the product; require industry structure, demand,
+  value-chain transmission, bottleneck mechanics, supply response, economic capture,
+  expectations, falsifiers, monitoring, scenario, and plain-language score sections;
+- **DONE:** bind every factual or inferential report claim to evidence IDs already admitted by the
+  exact replay, and reject unknown evidence, cutoff leakage, freeze mismatch, or missing sections;
 - **IN PROGRESS:** add an independently adjudicated demand root and explicit later-confirmation
   holdouts before using the replay to authorize company exposure mapping.
 

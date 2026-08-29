@@ -263,12 +263,17 @@ Repo B remains untouched until the upstream manifest is stable.
 5. persistent industry-state update jobs;
 6. root-demand-shock and causal-path persistence;
 7. early-AI-cycle historical replay with frozen `as_of` dates;
-8. company exposure mapping;
-9. Repo-A -> Repo-B manifest freeze and integration.
+8. mandatory evidence-bound reader-facing industry analysis;
+9. company exposure mapping;
+10. Repo-A -> Repo-B manifest freeze and integration.
 
 The Phase-5 replay has a separate provider-independent CLI and fingerprints its frozen root,
 graph, state, and judgment inputs. It calls the existing node ranker and cannot derive missing
 economic-capture, reinvestment, triangulation, expectation-gap, or bottleneck judgments.
+`industry_analysis_report.py` then joins a committed Korean narrative to that exact replay and
+fails closed when the report omits a required analytical section or cites evidence outside the
+strict-as-of replay. The numerical score remains a compact evidence summary rather than the user
+product.
 
 ## Design principles
 

@@ -18,6 +18,9 @@ on:
       replay_input_path:
         required: true
         type: string
+      analysis_input_path:
+        required: true
+        type: string
       validation_profile:
         required: false
         type: string
@@ -44,6 +47,10 @@ on:
         description: Committed frozen replay judgment input
         required: true
         default: 'experiments/pre_news_replay/early-ai-electrical-2026-08-21.json'
+      analysis_input_path:
+        description: Committed Korean reader-facing industry analysis input
+        required: true
+        default: 'experiments/industry_analysis/large-power-transformers-2026-08-21.ko.json'
       validation_profile:
         description: Exact fail-closed replay validation profile
         required: true
@@ -65,6 +72,7 @@ jobs:
       GRAPH_RUN_ID: ${{ inputs.graph_registry_run_id || '33060344295' }}
       STATE_RUN_ID: ${{ inputs.state_registry_run_id || '33060344295' }}
       REPLAY_INPUT_PATH: ${{ inputs.replay_input_path || 'experiments/pre_news_replay/early-ai-electrical-2026-08-21.json' }}
+      ANALYSIS_INPUT_PATH: ${{ inputs.analysis_input_path || 'experiments/industry_analysis/large-power-transformers-2026-08-21.ko.json' }}
       VALIDATION_PROFILE: ${{ inputs.validation_profile || 'transformer_evidence_backed' }}
     steps:
       - uses: actions/checkout@v4
@@ -86,15 +94,17 @@ jobs:
               exit 2
             fi
           done
-          input_path="$(realpath -- "$REPLAY_INPUT_PATH")"
-          case "$input_path" in
-            "$GITHUB_WORKSPACE"/*) ;;
-            *) echo "replay_input_path must stay inside the checked-out repository" >&2; exit 2 ;;
-          esac
-          if [[ ! -f "$input_path" ]]; then
-            echo "Committed replay input is missing: $REPLAY_INPUT_PATH" >&2
-            exit 2
-          fi
+          for configured_path in "$REPLAY_INPUT_PATH" "$ANALYSIS_INPUT_PATH"; do
+            input_path="$(realpath -- "$configured_path")"
+            case "$input_path" in
+              "$GITHUB_WORKSPACE"/*) ;;
+              *) echo "committed input path must stay inside the checked-out repository" >&2; exit 2 ;;
+            esac
+            if [[ ! -f "$input_path" ]]; then
+              echo "Committed input is missing: $configured_path" >&2
+              exit 2
+            fi
+          done
 
       - name: Download provider-free dated market calibration
         uses: actions/download-artifact@v4
@@ -237,6 +247,69 @@ jobs:
               "automatic_pre_news_candidate_promotion": False,
           }
           (output / "input_provenance.json").write_text(
+              json.dumps(provenance, indent=2, sort_keys=True) + "\n"
+          )
+
+      - name: Build mandatory Korean industry analysis
+        run: |
+          ibs-industry-analysis-report \
+            --analysis-input "$ANALYSIS_INPUT_PATH" \
+            --replay-result artifacts/replay/pre_news_rankings.json \
+            --replay-freeze artifacts/replay/replay_freeze.json \
+            --output-dir artifacts/replay
+
+      - name: Validate reader-facing analysis and extend provenance
+        shell: python
+        run: |
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          output = Path("artifacts/replay")
+          report = json.loads((output / "industry_analysis.json").read_text())
+          markdown = (output / "industry_analysis.ko.md").read_text()
+          if report["schema_version"] != "industry-analysis-report-v1":
+              raise SystemExit("unexpected industry analysis schema")
+          if report["node_id"] != "large-power-transformers":
+              raise SystemExit("industry analysis must explain the replayed economic node")
+          if report["as_of"] != "2026-08-21T23:59:59+00:00":
+              raise SystemExit("industry analysis cutoff changed")
+          if report["strict_as_of"] is not True or report["narrative_required"] is not True:
+              raise SystemExit("industry analysis must remain mandatory and strict-as-of")
+          if report["security_level_conclusion"] is not False:
+              raise SystemExit("node analysis must not invent a security-level conclusion")
+          if report["evidence_reference_count"] != 14:
+              raise SystemExit("transformer report must explain all 14 frozen evidence records")
+          required_headings = {
+              "## 한눈에 보는 결론",
+              "## 산업의 구조와 제품의 역할",
+              "## 수요는 어디에서 오는가",
+              "## 수요가 병목으로 전달되는 경로",
+              "## 공급이 빨리 늘지 못하는 이유",
+              "## 산업의 경제성과 수익 포착 조건",
+              "## 시장 기대에 반영된 것과 아직 모르는 것",
+              "## 반대 논리와 분석이 틀렸다고 판단할 조건",
+              "## 앞으로 확인해야 할 신호",
+              "## 점수를 사람의 언어로 해석하기",
+          }
+          missing = sorted(item for item in required_headings if item not in markdown)
+          if missing:
+              raise SystemExit("missing reader-facing report sections: " + ",".join(missing))
+
+          provenance_path = output / "input_provenance.json"
+          provenance = json.loads(provenance_path.read_text())
+          analysis_input = Path(os.environ["ANALYSIS_INPUT_PATH"])
+          provenance.update(
+              {
+                  "narrative_required": True,
+                  "analysis_input_sha256": hashlib.sha256(
+                      analysis_input.read_bytes()
+                  ).hexdigest(),
+                  "industry_analysis_report_sha256": report["report_sha256"],
+              }
+          )
+          provenance_path.write_text(
               json.dumps(provenance, indent=2, sort_keys=True) + "\n"
           )
 

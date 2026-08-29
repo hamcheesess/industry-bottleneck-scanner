@@ -24,6 +24,7 @@ Status vocabulary: **DONE**, **PARTIAL**, **LEGACY**, **NOT STARTED**, **BLOCKED
 | Demand convergence core | **PARTIAL** | first real production graph/state integration, one fail-closed grid assessment, one `pre_shock_bottleneck` transformer assessment, independent-root deduplication, strict pre-shock join | independent-root convergence and replay calibration |
 | Pre-news ranking core | **PARTIAL** | six dimensions and hard gates plus the first production large-power-transformer score: 73.0 `evidence_backed` | validate economic capture and expectation gap without promoting from supply constraints alone |
 | Historical pre-news replay | **PARTIAL** | first production replay completed from four exact upstream runs; one transformer node, 14 evidence records, eight evidence classes, strict cutoff, fingerprinted freeze and provenance | add an independent demand root and later-confirmation holdouts before any company mapping |
+| Reader-facing industry analysis | **PARTIAL** | mandatory Korean narrative schema/CLI; exact replay/freeze join; evidence-bound facts and inferences; industry structure, demand, value-chain, bottleneck, economics, scenarios, falsifiers and monitoring; first transformer report | repeat the same narrative gate for every later promoted economic node |
 | Company exposure mapping | **NOT STARTED** | architecture boundary only | evidence-backed node-to-company contract and mapper |
 | Repo A thesis manifest | **NOT STARTED** | conceptual Repo A/Repo B boundary only | freeze only after node-level historical replay succeeds |
 | Production cadence | **NOT STARTED** | none | begin only after replay and handoff stability |
@@ -35,7 +36,9 @@ SEC pass are complete. The first external causal result is eligible for append f
 evidence-backed edges, and a source-diverse pre-trigger transformer snapshot is severely
 constrained without using later outcomes. The first production historical replay preserved that
 node at `evidence_backed`, not `pre_news_candidate`, because economic capture and expectation gap
-remain weakly evidenced. The current execution gate is independent-root evidence and explicit
+remain weakly evidenced. Its score is now accompanied by a required Korean industry report that
+explains the physical mechanism, limitations, scenarios and falsifiers using only the 14 replay
+evidence records. The current execution gate is independent-root evidence and explicit
 later-confirmation holdouts. This work must
 not redefine Phase-1 outputs, change frozen thresholds, or
 approve a root shock without independent evidence and strict-as-of provenance.

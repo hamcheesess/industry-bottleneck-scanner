@@ -24,6 +24,7 @@ Broad US universe
   -> Independent Demand-root Convergence
   -> Pre-News Chain Selection
   -> Bottleneck / Economic Capture / Reinvestment / Expectation Gap
+  -> Evidence-bound Industry Analysis Narrative
   -> Listed-company Exposure Mapping
   -> Repo B Underwriting
 ```
@@ -118,6 +119,8 @@ Current provider-independent core:
 - `industry_state.py` — append-only pre-shock supply-state memory;
 - `industry_state_updater.py` — explicit issuer-to-node mapping plus evidence-diverse state updates;
 - `demand_convergence.py` — new-shock x pre-shock constraint x independent-root convergence.
+- `industry_analysis_report.py` — strict-as-of Korean narrative that explains each promoted
+  economic node and binds factual/inferential claims to replay-admitted evidence IDs.
 
 Raw full transcripts are not sent to an LLM. Cheap deterministic work remains local-first; later model calls are reserved for already-filtered research tasks and cannot approve causal evidence by themselves.
 
