@@ -24,7 +24,6 @@ jobs:
         run: pytest -q
 
   build-reader-facing-industry-analysis:
-    if: github.event_name == 'push'
     uses: ./.github/workflows/pre-news-replay-production.yml
     with:
       market_calibration_run_id: '32717734277'
