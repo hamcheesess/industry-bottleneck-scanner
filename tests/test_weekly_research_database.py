@@ -7,11 +7,13 @@ import pytest
 
 
 MIGRATION = Path("web_contract/migrations/0001_weekly_research.sql")
+FINANCIAL_MIGRATION = Path("web_contract/migrations/0002_financial_scenarios.sql")
 
 
 def database() -> sqlite3.Connection:
     connection = sqlite3.connect(":memory:")
     connection.executescript(MIGRATION.read_text(encoding="utf-8"))
+    connection.executescript(FINANCIAL_MIGRATION.read_text(encoding="utf-8"))
     return connection
 
 
@@ -42,6 +44,7 @@ def test_schema_has_status_and_final_tables_but_no_draft_storage() -> None:
         "industry_statuses",
         "final_reports",
         "report_efficiency_feedback",
+        "financial_scenario_summaries",
     } <= tables
     assert not any("draft" in table for table in tables)
     assert not any("draft" in column or "prompt" in column for column in columns)
@@ -103,7 +106,8 @@ def test_only_published_status_can_receive_final_report() -> None:
     connection.execute(
         "INSERT INTO industry_statuses "
         "(run_id, candidate_id, bucket, status, stage, stage_order, observed_at, "
-        "first_detected_as_of, report_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "first_detected_as_of, report_id, financial_scenario_id) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (
             "weekly-1",
             "lpt",
@@ -114,6 +118,34 @@ def test_only_published_status_can_receive_final_report() -> None:
             "2026-08-31T10:00:00+00:00",
             "2025-08-29",
             "report-1",
+            "scenario-1",
+        ),
+    )
+    connection.execute(
+        "INSERT INTO financial_scenario_summaries "
+        "(scenario_run_id, run_id, candidate_id, node_id, as_of, readiness_status, "
+        "decision_status, gate_reasons_json, base_12m_return, downside_12m_return, "
+        "upside_12m_return, reward_to_downside, base_12m_operating_income_gap, "
+        "base_12m_fcf_gap, scenario_object_key, scenario_sha256, investor_summary_ko_json) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            "scenario-1",
+            "weekly-1",
+            "lpt",
+            "large-power-transformers",
+            "2026-08-31T10:30:00+00:00",
+            "senior_review_ready",
+            "advance_to_deeper_work",
+            "[]",
+            0.30,
+            -0.10,
+            0.55,
+            3.0,
+            90.0,
+            75.0,
+            "scenarios/scenario-1.json",
+            "c" * 64,
+            '{"bottleneck_to_revenue":"설명"}',
         ),
     )
     connection.execute(
@@ -138,3 +170,48 @@ def test_only_published_status_can_receive_final_report() -> None:
     )
 
     assert connection.execute("SELECT count(*) FROM final_reports").fetchone()[0] == 1
+
+
+def test_database_blocks_final_report_without_advanced_scenario() -> None:
+    connection = database()
+    insert_run(connection)
+    connection.execute(
+        "INSERT INTO industry_statuses "
+        "(run_id, candidate_id, bucket, status, stage, stage_order, observed_at, "
+        "first_detected_as_of, report_id, financial_scenario_id) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            "weekly-1",
+            "lpt",
+            "대형 전력변압기",
+            "final_report_published",
+            "final_report",
+            8,
+            "2026-08-31T10:00:00+00:00",
+            "2025-08-29",
+            "report-1",
+            "scenario-1",
+        ),
+    )
+
+    with pytest.raises(sqlite3.IntegrityError, match="advanced financial scenario"):
+        connection.execute(
+            "INSERT INTO final_reports "
+            "(report_id, run_id, candidate_id, title_ko, report_object_key, report_sha256, "
+            "published_at, source_classes_json, independent_source_count, input_tokens, "
+            "output_tokens, cached_input_tokens) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                "report-1",
+                "weekly-1",
+                "lpt",
+                "대형 전력변압기 최종 분석",
+                "reports/report-1.json",
+                "b" * 64,
+                "2026-08-31T11:00:00+00:00",
+                '["issuer_primary","government_regulator"]',
+                2,
+                100,
+                20,
+                10,
+            ),
+        )

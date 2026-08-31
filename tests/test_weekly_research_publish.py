@@ -34,6 +34,7 @@ def payload() -> dict[str, object]:
                     "physical_market_data",
                 ],
                 "report_id": "lpt-2026-08-31",
+                "financial_scenario_id": "lpt-financial-2026-08-31",
             },
             {
                 "candidate_id": "sparse-insurance",
@@ -47,6 +48,32 @@ def payload() -> dict[str, object]:
                 "reason_code": "sparse_independent_operating_evidence",
                 "reason_summary_ko": "직접 운영 근거가 한 개 기업에만 있어 산업 전반의 병목으로 일반화할 수 없습니다.",
             },
+        ],
+        "financial_scenarios": [
+            {
+                "scenario_run_id": "lpt-financial-2026-08-31",
+                "candidate_id": "sic-3440",
+                "node_id": "large-power-transformers",
+                "as_of": "2026-08-31T10:30:00+00:00",
+                "readiness_status": "senior_review_ready",
+                "decision_status": "advance_to_deeper_work",
+                "gate_reasons": [],
+                "base_12m_return": 0.30,
+                "downside_12m_return": -0.10,
+                "upside_12m_return": 0.55,
+                "reward_to_downside": 3.0,
+                "base_12m_operating_income_gap": 90.0,
+                "base_12m_fcf_gap": 75.0,
+                "scenario_object_key": "scenarios/lpt-financial-2026-08-31.json",
+                "scenario_sha256": "b" * 64,
+                "investor_summary_ko": {
+                    "bottleneck_to_revenue": "산업 병목 물량에서 기업이 확보 가능한 물량과 증분 매출로 이어지는 경로를 설명합니다.",
+                    "earnings_and_cash_flow": "증분 매출이 영업이익과 잉여현금흐름으로 전환되는 과정을 보수적으로 설명합니다.",
+                    "market_expectations_gap": "자체 추정 영업이익과 현금흐름을 시장 기대치와 비교해 차이를 설명합니다.",
+                    "risk_reward": "하방·기준·상방 시나리오의 기대수익률과 보상 대비 하방 위험을 설명합니다.",
+                    "research_decision": "정량 관문을 모두 통과해 추가 기업 조사를 진행할 수 있는 상태입니다.",
+                },
+            }
         ],
         "final_reports": [
             {
@@ -93,6 +120,7 @@ def test_site_export_keeps_compact_rejection_and_final_reports_only() -> None:
         "active_research_count": 0,
         "rejected_count": 1,
         "final_report_count": 1,
+        "financial_scenario_count": 1,
     }
     assert site["research_policy"]["quality_before_token_efficiency"] is True
     assert site["research_policy"]["report_generation"] == "finalists_only"
@@ -111,6 +139,10 @@ def test_site_export_keeps_compact_rejection_and_final_reports_only() -> None:
         "independent_source_count",
         "token_usage",
     }
+    assert site["financial_scenarios"][0]["decision_status"] == "advance_to_deeper_work"
+    assert "증분 매출" in site["financial_scenarios"][0]["investor_summary_ko"][
+        "bottleneck_to_revenue"
+    ]
     assert feedback["report_count"] == 1
     assert feedback["reports"][0]["efficiency"]["output_tokens_per_useful_claim"] == 300.0
 
@@ -206,3 +238,20 @@ def test_writer_never_materializes_report_drafts(tmp_path) -> None:
         "token_efficiency_feedback.json",
         "weekly_research_status.json",
     ]
+
+
+def test_final_report_requires_advanced_financial_scenario() -> None:
+    value = payload()
+    value["financial_scenarios"][0]["decision_status"] = "valuation_gated"
+    value["financial_scenarios"][0]["gate_reasons"] = ["base_return_below_hurdle"]
+
+    with pytest.raises(ValueError, match="requires an advanced financial scenario"):
+        build_weekly_site_export(value)
+
+
+def test_financial_scenario_must_link_to_same_candidate() -> None:
+    value = payload()
+    value["financial_scenarios"][0]["candidate_id"] = "different-candidate"
+
+    with pytest.raises(ValueError, match="has no weekly candidate"):
+        build_weekly_site_export(value)

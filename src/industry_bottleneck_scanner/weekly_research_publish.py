@@ -22,6 +22,13 @@ STAGES = (
     "final_report",
 )
 STATUSES = {"active_research", "rejected", "final_report_published"}
+INVESTMENT_RESEARCH_STATUSES = {
+    "advance_to_deeper_work",
+    "wait_for_proof",
+    "valuation_gated",
+    "reject_no_expectation_gap",
+    "reject_unfavorable_skew",
+}
 
 SOURCE_CLASSES = {
     "issuer_primary",
@@ -158,6 +165,7 @@ def _normalize_candidate(raw: object, *, run_as_of: datetime) -> dict[str, objec
         raise ValueError(f"non-rejected candidate {candidate_id} cannot carry a rejection reason")
 
     report_id = raw.get("report_id")
+    financial_scenario_id = raw.get("financial_scenario_id")
     if status == "final_report_published":
         if stage != "final_report":
             raise ValueError(f"published candidate {candidate_id} must be at final_report")
@@ -165,6 +173,10 @@ def _normalize_candidate(raw: object, *, run_as_of: datetime) -> dict[str, objec
             raise ValueError(f"published candidate {candidate_id} requires report_id")
     elif report_id is not None:
         raise ValueError(f"candidate {candidate_id} cannot reference a report before publication")
+    if financial_scenario_id is not None and (
+        not isinstance(financial_scenario_id, str) or not financial_scenario_id.strip()
+    ):
+        raise ValueError(f"candidate {candidate_id} has invalid financial_scenario_id")
 
     return {
         "candidate_id": candidate_id,
@@ -181,6 +193,87 @@ def _normalize_candidate(raw: object, *, run_as_of: datetime) -> dict[str, objec
             None if reason_summary_ko is None else str(reason_summary_ko).strip()
         ),
         "report_id": None if report_id is None else str(report_id).strip(),
+        "financial_scenario_id": (
+            None if financial_scenario_id is None else str(financial_scenario_id).strip()
+        ),
+    }
+
+
+def _normalize_financial_scenario(
+    raw: object, *, run_as_of: datetime
+) -> dict[str, object]:
+    if not isinstance(raw, dict):
+        raise ValueError("financial scenario summary must be an object")
+    scenario_run_id = _required_text(raw, "scenario_run_id")
+    candidate_id = _required_text(raw, "candidate_id")
+    node_id = _required_text(raw, "node_id")
+    as_of = _aware_datetime(raw.get("as_of"), "financial scenario as_of")
+    if as_of > run_as_of:
+        raise ValueError(f"financial scenario {scenario_run_id} is after the weekly run")
+    readiness_status = _required_text(raw, "readiness_status")
+    if readiness_status not in {"screen_grade", "senior_review_ready"}:
+        raise ValueError(f"financial scenario {scenario_run_id} has invalid readiness")
+    decision_status = _required_text(raw, "decision_status")
+    if decision_status not in INVESTMENT_RESEARCH_STATUSES:
+        raise ValueError(f"financial scenario {scenario_run_id} has invalid decision")
+    gate_reasons = _string_list(
+        raw.get("gate_reasons"),
+        f"financial scenario {scenario_run_id} gate_reasons",
+        allow_empty=True,
+    )
+    if decision_status == "advance_to_deeper_work" and gate_reasons:
+        raise ValueError(f"advanced financial scenario {scenario_run_id} cannot have gate reasons")
+    if decision_status != "advance_to_deeper_work" and not gate_reasons:
+        raise ValueError(f"non-advanced financial scenario {scenario_run_id} requires gate reasons")
+    scenario_sha256 = _required_text(raw, "scenario_sha256", minimum=64)
+    if len(scenario_sha256) != 64 or any(
+        value not in "0123456789abcdef" for value in scenario_sha256
+    ):
+        raise ValueError(f"financial scenario {scenario_run_id} has invalid SHA-256")
+    scenario_object_key = _required_text(raw, "scenario_object_key")
+    reward_to_downside = raw.get("reward_to_downside")
+    if reward_to_downside is not None:
+        reward_to_downside = _number(reward_to_downside, "reward_to_downside")
+    investor_summary_ko = raw.get("investor_summary_ko")
+    if not isinstance(investor_summary_ko, dict):
+        raise ValueError(f"financial scenario {scenario_run_id} requires investor_summary_ko")
+    required_summary_keys = {
+        "bottleneck_to_revenue",
+        "earnings_and_cash_flow",
+        "market_expectations_gap",
+        "risk_reward",
+        "research_decision",
+    }
+    if set(investor_summary_ko) != required_summary_keys or any(
+        not isinstance(value, str) or len(value.strip()) < 20
+        for value in investor_summary_ko.values()
+    ):
+        raise ValueError(f"financial scenario {scenario_run_id} has incomplete Korean summary")
+    return {
+        "scenario_run_id": scenario_run_id,
+        "candidate_id": candidate_id,
+        "node_id": node_id,
+        "as_of": as_of.isoformat(),
+        "readiness_status": readiness_status,
+        "decision_status": decision_status,
+        "gate_reasons": gate_reasons,
+        "base_12m_return": _number(raw.get("base_12m_return"), "base_12m_return", minimum=-1),
+        "downside_12m_return": _number(
+            raw.get("downside_12m_return"), "downside_12m_return", minimum=-1
+        ),
+        "upside_12m_return": _number(
+            raw.get("upside_12m_return"), "upside_12m_return", minimum=-1
+        ),
+        "reward_to_downside": reward_to_downside,
+        "base_12m_operating_income_gap": _number(
+            raw.get("base_12m_operating_income_gap"), "base_12m_operating_income_gap"
+        ),
+        "base_12m_fcf_gap": _number(raw.get("base_12m_fcf_gap"), "base_12m_fcf_gap"),
+        "scenario_object_key": scenario_object_key,
+        "scenario_sha256": scenario_sha256,
+        "investor_summary_ko": {
+            key: str(investor_summary_ko[key]).strip() for key in sorted(required_summary_keys)
+        },
     }
 
 
@@ -319,11 +412,14 @@ def build_weekly_site_export(payload: dict[str, object]) -> tuple[dict[str, obje
     run_as_of = _aware_datetime(payload.get("as_of"), "weekly run as_of")
 
     raw_candidates = payload.get("candidates")
+    raw_scenarios = payload.get("financial_scenarios")
     raw_reports = payload.get("final_reports")
     if not isinstance(raw_candidates, list) or not raw_candidates:
         raise ValueError("weekly research input requires candidates")
     if not isinstance(raw_reports, list):
         raise ValueError("weekly research input final_reports must be a list")
+    if not isinstance(raw_scenarios, list):
+        raise ValueError("weekly research input financial_scenarios must be a list")
 
     candidates = [_normalize_candidate(raw, run_as_of=run_as_of) for raw in raw_candidates]
     candidate_ids = [str(item["candidate_id"]) for item in candidates]
@@ -341,6 +437,23 @@ def build_weekly_site_export(payload: dict[str, object]) -> tuple[dict[str, obje
         raise ValueError("weekly final report IDs must be unique")
 
     candidate_by_id = {str(item["candidate_id"]): item for item in candidates}
+    scenarios = [
+        _normalize_financial_scenario(raw, run_as_of=run_as_of) for raw in raw_scenarios
+    ]
+    scenario_ids = [str(item["scenario_run_id"]) for item in scenarios]
+    if len(set(scenario_ids)) != len(scenario_ids):
+        raise ValueError("weekly financial scenario IDs must be unique")
+    scenario_by_id = {str(item["scenario_run_id"]): item for item in scenarios}
+    for scenario in scenarios:
+        candidate = candidate_by_id.get(str(scenario["candidate_id"]))
+        if candidate is None:
+            raise ValueError(
+                f"financial scenario {scenario['scenario_run_id']} has no weekly candidate"
+            )
+        if candidate["financial_scenario_id"] != scenario["scenario_run_id"]:
+            raise ValueError(
+                f"financial scenario {scenario['scenario_run_id']} candidate linkage differs"
+            )
     report_by_id = {str(item["report_id"]): item for item in reports}
     for report in reports:
         candidate = candidate_by_id.get(str(report["candidate_id"]))
@@ -350,6 +463,12 @@ def build_weekly_site_export(payload: dict[str, object]) -> tuple[dict[str, obje
             raise ValueError(f"final report {report['report_id']} candidate is not published")
         if candidate["report_id"] != report["report_id"]:
             raise ValueError(f"final report {report['report_id']} candidate linkage differs")
+        scenario_id = candidate["financial_scenario_id"]
+        scenario = None if scenario_id is None else scenario_by_id.get(str(scenario_id))
+        if scenario is None or scenario["decision_status"] != "advance_to_deeper_work":
+            raise ValueError(
+                f"final report {report['report_id']} requires an advanced financial scenario"
+            )
     for candidate in candidates:
         report_id = candidate["report_id"]
         if report_id is not None and str(report_id) not in report_by_id:
@@ -367,6 +486,7 @@ def build_weekly_site_export(payload: dict[str, object]) -> tuple[dict[str, obje
             "reason_code": item["reason_code"],
             "reason_summary_ko": item["reason_summary_ko"],
             "report_id": item["report_id"],
+            "financial_scenario_id": item["financial_scenario_id"],
         }
         for item in candidates
     ]
@@ -390,8 +510,10 @@ def build_weekly_site_export(payload: dict[str, object]) -> tuple[dict[str, obje
             ),
             "rejected_count": sum(item["status"] == "rejected" for item in candidates),
             "final_report_count": len(reports),
+            "financial_scenario_count": len(scenarios),
         },
         "candidate_statuses": compact_statuses,
+        "financial_scenarios": scenarios,
         "final_reports": reports,
     }
     site_export["export_sha256"] = _canonical_sha256(site_export)
