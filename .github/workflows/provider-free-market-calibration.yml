@@ -1,0 +1,90 @@
+name: Provider-Free Market Trigger Calibration
+
+on:
+  workflow_call:
+    inputs:
+      source_run_id:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Successful historical bootstrap run containing normalized history
+        required: true
+        default: '32620277256'
+  push:
+    branches: [phase1-scanner-foundation]
+    paths:
+      - '.github/workflows/provider-free-market-calibration.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: provider-free-market-calibration
+  cancel-in-progress: false
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_RUN_ID: ${{ inputs.source_run_id || '32620277256' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Download frozen normalized history
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          pattern: market-trigger-u2025-05-30-m2026-08-21-*
+          path: artifacts/source
+          merge-multiple: true
+
+      - name: Produce dated provider-free calibration artifacts
+        run: |
+          ibs-market-trigger-calibrate \
+            --history-jsonl artifacts/source/market_history.jsonl \
+            --start-as-of 2025-05-30 \
+            --end-as-of 2026-08-21 \
+            --output-dir artifacts/calibration
+
+      - name: Review trigger stability without outcomes
+        run: |
+          ibs-market-trigger-quality \
+            --calibration-dir artifacts/calibration \
+            --output artifacts/calibration/market_trigger_quality_review.json
+
+      - name: Download final dated universe snapshot
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          pattern: massive-universe-2025-05-30-*-7
+          path: artifacts/universe
+          merge-multiple: true
+
+      - name: Build bounded persistent-trigger SEC research queue
+        run: |
+          ibs-market-trigger-research-queue \
+            --quality-review artifacts/calibration/market_trigger_quality_review.json \
+            --universe-csv artifacts/universe/market_universe.csv \
+            --output-dir artifacts/calibration/research_queue \
+            --batch-size 100
+
+      - name: Upload calibration artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-free-market-calibration-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/calibration
+          if-no-files-found: error
+          retention-days: 30

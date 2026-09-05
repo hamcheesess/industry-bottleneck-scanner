@@ -1,0 +1,61 @@
+{
+  "schema_version": "root-shock-research-result-v1",
+  "packet_id": "18026c3fad8436f03022",
+  "as_of": "2026-08-21T23:59:59+00:00",
+  "root_shock": {
+    "root_shock_id": "ai-data-center-electric-load-expansion-2026q3",
+    "root_node": "ai-data-center-electric-load-growth",
+    "label": "AI data-center electric-load expansion",
+    "mechanism": "Accelerating AI and large-computing deployments increased committed electric load in major U.S. data-center regions, advancing grid interconnection, utility-structure, and facility structural-steel procurement before the dated market trigger.",
+    "causal_chain": [
+      "AI compute deployments increase committed data-center electricity load",
+      "large-load interconnections advance transmission and utility-structure procurement",
+      "data-center and grid construction raises fabricated structural-metal backlog"
+    ],
+    "detected_at": "2026-08-21T00:00:00+00:00",
+    "demand_strength": 4,
+    "evidence": [
+      {
+        "evidence_id": "vate-ai-infrastructure-backlog",
+        "evidence_class": "backlog_or_orders",
+        "source_category": "issuer_operating_disclosure",
+        "packet_signal_id": "9d437d52959ffb9763e1bfe0",
+        "summary": "DBM Global reported backlog growth and visibility into 2027 and 2028, explicitly identifying sustained AI-infrastructure and technology demand among the supporting end markets."
+      },
+      {
+        "evidence_id": "arcosa-utility-structures-backlog",
+        "evidence_class": "backlog_or_orders",
+        "source_category": "issuer_operating_disclosure",
+        "packet_signal_id": "500fbd0c0eb3a17aa6579bd2",
+        "summary": "Arcosa reported record utility-and-related-structures backlog of $648.1 million, up 49% from the start of 2026."
+      },
+      {
+        "evidence_id": "doe-data-center-load-outlook-2024",
+        "evidence_class": "physical_industry_data",
+        "source_category": "government_statistic",
+        "source_id": "doe-lbnl-us-data-center-energy-use-2024",
+        "source_url": "https://www.energy.gov/articles/doe-releases-new-report-evaluating-increase-electricity-demand-data-centers",
+        "observed_at": "2024-12-20T00:00:00+00:00",
+        "summary": "DOE's LBNL-backed report estimated U.S. data-center electricity use at 176 TWh in 2023 and projected 325 to 580 TWh by 2028, with AI applications identified as a driver of load growth."
+      },
+      {
+        "evidence_id": "eia-regional-large-load-forecast-2025",
+        "evidence_class": "physical_industry_data",
+        "source_category": "government_statistic",
+        "source_id": "eia-steo-regional-electricity-demand-2025-07",
+        "source_url": "https://www.eia.gov/todayinenergy/detail.php?id=65844",
+        "observed_at": "2025-07-31T00:00:00+00:00",
+        "summary": "EIA forecast rapid ERCOT and PJM electricity-demand growth and tied the regional increase to proposed data centers and other large facilities, including 14% ERCOT demand growth in 2026 as projects came online."
+      },
+      {
+        "evidence_id": "nerc-large-load-grid-integration-2025",
+        "evidence_class": "regulatory_or_permitting",
+        "source_category": "regulatory_record",
+        "source_id": "nerc-ferc-large-load-comments-el25-49-2025-04",
+        "source_url": "https://www.nerc.com/globalassets/who-we-are/membership/legal--regulatory/filings--orders/nerc-filings-to-ferc/2025/comments-re-large-loads-el25-49_signed.pdf",
+        "observed_at": "2025-04-23T00:00:00+00:00",
+        "summary": "NERC's FERC filing documented rapidly increasing data-center-type loads and the resulting need for grid planning, reliability analysis, information sharing, and large-load integration work."
+      }
+    ]
+  }
+}

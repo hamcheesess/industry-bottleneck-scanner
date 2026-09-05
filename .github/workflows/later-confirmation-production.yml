@@ -1,0 +1,179 @@
+name: Build Later-Confirmation Holdout
+
+on:
+  workflow_call:
+    inputs:
+      replay_run_id:
+        required: true
+        type: string
+      plan_path:
+        required: true
+        type: string
+      evaluation_as_of:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      replay_run_id:
+        description: Successful two-root historical replay run
+        required: true
+        default: '33234820223'
+      plan_path:
+        description: Committed later-confirmation plan
+        required: true
+        default: 'experiments/later_confirmation/large-power-transformers-2026-08-21.json'
+      evaluation_as_of:
+        description: Timezone-aware diagnostic cutoff
+        required: true
+        default: '2026-08-29T23:59:59+00:00'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      REPLAY_RUN_ID: ${{ inputs.replay_run_id || '33234820223' }}
+      PLAN_PATH: ${{ inputs.plan_path || 'experiments/later_confirmation/large-power-transformers-2026-08-21.json' }}
+      EVALUATION_AS_OF: ${{ inputs.evaluation_as_of || '2026-08-29T23:59:59+00:00' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Validate bounded inputs
+        shell: bash
+        run: |
+          if [[ ! "$REPLAY_RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "replay run ID must contain only digits" >&2
+            exit 2
+          fi
+          plan_path="$(realpath -- "$PLAN_PATH")"
+          case "$plan_path" in
+            "$GITHUB_WORKSPACE"/*) ;;
+            *) echo "plan path must stay inside the checked-out repository" >&2; exit 2 ;;
+          esac
+          if [[ ! -f "$plan_path" ]]; then
+            echo "Committed later-confirmation plan is missing" >&2
+            exit 2
+          fi
+
+      - name: Download frozen historical replay
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.REPLAY_RUN_ID }}
+          pattern: pre-news-replay-${{ env.REPLAY_RUN_ID }}-*
+          path: artifacts/input/replay
+          merge-multiple: true
+
+      - name: Build empty holdout diagnostic
+        run: |
+          ibs-later-confirmation \
+            --plan "$PLAN_PATH" \
+            --replay-result artifacts/input/replay/pre_news_rankings.json \
+            --evaluation-as-of "$EVALUATION_AS_OF" \
+            --output-dir artifacts/later-confirmation
+
+      - name: Validate frozen holdout and provenance
+        shell: python
+        run: |
+          import hashlib
+          import json
+          import os
+          from datetime import datetime
+          from pathlib import Path
+
+          output = Path("artifacts/later-confirmation")
+          diagnostic = json.loads(
+              (output / "later_confirmation_diagnostic.json").read_text()
+          )
+          markdown = (output / "later_confirmation.ko.md").read_text()
+          if diagnostic["schema_version"] != "later-confirmation-diagnostic-v1":
+              raise SystemExit("unexpected later-confirmation schema")
+          if diagnostic["plan_id"] != "large-power-transformers-2026-08-21-v1":
+              raise SystemExit("unexpected frozen plan")
+          if diagnostic["replay_id"] != "early-ai-electrical-2026-08-21-two-root-v2":
+              raise SystemExit("holdout must bind to the two-root replay")
+          if diagnostic["node_id"] != "large-power-transformers":
+              raise SystemExit("unexpected holdout node")
+          if diagnostic["replay_as_of"] != "2026-08-21T23:59:59+00:00":
+              raise SystemExit("replay cutoff changed")
+          if datetime.fromisoformat(diagnostic["evaluation_as_of"]) <= datetime.fromisoformat(
+              diagnostic["replay_as_of"]
+          ):
+              raise SystemExit("diagnostic must occur after the frozen replay")
+          if diagnostic["automatic_rerank"] is not False:
+              raise SystemExit("later evidence must not rerank the replay")
+          if diagnostic["original_replay_unchanged"] is not True:
+              raise SystemExit("original replay must remain unchanged")
+          if diagnostic["security_thesis_readiness"] != "not_decision_grade":
+              raise SystemExit("holdout cannot create a security conclusion")
+          if diagnostic["node_diagnostic_status"] != "pending":
+              raise SystemExit("empty first holdout diagnostic must remain pending")
+          expected_ranking = {
+              "stage": "evidence_backed",
+              "score": 73.0,
+              "convergence_stage": "priority_convergence",
+              "convergence_score": 75.07,
+          }
+          if diagnostic["original_ranking"] != expected_ranking:
+              raise SystemExit("frozen original ranking changed")
+
+          slots = diagnostic["slot_results"]
+          required = [item for item in slots if item["required_for_node_validation"]]
+          blocked = [item for item in slots if item["status"] == "blocked"]
+          if len(required) != 4 or any(item["status"] != "pending" for item in required):
+              raise SystemExit("four required holdout slots must begin pending")
+          if len(blocked) != 1 or blocked[0]["thesis_dimension"] != "expectation_gap":
+              raise SystemExit("unfrozen security expectation gap must remain blocked")
+          cutoff = datetime.fromisoformat(diagnostic["replay_as_of"])
+          if any(datetime.fromisoformat(item["not_before"]) <= cutoff for item in slots):
+              raise SystemExit("holdout window leaked into the replay period")
+          required_sections = {
+              "## 사전에 고정한 판정 기준",
+              "## 해석 경계",
+              "90일 실수요 전환",
+              "180일 병목 지속성",
+              "365일 공급 반응",
+              "180일 경제적 수익 포착",
+              "증권 기대 차이",
+          }
+          missing = sorted(item for item in required_sections if item not in markdown)
+          if missing:
+              raise SystemExit("missing reader-facing holdout sections: " + ",".join(missing))
+
+          provenance = {
+              "schema_version": "later-confirmation-provenance-v1",
+              "plan_id": diagnostic["plan_id"],
+              "plan_sha256": diagnostic["plan_sha256"],
+              "diagnostic_sha256": diagnostic["diagnostic_sha256"],
+              "replay_run_id": os.environ["REPLAY_RUN_ID"],
+              "plan_file_sha256": hashlib.sha256(Path(os.environ["PLAN_PATH"]).read_bytes()).hexdigest(),
+              "replay_result_sha256": hashlib.sha256(
+                  Path("artifacts/input/replay/pre_news_rankings.json").read_bytes()
+              ).hexdigest(),
+              "evaluation_as_of": diagnostic["evaluation_as_of"],
+              "automatic_rerank": False,
+              "original_replay_unchanged": True,
+              "security_level_conclusion": False,
+          }
+          (output / "input_provenance.json").write_text(
+              json.dumps(provenance, indent=2, sort_keys=True) + "\n"
+          )
+
+      - name: Upload later-confirmation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: later-confirmation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/later-confirmation
+          if-no-files-found: error
+          retention-days: 90

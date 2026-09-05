@@ -1,0 +1,45 @@
+{
+  "schema_version": "root-shock-research-result-v1",
+  "packet_id": "18026c3fad8436f03022",
+  "as_of": "2026-08-21T23:59:59+00:00",
+  "root_shock": {
+    "root_shock_id": "grid-modernization-and-resilience-investment-2026q3",
+    "root_node": "grid-modernization-and-resilience-investment",
+    "label": "Grid modernization and resilience investment",
+    "mechanism": "Utilities increased transmission, substation, distribution, and resilience investment to replace aging infrastructure, harden the grid against extreme weather, integrate new generation, and relieve congestion; this equipment demand exists independently of AI data-center load growth.",
+    "causal_chain": [
+      "aging assets, extreme-weather exposure, and generation interconnection needs raise utility grid capital plans",
+      "funded transmission and substation projects convert those plans into orders for structures and high-voltage equipment",
+      "persistent utility capital spending raises demand for constrained transformer manufacturing capacity"
+    ],
+    "detected_at": "2026-08-21T00:00:00+00:00",
+    "demand_strength": 4,
+    "evidence": [
+      {
+        "evidence_id": "valmont-utility-capex-tailwinds-2026",
+        "evidence_class": "supplier_capacity_expansion",
+        "source_category": "issuer_operating_disclosure",
+        "packet_signal_id": "c92d5560e1097038cb3379fe",
+        "summary": "Valmont's June 2026 utility strategy materials identified utility capital-expenditure tailwinds, incremental utility sales, a visible project pipeline, and brownfield expansion as linked operating drivers."
+      },
+      {
+        "evidence_id": "eia-grid-infrastructure-investment-2024",
+        "evidence_class": "physical_industry_data",
+        "source_category": "government_statistic",
+        "source_id": "https://www.eia.gov/todayinenergy/detail.php?id=63724",
+        "source_url": "https://www.eia.gov/todayinenergy/detail.php?id=63724",
+        "observed_at": "2024-11-18T00:00:00+00:00",
+        "summary": "EIA reported 2023 utility transmission investment of $27.7 billion and distribution investment of $50.9 billion, with spending driven by aging-equipment replacement, resilience, renewable integration, and substation and transformer upgrades."
+      },
+      {
+        "evidence_id": "doe-transmission-project-investment-2024",
+        "evidence_class": "regulatory_or_permitting",
+        "source_category": "regulatory_record",
+        "source_id": "https://www.energy.gov/articles/biden-harris-administration-invests-15-billion-bolster-nations-electricity-grid-and-0",
+        "source_url": "https://www.energy.gov/articles/biden-harris-administration-invests-15-billion-bolster-nations-electricity-grid-and-0",
+        "observed_at": "2024-10-02T00:00:00+00:00",
+        "summary": "DOE announced $1.5 billion for four transmission projects intended to improve reliability and resilience, relieve congestion, and expand access to electricity supply."
+      }
+    ]
+  }
+}

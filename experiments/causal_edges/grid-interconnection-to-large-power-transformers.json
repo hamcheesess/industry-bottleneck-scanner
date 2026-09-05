@@ -1,0 +1,43 @@
+{
+  "schema_version": "causal-edge-input-v1",
+  "edge_id": "grid-interconnection-requires-large-power-transformers",
+  "as_of": "2026-08-21T23:59:59+00:00",
+  "edge": {
+    "upstream_node": "large-load-grid-interconnection-capacity",
+    "downstream_node": "large-power-transformers",
+    "relation": "requires_input",
+    "mechanism": "Expanding transmission and substation capacity to interconnect new large loads requires large power transformers to change voltage across the generation, transmission, and distribution interfaces; transformer procurement therefore enters the critical path for incremental grid-interconnection capacity.",
+    "demand_sensitivity": 4,
+    "lag_months_min": null,
+    "lag_months_max": null,
+    "evidence": [
+      {
+        "evidence_id": "doe-lpt-grid-expansion-demand-2024",
+        "evidence_class": "physical_industry_data",
+        "source_id": "https://www.energy.gov/sites/default/files/2024-10/EXEC-2022-001242%20-%20Large%20Power%20Transformer%20Resilience%20Report%20signed%20by%20Secretary%20Granholm%20on%207-10-24.pdf",
+        "observed_at": "2024-07-10T00:00:00+00:00",
+        "summary": "DOE identified the addition of large power transformers to accommodate transmission expansion and economic growth as a primary demand driver, and described LPT supply-chain constraints as potential bottlenecks to rapid grid expansion.",
+        "beneficiary_company_id": null,
+        "source_company_id": null
+      },
+      {
+        "evidence_id": "hitachi-lpt-grid-interconnection-dependency-2024",
+        "evidence_class": "customer_architecture_dependency",
+        "source_id": "https://www.hitachienergy.com/news-and-events/press-releases/2024/04/hitachi-energy-announces-over-100-million-in-modernization-and-upgrade-of-power-transformer-factory-and-facilities-in-quebec-canada",
+        "observed_at": "2024-04-29T00:00:00+00:00",
+        "summary": "Hitachi Energy described large power transformers as key components for grid interconnections and data-center power, with the Varennes facility producing 100 to 1,200 MVA units for North American grids.",
+        "beneficiary_company_id": null,
+        "source_company_id": "hitachi-energy"
+      },
+      {
+        "evidence_id": "hitachi-varennes-lpt-capacity-expansion-2024",
+        "evidence_class": "supplier_capacity_expansion",
+        "source_id": "https://www.hitachienergy.com/news-and-events/press-releases/2024/04/hitachi-energy-announces-over-100-million-in-modernization-and-upgrade-of-power-transformer-factory-and-facilities-in-quebec-canada",
+        "observed_at": "2024-04-29T00:00:00+00:00",
+        "summary": "Hitachi Energy announced more than $100 million of factory, testing, and engineering investment to expand North American large-power-transformer capacity in response to fast-growing customer demand.",
+        "beneficiary_company_id": null,
+        "source_company_id": "hitachi-energy"
+      }
+    ]
+  }
+}

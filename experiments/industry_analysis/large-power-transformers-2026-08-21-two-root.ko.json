@@ -1,0 +1,430 @@
+{
+  "schema_version": "industry-analysis-narrative-input-v1",
+  "report_id": "large-power-transformers-2026-08-21-ko-two-root-v2",
+  "replay_id": "early-ai-electrical-2026-08-21-two-root-v2",
+  "node_id": "large-power-transformers",
+  "selection_market_bucket": "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS",
+  "as_of": "2026-08-21T23:59:59+00:00",
+  "language": "ko",
+  "title": "대형 전력변압기 산업: AI 전력부하와 전력망 현대화가 하나의 긴 제조 병목에서 만나는 구조",
+  "security_level_conclusion": false,
+  "executive_call": {
+    "label": "핵심 판단",
+    "claim_type": "inference",
+    "text": "대형 전력변압기는 발전된 전기를 송전망과 변전소의 서로 다른 전압 수준 사이에서 이동시키는 주문형 핵심 설비다. 이번 분석에서는 두 개의 서로 독립적인 수요축이 같은 제한된 생산 슬롯을 압박한다. 첫째, AI 데이터센터의 전력부하 증가는 대규모 부하 계통연계와 송·변전 증설을 요구한다. 둘째, AI와 무관하게 노후 설비 교체, 복원력 강화, 혼잡 완화와 발전원 연계를 위한 전력망 현대화 투자가 지속된다. 36개월 이상으로 늘어난 납기, 고객별 설계와 사전 자격심사, 공장과 전용 설비의 긴 증설기간 때문에 수요가 늘어도 공급은 즉시 따라오지 못한다. 두 수요축의 결합은 단일 AI 테마 의존도를 낮추지만, 특정 상장사의 장기 가격결정력이나 주가의 기대 차이를 증명하지는 않는다.",
+    "evidence_ids": [
+      "doe-data-center-load-outlook-2024",
+      "doe-lpt-grid-expansion-demand-2024",
+      "doe-lpt-lead-time-2024",
+      "doe-lpt-qualification-customization-2024",
+      "doe-lpt-capacity-expansion-difficulty-2024",
+      "eia-grid-infrastructure-investment-2024",
+      "doe-transmission-project-investment-2024",
+      "valmont-utility-capex-tailwinds-2026"
+    ]
+  },
+  "sections": {
+    "selection_rationale": [
+      {
+        "label": "시장 이상 뒤 실제 공시에서 확인된 주문·가시성 문구",
+        "claim_type": "inference",
+        "text": "시장 신호만으로 산업 원인을 단정하지 않고 같은 버킷의 SEC 공시를 확인했다. Arcosa는 ‘We ended the second quarter with record backlog for utility and related structures of $648.1 million, which is up 49% from the start of the year’라고 밝혔다. DBM Global은 ‘backlog growth and visibility into 2027 and 2028’과 함께 technology 및 AI infrastructure의 지속 수요를 언급했다. Valmont의 유틸리티 전략 자료에는 ‘Utility CapEx Tailwinds’, ‘Visible Project Pipeline’, ‘Incremental Utility Sales’, ‘Brownfield Expansion’이 한 화면에 제시됐다. 이 문구들은 주가 움직임과 별도로 주문잔고·장기 가시성·유틸리티 증설이 실제 운영계획으로 전환되고 있음을 보여줬다. [Arcosa SEC 원문](https://www.sec.gov/Archives/edgar/data/1739445/000173944526000124/exh991earningsrelease63020.htm) · [DBM Global SEC 원문](https://www.sec.gov/Archives/edgar/data/1006837/000100683726000061/exhibit991-q22026pressrele.htm) · [Valmont SEC 원문](https://www.sec.gov/Archives/edgar/data/102729/000110465926074241/tm2617542d1_ex99-1.htm)",
+        "evidence_ids": [
+          "arcosa-utility-structures-backlog",
+          "vate-ai-infrastructure-backlog",
+          "valmont-utility-capex-tailwinds-2026"
+        ]
+      },
+      {
+        "label": "구조금속 시장 이상에서 대형 변압기 병목으로 넘어간 논리",
+        "claim_type": "inference",
+        "text": "구조금속 업체의 backlog와 유틸리티 capex 문구는 조사 방향을 알려줬지만 변압기 부족을 직접 증명하지는 않았다. 별도의 DOE·EIA·NERC 자료를 결합했을 때 두 경로가 확인됐다. 첫째는 ‘AI 전력부하 → 계통연계·송변전 증설 → 변압기 발주’이고, 둘째는 ‘노후 전력망 교체·복원력·혼잡완화 투자 → 변전소·송전 프로젝트 → 변압기 생산 슬롯’이다. 두 root가 증거를 공유하지 않으면서 동일한 84점 severely constrained 노드에 도달했기 때문에 대형 변압기가 downstream 공통 병목으로 선별됐다.",
+        "evidence_ids": [
+          "doe-data-center-load-outlook-2024",
+          "nerc-large-load-grid-integration-2025",
+          "eia-grid-infrastructure-investment-2024",
+          "doe-transmission-project-investment-2024",
+          "doe-lpt-grid-expansion-demand-2024",
+          "doe-lpt-lead-time-2024"
+        ]
+      },
+      {
+        "label": "선별의 의미와 해석 경계",
+        "claim_type": "uncertainty",
+        "text": "시장 trigger는 어떤 버킷을 먼저 조사할지를 정하는 이상탐지 신호이지 원인·병목·수혜기업을 자동 확정하는 신호가 아니다. 구조금속 버킷의 움직임이 변압기 제조사 주가의 미반영 기대를 뜻하지도 않는다. 공시 문구, 외부 물리자료, 두 독립 수요 root와 pre-trigger 공급상태가 순차적으로 통과했기 때문에 대형 변압기 산업 연구가 우선순위에 오른 것이다.",
+        "evidence_ids": []
+      }
+    ],
+    "industry_structure": [
+      {
+        "label": "전력망의 전압을 바꾸는 주문형 자본재",
+        "claim_type": "fact",
+        "text": "대형 전력변압기는 송전망, 발전원, 변전소와 대규모 전력수요처가 서로 다른 전압 수준에서 연결되도록 전압을 승압하거나 강압하는 설비다. 북미에서 생산되는 대형 제품은 수백 MVA급에 이르며, 단순 범용품이 아니라 설치 지점의 전압·임피던스·운송 조건에 맞춰 설계·시험되는 프로젝트형 자본재에 가깝다.",
+        "evidence_ids": [
+          "hitachi-lpt-grid-interconnection-dependency-2024",
+          "doe-lpt-qualification-customization-2024"
+        ]
+      },
+      {
+        "label": "수요의 단위는 데이터센터 한 동이 아니라 전력망 증설 프로젝트",
+        "claim_type": "inference",
+        "text": "데이터센터의 서버 투자가 바로 변압기 매출로 이어지는 것은 아니다. 실제 전달 경로는 신규 전력부하가 계통연계 심사와 신뢰도 계획을 거쳐 송전선·변전소 증설로 구체화되고, 그 프로젝트의 설계와 발주가 확정될 때 대형 변압기 수요로 전환되는 구조다. 따라서 이 산업을 이해하려면 데이터센터 건설량뿐 아니라 계통연계 승인과 송·변전 자본지출을 함께 봐야 한다.",
+        "evidence_ids": [
+          "nerc-large-load-grid-integration-2025",
+          "doe-lpt-grid-expansion-demand-2024"
+        ]
+      }
+    ],
+    "demand_drivers": [
+      {
+        "label": "AI 데이터센터가 만드는 새로운 대규모 전력부하",
+        "claim_type": "fact",
+        "text": "미 에너지부가 인용한 LBNL 분석은 미국 데이터센터 전력사용량을 2023년 176TWh로 추정하고 2028년에는 325~580TWh까지 증가할 수 있다고 봤다. AI 응용의 확산이 주요 증가 요인으로 지목됐고, EIA도 ERCOT와 PJM의 빠른 수요 증가를 데이터센터 등 대규모 시설과 연결했다. 이는 전력망 운영자가 해당 부하를 별도의 계획·신뢰도 문제로 다루게 만드는 규모다.",
+        "evidence_ids": [
+          "doe-data-center-load-outlook-2024",
+          "eia-regional-large-load-forecast-2025",
+          "nerc-large-load-grid-integration-2025"
+        ]
+      },
+      {
+        "label": "AI와 독립적인 노후 전력망 교체·복원력 투자",
+        "claim_type": "fact",
+        "text": "대형 변압기 수요는 AI 한 가지에만 의존하지 않는다. EIA는 미국 유틸리티의 2023년 송전 투자를 277억 달러, 배전 투자를 509억 달러로 집계했고, 노후 설비 교체, 극한기후 복원력, 재생에너지 연계, 변전소와 변압기 업그레이드를 지출 동인으로 제시했다. DOE가 발표한 15억 달러 규모의 네 개 송전 프로젝트도 신뢰도·복원력 개선, 혼잡 완화와 전력공급 접근 확대를 목표로 했다. 이 수요는 데이터센터 건설 속도와 별개로 같은 변압기 생산 슬롯을 사용한다.",
+        "evidence_ids": [
+          "eia-grid-infrastructure-investment-2024",
+          "doe-transmission-project-investment-2024",
+          "doe-lpt-grid-expansion-demand-2024",
+          "doe-lpt-demand-supply-gap-2024"
+        ]
+      },
+      {
+        "label": "주문잔고는 수요가 계획을 넘어 발주로 이동했음을 보여주는 보조 신호",
+        "claim_type": "inference",
+        "text": "Arcosa의 유틸리티 구조물 주문잔고와 DBM Global의 AI 인프라 관련 가시성은 전력망·데이터센터 투자가 일부 구조물 공급망에서 실제 주문으로 전환됐음을 보여준다. Valmont가 2026년 자료에서 유틸리티 자본지출 순풍, 가시적 프로젝트 파이프라인, 유틸리티 매출 증가와 brownfield 증설을 함께 제시한 점은 AI와 독립적인 전력망 투자축에도 제조업체의 운영 대응이 나타났음을 보강한다. 다만 이 자료들은 변압기 자체 주문잔고가 아니므로 변압기 수요 규모를 직접 산정하는 근거로 사용하지 않는다.",
+        "evidence_ids": [
+          "arcosa-utility-structures-backlog",
+          "vate-ai-infrastructure-backlog",
+          "valmont-utility-capex-tailwinds-2026"
+        ]
+      }
+    ],
+    "value_chain_transmission": [
+      {
+        "label": "AI 연산에서 변압기까지의 인과 사슬",
+        "claim_type": "inference",
+        "text": "인과 사슬은 ‘AI 연산 배치 증가 → 데이터센터의 확정 전력부하 증가 → 대규모 부하 계통연계와 송·변전 용량 확보 → 전압 변환 설비 발주 → 대형 전력변압기 생산 슬롯 점유’로 이어진다. 이 사슬에서 핵심 중간노드는 계통연계 용량이며, 계통 계획이나 변전소 프로젝트가 지연되면 최종 변압기 수요의 시점도 늦어진다.",
+        "evidence_ids": [
+          "doe-data-center-load-outlook-2024",
+          "nerc-large-load-grid-integration-2025",
+          "doe-lpt-grid-expansion-demand-2024",
+          "hitachi-lpt-grid-interconnection-dependency-2024"
+        ]
+      },
+      {
+        "label": "전력망 현대화에서 변압기까지의 두 번째 독립 인과 사슬",
+        "claim_type": "inference",
+        "text": "두 번째 경로는 ‘노후 설비 교체·복원력 강화·혼잡 완화 투자 → 송전선과 변전소 프로젝트 승인 → 고전압 변환설비 발주 → 대형 전력변압기 생산 슬롯 점유’로 이어진다. 이 경로는 AI 데이터센터 부하 증가를 전제로 하지 않으므로, AI 프로젝트가 일부 지연되더라도 변압기 수요 기반을 완전히 제거하지 않는다. 반대로 전력망 투자 예산이 축소되거나 프로젝트 실행률이 떨어지면 이 완충 효과도 약해진다.",
+        "evidence_ids": [
+          "eia-grid-infrastructure-investment-2024",
+          "doe-transmission-project-investment-2024",
+          "doe-lpt-grid-expansion-demand-2024",
+          "valmont-utility-capex-tailwinds-2026"
+        ]
+      },
+      {
+        "label": "병목은 변압기 한 품목이 아니라 연속된 승인·생산·운송 과정에 존재",
+        "claim_type": "inference",
+        "text": "전력망 운영자의 계통연계 연구, 유틸리티의 프로젝트 승인, 제조사의 설계와 고객 자격심사, 전용 권선·코어 설비를 이용한 생산, 현장 운송과 시험이 순서대로 이어진다. 어느 한 단계가 밀리면 전체 납기가 늘어나므로, 단순 원재료 가격보다 프로젝트 승인과 생산 슬롯이 산업의 처리량을 결정하는 경우가 많다.",
+        "evidence_ids": [
+          "nerc-large-load-grid-integration-2025",
+          "doe-lpt-qualification-customization-2024",
+          "doe-lpt-supply-inelasticity-2024"
+        ]
+      }
+    ],
+    "bottleneck_mechanics": [
+      {
+        "label": "36개월을 넘는 납기와 제한된 생산 슬롯",
+        "claim_type": "fact",
+        "text": "에너지부는 팬데믹 이전 1년 미만이던 대형 변압기 제조 납기가 최대 36개월 또는 그 이상으로 늘었다고 보고했다. 기존 공장에서 생산 슬롯을 조금 조정하는 것만으로는 수요 급증을 흡수하기 어렵고, 의미 있는 생산능력 확대에는 신규 시설 또는 대규모 설비 투자가 필요하다고 지적했다.",
+        "evidence_ids": [
+          "doe-lpt-lead-time-2024",
+          "doe-lpt-supply-inelasticity-2024"
+        ]
+      },
+      {
+        "label": "공장보다 늦게 움직일 수 있는 전용 제조설비",
+        "claim_type": "fact",
+        "text": "신규 대형 변압기 공장을 짓는 데 약 1~3년이 걸리고, 공장 안에 들어가는 특수 권선기와 코어 테이블도 조달에 1~2년이 필요할 수 있다. 수요를 확인한 뒤 증설 결정을 내려도 실제 출하능력이 생기기까지 여러 해가 걸리므로 공급곡선이 단기간에는 비탄력적이다.",
+        "evidence_ids": [
+          "doe-lpt-capacity-expansion-difficulty-2024"
+        ]
+      },
+      {
+        "label": "고객 자격심사와 맞춤 설계가 신규 진입을 늦춘다",
+        "claim_type": "fact",
+        "text": "유틸리티 고객은 제조사를 사전 승인하고 설치 지점별 전압·임피던스에 맞춘 설계, 시험과 특수 운송 조건을 요구한다. 따라서 다른 전기장비 공장이 즉시 대형 변압기 생산으로 전환하기 어렵고, 새로운 공급자의 명목 생산능력이 생겨도 실제 수주 가능한 공급능력으로 인정되기까지 시간이 필요하다.",
+        "evidence_ids": [
+          "doe-lpt-qualification-customization-2024"
+        ]
+      },
+      {
+        "label": "핵심 소재인 방향성 전기강판도 독립된 제약 요인",
+        "claim_type": "fact",
+        "text": "에너지부의 공급망 검토는 제한된 미국 내 방향성 전기강판 공급을 대형 변압기 생산의 주요 병목으로 지목했다. 완제품 공장만 늘어나도 핵심 코어 소재와 전용 제조설비가 함께 늘지 않으면 유효 생산량이 같은 속도로 증가하지 않을 수 있다.",
+        "evidence_ids": [
+          "doe-lpt-demand-supply-gap-2024"
+        ]
+      }
+    ],
+    "supply_response": [
+      {
+        "label": "공급 증설은 시작됐지만 즉각적인 해소를 뜻하지 않는다",
+        "claim_type": "fact",
+        "text": "Hitachi Energy는 북미 변압기 공장·시험·엔지니어링에 1억 달러 이상을 투자했고, Siemens Energy는 미국 대형 변압기 제조·서비스 시설에 1억5천만 달러를 투자해 완전가동 시 연간 신규 57대와 서비스 24대의 능력을 목표로 했다. 이는 제조사가 실제 부족을 보고 자본을 투입하고 있다는 증거이면서 동시에 향후 공급완화 가능성을 보여주는 신호다.",
+        "evidence_ids": [
+          "hitachi-varennes-lpt-capacity-expansion-2024",
+          "siemens-charlotte-lpt-capacity-expansion-2024"
+        ]
+      },
+      {
+        "label": "투자 발표와 실제 유효 생산능력 사이에는 시차가 존재",
+        "claim_type": "inference",
+        "text": "증설 발표액만으로 병목의 종료 시점을 판단할 수 없다. 공장 건설과 전용설비 설치, 인력 숙련, 고객 자격심사, 초기 수율 안정화가 모두 끝나야 실제 납기와 주문잔고를 줄이는 유효 생산능력이 된다. 따라서 분석의 핵심은 발표 금액보다 가동시점과 실제 출하량, 납기 정상화 속도다.",
+        "evidence_ids": [
+          "doe-lpt-capacity-expansion-difficulty-2024",
+          "doe-lpt-qualification-customization-2024",
+          "hitachi-varennes-lpt-capacity-expansion-2024",
+          "siemens-charlotte-lpt-capacity-expansion-2024"
+        ]
+      }
+    ],
+    "economic_capture": [
+      {
+        "label": "강한 수요와 병목이 곧바로 높은 수익성을 보장하지는 않는다",
+        "claim_type": "uncertainty",
+        "text": "현재 cutoff 이전 근거는 변압기 부족, 긴 납기와 증설 투자를 강하게 보여주지만, 그 부족이 공급업체의 가격 인상, 계약조건 개선, 믹스 상승 또는 구조적인 영업이익률 확대로 얼마나 전환됐는지는 확인하지 못했다. 원재료·인건비·공장 램프 비용이 가격 상승분을 상쇄할 수도 있으므로 산업 병목과 주주가치 포착을 분리해서 봐야 한다.",
+        "evidence_ids": [
+          "doe-lpt-lead-time-2024",
+          "hitachi-varennes-lpt-capacity-expansion-2024",
+          "siemens-charlotte-lpt-capacity-expansion-2024"
+        ]
+      },
+      {
+        "label": "경제성을 확인하려면 기업별 주문·가격·마진 증거가 필요",
+        "claim_type": "uncertainty",
+        "text": "실제 수익 포착을 판단하려면 대형 변압기 매출 비중, 취소 가능성을 조정한 주문잔고, 가격 재협상 조건, 생산능력 이용률, 신규 공장 감가상각과 램프 비용, 서비스 매출의 반복성까지 기업별로 확인해야 한다. 현재 단계에서는 특정 공급사를 수혜주로 자동 승격하지 않고 산업 연구 대기열로만 남긴다.",
+        "evidence_ids": []
+      }
+    ],
+    "expectations_and_pricing": [
+      {
+        "label": "현재 시장 trigger는 변압기 기대를 직접 측정하지 않는다",
+        "claim_type": "uncertainty",
+        "text": "이번 replay를 시작한 시장 신호는 fabricated structural metal 산업 버킷에서 관측됐고 대형 변압기 제조사 집단의 가격, 밸류에이션, 실적추정치 변화를 직접 측정한 것이 아니다. 따라서 73점은 산업 병목의 근거 강도를 뜻할 뿐, 시장이 변압기 호황을 덜 반영했다거나 초과수익 기회가 있다는 뜻이 아니다.",
+        "evidence_ids": [
+          "arcosa-utility-structures-backlog",
+          "vate-ai-infrastructure-backlog"
+        ]
+      },
+      {
+        "label": "무엇이 이미 반영됐는지는 별도 증명이 필요",
+        "claim_type": "uncertainty",
+        "text": "공급업체의 증설 발표와 널리 알려진 장기 납기는 시장 참여자에게 이미 알려졌을 가능성이 있다. 기대 차이를 판단하려면 관련 상장사의 주가와 밸류에이션, 컨센서스 매출·마진 추정치, 변압기 주문·가격 관련 경영진 가이던스가 cutoff 이전에 어떻게 변했는지를 별도로 동결해 비교해야 한다.",
+        "evidence_ids": [
+          "hitachi-varennes-lpt-capacity-expansion-2024",
+          "siemens-charlotte-lpt-capacity-expansion-2024"
+        ]
+      }
+    ],
+    "risks_and_falsifiers": [
+      {
+        "label": "수요가 계획보다 늦게 실제 부하로 전환될 위험",
+        "claim_type": "scenario",
+        "text": "AI 데이터센터의 발표 전력량이 실제 가동부하와 확정 계통접속으로 전환되지 않거나 프로젝트가 취소될 수 있다. 다만 이번 결과에는 AI와 독립적인 전력망 교체·복원력 투자축이 있으므로 AI 둔화만으로 전체 변압기 수요 명제가 곧바로 무효가 되지는 않는다. 두 수요축의 프로젝트 실행률과 실제 발주가 함께 약해질 때 수요 전달 판단을 낮춰야 한다.",
+        "evidence_ids": [
+          "doe-data-center-load-outlook-2024",
+          "nerc-large-load-grid-integration-2025",
+          "eia-grid-infrastructure-investment-2024",
+          "doe-transmission-project-investment-2024"
+        ]
+      },
+      {
+        "label": "증설과 표준화가 예상보다 빨리 병목을 완화할 위험",
+        "claim_type": "scenario",
+        "text": "공급업체의 신규 시설이 계획보다 빨리 램프되고 핵심 전기강판 공급이 늘거나 고객 사양 표준화가 진전되면 납기와 가격 프리미엄은 빠르게 정상화될 수 있다. 신규 생산능력의 실제 출하가 수요 증가를 앞서고 납기가 지속적으로 짧아지는 것이 이 분석의 가장 명확한 반증이다.",
+        "evidence_ids": [
+          "hitachi-varennes-lpt-capacity-expansion-2024",
+          "siemens-charlotte-lpt-capacity-expansion-2024",
+          "doe-lpt-demand-supply-gap-2024"
+        ]
+      },
+      {
+        "label": "병목은 맞지만 투자수익은 낮을 수 있는 위험",
+        "claim_type": "uncertainty",
+        "text": "장기 주문잔고가 있어도 고정가격 계약, 원가 인플레이션, 보증 비용, 신규 공장 램프 손실과 높은 자본집약도가 현금흐름을 약화할 수 있다. 제품 부족이 기업의 자본수익률 상승으로 연결되지 않는다면 산업 판단은 맞더라도 상장주식 투자 명제는 성립하지 않는다.",
+        "evidence_ids": []
+      }
+    ],
+    "monitoring_signals": [
+      {
+        "label": "물리적 병목을 확인하는 지표",
+        "claim_type": "inference",
+        "text": "대형 변압기 견적 납기, 생산 슬롯 예약기간, 북미 신규 공장의 가동·출하 시점, 방향성 전기강판 공급을 추적한다. 수요 측에서는 데이터센터 대규모 부하 계통연계 승인과 별도로 유틸리티의 송·배전 자본지출, 노후 설비 교체, 복원력 프로젝트, 제조사의 유틸리티 파이프라인을 기록해야 한다. 두 수요축 중 하나가 약해져도 다른 축이 생산 슬롯을 계속 점유하는지 확인하는 것이 핵심이다.",
+        "evidence_ids": [
+          "doe-lpt-lead-time-2024",
+          "doe-lpt-capacity-expansion-difficulty-2024",
+          "doe-lpt-demand-supply-gap-2024",
+          "nerc-large-load-grid-integration-2025",
+          "eia-grid-infrastructure-investment-2024",
+          "doe-transmission-project-investment-2024",
+          "valmont-utility-capex-tailwinds-2026"
+        ]
+      },
+      {
+        "label": "경제적 수익 포착과 기대 차이를 확인하는 지표",
+        "claim_type": "uncertainty",
+        "text": "관련 제조사의 변압기 주문잔고와 book-to-bill, 가격·믹스, 영업이익률, 선급금과 운전자본, 신규 공장 이용률, 컨센서스 실적 추정치와 밸류에이션 변화를 기록해야 한다. 이 자료가 확보되기 전까지는 산업 병목에서 개별 회사 추천으로 넘어가지 않는다.",
+        "evidence_ids": []
+      }
+    ]
+  },
+  "score_explanations": {
+    "demand_transmission": {
+      "plain_language": "AI 전력부하가 계통연계와 송·변전 증설을 거쳐 변압기 수요로 이어지는 경로와, 노후 전력망 교체·복원력 투자가 직접 변압기 생산 슬롯을 사용하는 별도 경로가 모두 확인됐다. 두 경로가 증거를 공유하지 않는 독립 수요축이므로 전달력은 강하지만 최고점으로 올리지는 않는다.",
+      "evidence_ids": [
+        "doe-data-center-load-outlook-2024",
+        "nerc-large-load-grid-integration-2025",
+        "doe-lpt-grid-expansion-demand-2024",
+        "eia-grid-infrastructure-investment-2024",
+        "doe-transmission-project-investment-2024",
+        "valmont-utility-capex-tailwinds-2026"
+      ],
+      "what_would_change": "데이터센터 접속계약과 전력망 현대화 프로젝트가 함께 취소되고 실제 변압기 발주가 둔화하면 점수를 낮춘다."
+    },
+    "bottleneck_strength": {
+      "plain_language": "36개월 이상의 납기, 제한된 생산 슬롯, 맞춤 설계와 자격심사, 전용설비의 긴 조달기간이 동시에 존재해 병목 근거가 가장 강하다.",
+      "evidence_ids": [
+        "doe-lpt-lead-time-2024",
+        "doe-lpt-supply-inelasticity-2024",
+        "doe-lpt-capacity-expansion-difficulty-2024",
+        "doe-lpt-qualification-customization-2024"
+      ],
+      "what_would_change": "견적 납기가 정상 범위로 지속 하락하고 생산 슬롯과 핵심 소재가 충분해졌다는 다수의 독립 자료가 나오면 낮춘다."
+    },
+    "economic_capture": {
+      "plain_language": "산업 부족은 확인됐지만 가격 인상, 계약조건 개선, 마진과 자본수익률 상승이 특정 공급업체에 귀속된다는 근거는 아직 부족하다.",
+      "evidence_ids": [
+        "hitachi-varennes-lpt-capacity-expansion-2024",
+        "siemens-charlotte-lpt-capacity-expansion-2024"
+      ],
+      "what_would_change": "기업별 가격·믹스, 변압기 마진, 선급금, 증설 후 자본수익률이 구조적으로 개선됐다는 cutoff 이전 근거가 필요하다."
+    },
+    "reinvestment_runway": {
+      "plain_language": "2030년까지의 수요 증가 전망과 여러 해가 걸리는 공장·설비 증설 때문에 산업 투자가 단기에 끝나지 않을 가능성이 높다.",
+      "evidence_ids": [
+        "doe-lpt-demand-supply-gap-2024",
+        "doe-lpt-capacity-expansion-difficulty-2024"
+      ],
+      "what_would_change": "실제 수요 전망이 하향되고 이미 발표된 생산능력만으로 중기 수요를 충분히 충족한다는 증거가 나오면 낮춘다."
+    },
+    "triangulation": {
+      "plain_language": "정부 물리자료, 규제·프로젝트 기록, 고객 아키텍처 설명, 서로 다른 공급업체의 증설·발주 신호뿐 아니라 AI와 증거가 겹치지 않는 전력망 현대화 수요축까지 같은 변압기 병목을 가리킨다.",
+      "evidence_ids": [
+        "doe-lpt-demand-supply-gap-2024",
+        "nerc-large-load-grid-integration-2025",
+        "hitachi-lpt-grid-interconnection-dependency-2024",
+        "siemens-charlotte-lpt-capacity-expansion-2024",
+        "arcosa-utility-structures-backlog",
+        "eia-grid-infrastructure-investment-2024",
+        "doe-transmission-project-investment-2024",
+        "valmont-utility-capex-tailwinds-2026"
+      ],
+      "what_would_change": "공식 수요·납기 자료와 제조사 주문·증설 자료가 서로 반대 방향으로 갈 경우 근거 충돌을 반영해 낮춘다."
+    },
+    "expectation_gap": {
+      "plain_language": "현재 시장 trigger가 변압기 주식의 가격·밸류에이션·실적추정치를 직접 측정하지 않아 미반영 기대를 주장할 수 없다.",
+      "evidence_ids": [
+        "arcosa-utility-structures-backlog",
+        "vate-ai-infrastructure-backlog"
+      ],
+      "what_would_change": "관련 상장사와 동종업계의 cutoff 이전 주가, 밸류에이션, 컨센서스 추정치가 산업 물리자료에 뒤처졌다는 독립 검증이 필요하다."
+    }
+  },
+  "scenarios": [
+    {
+      "scenario_id": "base",
+      "label": "기준 경로: 수요와 증설이 함께 늘지만 병목은 천천히 완화",
+      "description": "데이터센터 계통연계와 노후 전력망 교체·복원력 투자가 모두 진행되고 신규 공장도 순차적으로 가동된다. 두 수요축과 공급 증설이 동시에 일어나 납기는 고점에서 일부 내려오지만, 맞춤 설계와 전용설비 제약 때문에 단기간에 정상화되지는 않는 경로다.",
+      "confirmers": [
+        "변압기 주문잔고가 유지되면서 견적 납기가 완만하게 단축",
+        "북미 신규 공장이 계획된 일정대로 램프",
+        "유틸리티 송·변전 자본지출이 계속 증가",
+        "유틸리티의 노후 설비 교체·복원력 프로젝트와 제조사 유틸리티 파이프라인이 유지"
+      ],
+      "falsifiers": [
+        "납기와 주문잔고가 동시에 급격히 감소",
+        "대규모 부하 접속 프로젝트의 광범위한 취소"
+      ],
+      "evidence_ids": [
+        "doe-lpt-demand-supply-gap-2024",
+        "doe-lpt-capacity-expansion-difficulty-2024",
+        "hitachi-varennes-lpt-capacity-expansion-2024",
+        "siemens-charlotte-lpt-capacity-expansion-2024",
+        "eia-grid-infrastructure-investment-2024",
+        "doe-transmission-project-investment-2024",
+        "valmont-utility-capex-tailwinds-2026"
+      ]
+    },
+    {
+      "scenario_id": "upside",
+      "label": "상방 경로: 실제 전력부하가 증설 속도보다 빠르게 현실화",
+      "description": "AI 데이터센터의 전력사용과 계통연계 승인이 예상보다 빠르게 늘고, 노후 전력망 교체와 복원력 투자도 계획을 웃돈다. 서로 독립적인 두 수요축이 같은 생산 슬롯을 두고 경쟁하는 반면 신규 공장 램프와 핵심 소재 공급은 지연돼 희소성이 오래 유지되는 경로다.",
+      "confirmers": [
+        "데이터센터 전력수요 전망의 추가 상향",
+        "36개월 이상 납기의 지속",
+        "공급업체의 가격·믹스 및 변압기 마진 개선",
+        "전력망 현대화 예산과 실제 착공 프로젝트의 동시 상향"
+      ],
+      "falsifiers": [
+        "접속 대기 부하의 실제 전력사용 전환이 정체",
+        "신규 생산능력이 계획보다 빠르게 출하를 확대"
+      ],
+      "evidence_ids": [
+        "doe-data-center-load-outlook-2024",
+        "nerc-large-load-grid-integration-2025",
+        "doe-lpt-lead-time-2024",
+        "eia-grid-infrastructure-investment-2024",
+        "doe-transmission-project-investment-2024"
+      ]
+    },
+    {
+      "scenario_id": "downside",
+      "label": "하방 경로: 프로젝트 지연과 공급 증설이 동시에 병목을 해소",
+      "description": "데이터센터 프로젝트 지연과 함께 유틸리티의 전력망 현대화 실행률도 낮아지고, 이미 발표된 증설은 예상보다 빠르게 생산에 기여한다. 두 수요축의 실제 발주가 동시에 약해지며 납기와 주문잔고가 함께 줄어드는 경우 현재 병목 판단을 낮춰야 한다.",
+      "confirmers": [
+        "대규모 부하 계통연계 취소와 지연 증가",
+        "변압기 납기의 빠른 정상화",
+        "신규 공장 이용률이 손익분기점 아래에 머무름"
+      ],
+      "falsifiers": [
+        "실제 발주와 주문잔고가 생산능력 증가보다 빠르게 확대",
+        "핵심 소재와 생산 슬롯 부족이 지속",
+        "AI 외 전력망 교체·복원력 투자가 예정대로 집행"
+      ],
+      "evidence_ids": [
+        "hitachi-varennes-lpt-capacity-expansion-2024",
+        "siemens-charlotte-lpt-capacity-expansion-2024",
+        "doe-lpt-demand-supply-gap-2024",
+        "eia-grid-infrastructure-investment-2024",
+        "doe-transmission-project-investment-2024"
+      ]
+    }
+  ],
+  "reader_guardrails": [
+    "73점은 성공확률이나 기대수익률이 아니라 산업 근거의 구조화 점수다. 별도의 convergence 75.07점은 두 독립 수요축이 같은 병목에 모인다는 조사 우선순위를 뜻한다.",
+    "이번 분석은 경제 노드 수준이며 특정 상장사의 제품 노출, 주문의 질, 마진과 밸류에이션을 아직 검증하지 않았다.",
+    "시장 trigger는 fabricated structural metal 버킷에서 발생했으며, 두 번째 전력망 현대화 수요축은 산업 근거로 독립 검증됐지만 변압기 관련 기대 차이나 주가 매력을 직접 측정하지 않는다.",
+    "모든 결론은 2026-08-21T23:59:59+00:00 이전에 관측된 근거로 제한되며 이후의 결과는 사용하지 않는다."
+  ]
+}
