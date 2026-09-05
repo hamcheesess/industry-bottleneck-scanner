@@ -1,0 +1,36 @@
+{
+  "schema_version": "company-exposure-research-v1",
+  "mode": "current_research",
+  "as_of": "2026-09-05T23:59:59+00:00",
+  "historical_reference_only": "early-ai-electrical-2026-08-21-two-root-v2",
+  "universe_note_ko": "미국 투자대상 후보와 해외 공급 비교대상을 구분한다. 전체 후보군이나 최종 보고서가 아닌 1차 근거 점검이다.",
+  "companies": [
+    {
+      "company_id": "ge-vernova",
+      "role": "us_candidate",
+      "node_match": "needs_product_attribution",
+      "reason_ko": "Prolec 연결 편입은 확인했으나 대형 전력변압기만의 실적 비중과 유효 능력은 별도 확인이 필요하다.",
+      "finding_ko": "2026-02-02 잔여 지분 50% 인수가 완료됐다. 가격은 52.75억 달러이며 현금과 부채를 절반씩 사용했다. 인수 효과가 회사 전망에 포함됐으므로 연결 범위 증가를 유기적 성장이나 시장 기대 차이로 간주하지 않는다.",
+      "missing_inputs": ["대형 변압기 제품별 매출·생산능력", "인수 전후 동일 연결범위 비교", "인수부채 이자·운전자본·증설 현금유출", "동일 시점 가격·시장 기대치"],
+      "evidence": [{"url": "https://www.gevernova.com/news/press-releases/ge-vernova-completes-prolec-ge-acquisition", "published_at": "2026-02-02T23:59:59+00:00", "retrieved_at": "2026-09-05T00:00:00+00:00", "timestamp_precision": "publication_date_only; retrieval_date_only", "source_class": "issuer_primary"}]
+    },
+    {
+      "company_id": "siemens-energy",
+      "role": "non_us_supply_comparator",
+      "node_match": "direct",
+      "reason_ko": "대형 변압기 제조 계획은 직접 연결되지만 발표 목표를 실제 증분 출하량으로 사용할 수 없다.",
+      "finding_ko": "Charlotte 계획은 신규 제조 초기 24대에서 완전가동 57대, 수리·정비 초기 12대에서 24대다. 합계 81대를 신규 제조량으로 사용하면 안 된다. 현재 가동·고객 승인·출하 상태는 미확인이다.",
+      "missing_inputs": ["공장 가동 및 램프 진행률", "6·12·18개월 유효 신규 출하량", "제품별 가격·원가·현금흐름", "상장증권 식별과 시장 기대치"],
+      "evidence": [{"url": "https://www.siemens-energy.com/global/en/home/stories/transformer-manufacturing-and-service-expansion-in-us.html", "published_at": null, "retrieved_at": "2026-09-05T00:00:00+00:00", "timestamp_precision": "retrieval_date_only; page publication unverified", "source_class": "issuer_primary"}]
+    },
+    {
+      "company_id": "hammond-power-solutions",
+      "role": "adjacent_product_comparator",
+      "node_match": "adjacent_only",
+      "reason_ko": "확인한 제품은 중전압 건식 배전용이다. 이 제품 페이지로 대형 송전용 변압기 노출을 승인할 수 없다.",
+      "finding_ko": "공식 VPI 제품 범위는 500kVA–34MVA다. 회사 전체가 대형 변압기를 만들지 않는다는 결론은 내리지 않으며 해당 자료로는 직접 노출이 증명되지 않는다는 의미다.",
+      "missing_inputs": ["대형 송전용 제품 존재·매출 근거", "별도 중전압 병목 노드 검증", "상장증권 식별"],
+      "evidence": [{"url": "https://americas.hammondpowersolutions.com/products/medium-voltage-distribution/vpi-up-to-35kv-class", "published_at": null, "retrieved_at": "2026-09-05T00:00:00+00:00", "timestamp_precision": "retrieval_date_only; page publication unverified", "source_class": "issuer_primary"}]
+    }
+  ]
+}
