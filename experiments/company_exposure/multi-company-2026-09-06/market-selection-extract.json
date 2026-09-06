@@ -1,0 +1,49 @@
+{
+  "schema_version": "research-market-extract-v1",
+  "run_id": 32717734277,
+  "trigger": {
+    "abnormal_volume_breadth": 0.1667,
+    "bucket": "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS",
+    "company_count": 6,
+    "market_outperform_breadth": 0.6667,
+    "median_market_relative_3m": 0.056137,
+    "median_sector_relative_3m": 0.037466,
+    "near_high_breadth": 0.6667,
+    "reasons": [],
+    "score": 59.17,
+    "sector_outperform_breadth": 0.6667,
+    "triggered": true
+  },
+  "stability": {
+    "bucket": "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS",
+    "current_consecutive_run": 9,
+    "first_triggered_as_of": "2025-08-29",
+    "latest_company_count": 6,
+    "latest_score": 60.83,
+    "longest_consecutive_run": 9,
+    "research_tier": "persistent",
+    "triggered_date_count": 11
+  },
+  "benchmark_ticker": "IWB",
+  "policy": {
+    "abnormal_volume_breadth_min": 0.35,
+    "abnormal_volume_ratio": 1.25,
+    "market_outperform_breadth_min": 0.6,
+    "min_companies": 4,
+    "near_high_breadth_min": 0.4,
+    "near_high_threshold": -0.1,
+    "sector_outperform_breadth_min": 0.5
+  },
+  "source": "replay:massive_grouped_daily_adjusted",
+  "claim_scope": "first sampled detection; not exact daily onset",
+  "files": [
+    {
+      "path": "as_of=2025-08-29/industry_market_triggers.json",
+      "sha256": "c79431370e4cc494bd024b32d11e21eba1501a1eaa8fe3c969446db4c96722ab"
+    },
+    {
+      "path": "market_trigger_quality_review.json",
+      "sha256": "bb5b7d681af72c2d8ec5063562c4b1864998feca94b69e8267d8d33fdc17b7cf"
+    }
+  ]
+}

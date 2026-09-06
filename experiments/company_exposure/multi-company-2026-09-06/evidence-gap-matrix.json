@@ -1,0 +1,32 @@
+{
+  "as_of": "2026-09-06T23:59:59+00:00",
+  "research_scope": "seven-company comparison of one industry path",
+  "closed": [
+    "first sampled anomaly metrics",
+    "manufacturer product-boundary comparison",
+    "segment actual profitability",
+    "customer contract and regulatory counterevidence"
+  ],
+  "open": [
+    "daily anomaly onset and company contributions",
+    "national product-level supply deficit",
+    "company shipments, ASP, costs and FCF attribution",
+    "same-date prices and independent expectations",
+    "nine quantitative scenarios per finalist",
+    "regulatory audit resolution"
+  ],
+  "rejected_source_uses": [
+    "OSTI 3363379: full text/publication not verified; not admitted",
+    "unverified Hyosung installed-share claim: omitted",
+    "Texas PUCT 59142_53 PDF inaccessible: replaced by governor primary release"
+  ],
+  "token_feedback": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "cached_tokens": null,
+    "reason": "tooling exposes no complete billable accounting; do not estimate",
+    "improvement": "retain reviewed units, provenance and open questions; reuse issuer facts without re-generating final prose"
+  },
+  "historical_replay_mutation": false,
+  "final_report_db_write": false
+}

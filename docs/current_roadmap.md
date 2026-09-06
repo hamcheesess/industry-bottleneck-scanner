@@ -168,7 +168,7 @@ This is the code status after architecture consolidation.
 | Demand convergence | **TWO-ROOT PRODUCTION CALIBRATION COMPLETE** | exact production run, evidence-disjoint root validation, three branches, strict pre-shock join, fail-closed grid node, transformer 75.07 `priority_convergence` | later-confirmation calibration and additional historical cases |
 | Pre-news node ranking | **TWO-ROOT REPLAY COMPLETE / CALIBRATION CONTINUES** | six dimensions + hard gates, promoted-convergence join, explicit frozen judgments; transformer remains 73.0 `evidence_backed` despite higher structural convergence | economic-capture and expectation-gap validation |
 | Historical pre-news replay | **TWO-ROOT CASE COMPLETE / NARRATIVE GATE ACTIVE** | exact `as_of`, five input fingerprints, 17 dated evidence records across eight classes, mandatory evidence-bound Korean analysis explaining both independent demand paths | explicit later-confirmation holdouts before company mapping |
-| Company exposure mapping | **NOT IMPLEMENTED** | boundary defined | node-to-company exposure model and evidence contract |
+| Company exposure mapping | **RESEARCH GATE PARTIAL / SEVEN-COMPANY COMPARISON** | current-research exposure gate, cash-quality scope checks, 2026-09-06 Korean comparison and source ledger | product-level shipments, prices, FCF attribution, same-date expectations; no final publication eligible |
 | Repo-A -> Repo-B manifest | **NOT FROZEN** | conceptual boundary only | implement only after upstream historical replay works |
 
 This table is the implementation checkpoint. New work should advance the next missing column rather than create parallel replacements for already working contracts.
@@ -386,6 +386,15 @@ Implementation:
   industrial checks as `pending`, and keeps the security expectation gap `blocked`.
 
 ### Phase 6 — company exposure mapping
+
+2026-09-06 checkpoint: a research-only seven-company comparison is preserved in
+`experiments/company_exposure/multi-company-2026-09-06/`. It restores the first
+sampled SIC 3440 trigger (2025-08-29), separates direct manufacturers from adjacent
+products, and adds customer and regulatory counterevidence. The Korean PDF source
+explains cash conversion and conditional 6/12/18-month tests. This is a completed
+comparison deliverable, not a completed quantitative investment thesis: product
+volumes, independent market expectations and all nine financial scenarios remain
+open. No frozen replay, production registry, or final-report database was changed.
 
 Only after node-level discovery works:
 

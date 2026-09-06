@@ -1,0 +1,144 @@
+{
+  "schema_version": "reviewed-financial-facts-v1",
+  "as_of": "2026-09-06T23:59:59+00:00",
+  "metrics": [
+    {
+      "id": "gev_electrification_revenue",
+      "value": 3637,
+      "unit": "USD_million",
+      "period": "2026Q2",
+      "scope": "Electrification",
+      "definition": "revenue",
+      "source_id": "S6"
+    },
+    {
+      "id": "gev_electrification_ebitda",
+      "value": 671,
+      "unit": "USD_million",
+      "period": "2026Q2",
+      "scope": "Electrification",
+      "definition": "segment_EBITDA",
+      "source_id": "S6"
+    },
+    {
+      "id": "siemens_grid_revenue",
+      "value": 3624,
+      "unit": "EUR_million",
+      "period": "2026Q3_fiscal_Apr_Jun",
+      "scope": "Grid Technologies",
+      "definition": "revenue",
+      "source_id": "S7"
+    },
+    {
+      "id": "siemens_grid_profit_before_special",
+      "value": 722,
+      "unit": "EUR_million",
+      "period": "2026Q3_fiscal_Apr_Jun",
+      "scope": "Grid Technologies",
+      "definition": "profit_before_special_items",
+      "source_id": "S7"
+    },
+    {
+      "id": "hyosung_heavy_revenue",
+      "value": 1137.1,
+      "unit": "KRW_billion",
+      "period": "2026Q2",
+      "scope": "Heavy Industries",
+      "definition": "revenue",
+      "source_id": "S9"
+    },
+    {
+      "id": "hyosung_heavy_op",
+      "value": 229.8,
+      "unit": "KRW_billion",
+      "period": "2026Q2",
+      "scope": "Heavy Industries",
+      "definition": "operating_profit",
+      "source_id": "S9"
+    },
+    {
+      "id": "hyundai_total_revenue",
+      "value": 1141.8,
+      "unit": "KRW_billion",
+      "period": "2026Q2",
+      "scope": "consolidated",
+      "definition": "revenue",
+      "source_id": "S10"
+    },
+    {
+      "id": "hyundai_total_op",
+      "value": 287.0,
+      "unit": "KRW_billion",
+      "period": "2026Q2",
+      "scope": "consolidated",
+      "definition": "operating_profit",
+      "source_id": "S10"
+    },
+    {
+      "id": "hyundai_power_revenue",
+      "value": 535.9,
+      "unit": "KRW_billion",
+      "period": "2026Q2",
+      "scope": "Power category; subsidiaries separately presented",
+      "definition": "revenue",
+      "source_id": "S10"
+    },
+    {
+      "id": "gev_reported_fcf",
+      "value": 5107,
+      "unit": "USD_million",
+      "period": "2026Q2",
+      "scope": "consolidated",
+      "definition": "reported_FCF",
+      "source_id": "S6"
+    },
+    {
+      "id": "gev_wc_benefit",
+      "value": 6400,
+      "unit": "USD_million",
+      "period": "2026Q2",
+      "scope": "consolidated",
+      "definition": "rounded_working_capital_cash_benefit",
+      "source_id": "S12"
+    }
+  ],
+  "calculations": [
+    {
+      "id": "siemens_observed_incremental_profit_ratio",
+      "value": 0.340373,
+      "formula": "(722 - 448) / (3624 - 2819)",
+      "source_ids": [
+        "S7"
+      ],
+      "use": "observed two-quarter change, not forecast transformer margin"
+    },
+    {
+      "id": "gev_guidance_ebitda_bounds",
+      "value": [
+        2610.0,
+        3000.0
+      ],
+      "unit": "USD_million",
+      "period": "FY2026",
+      "scope": "Electrification",
+      "source_ids": [
+        "S6"
+      ],
+      "use": "derived company-guidance envelope, not FCF or independent forecast"
+    },
+    {
+      "id": "gev_fcf_minus_wc",
+      "value": -1293,
+      "unit": "USD_million",
+      "source_ids": [
+        "S6",
+        "S12"
+      ],
+      "use": "rounded diagnostic only; NOT normalized or transformer FCF"
+    }
+  ],
+  "financial_scenarios": null,
+  "market_expectation_gap": null,
+  "valuation": null,
+  "publication_eligible": false
+}
