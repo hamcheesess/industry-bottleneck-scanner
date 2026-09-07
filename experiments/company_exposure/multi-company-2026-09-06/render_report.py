@@ -17,7 +17,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 
 
-def render(output, font_dir):
+def render(output, font_dir, source=None, display_date='2026.09.06'):
     root = Path(__file__).resolve().parent
     for name, file in [('KR', 'NanumGothic-Regular.ttf'), ('KRB', 'NanumGothic-Bold.ttf')]:
         pdfmetrics.registerFont(TTFont(name, str(font_dir / file)))
@@ -45,7 +45,7 @@ def render(output, font_dir):
             result += f'<link href="{escape(m[2], quote=True)}" color="#176F75">{escape(m[1])}</link>'
             cursor = m.end()
         return result + escape(line[cursor:])
-    pages = (root / 'report-source.md').read_text().split('---PAGE---')
+    pages = (source or root / 'report-source.md').read_text().split('---PAGE---')
     story = []
     for page_index, page in enumerate(pages):
         if page_index: story.append(PageBreak())
@@ -81,7 +81,7 @@ def render(output, font_dir):
         canvas.setFillColor(teal); canvas.rect(0,h-10,w,10,fill=1,stroke=0)
         canvas.setFont('KR',8); canvas.setFillColor(navy)
         canvas.drawString(42,h-33,'산업 병목 리서치  /  다회사 비교 조사')
-        canvas.drawRightString(w-42,h-33,'2026.09.06')
+        canvas.drawRightString(w-42,h-33,display_date)
         canvas.setStrokeColor(colors.HexColor('#DDE4E9')); canvas.line(42,36,w-42,36)
         canvas.setFont('KR',7.5)
         canvas.drawString(42,23,'한국어 검토본 · 투자 판단 및 최종 게시 요건 미충족')
@@ -96,4 +96,6 @@ if __name__ == '__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--font-dir',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
-    args=parser.parse_args(); render(args.output,args.font_dir)
+    parser.add_argument('--source',type=Path)
+    parser.add_argument('--display-date',default='2026.09.06')
+    args=parser.parse_args(); render(args.output,args.font_dir,args.source,args.display_date)

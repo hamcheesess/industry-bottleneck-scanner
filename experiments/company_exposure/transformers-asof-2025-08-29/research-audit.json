@@ -1,0 +1,54 @@
+{
+  "canonical_source_sha256": "a4125d11a08e26d298016c341e7762ea98781a4653a410edf595b15e9c2a4a15",
+  "exclusions": [
+    {
+      "lead": "Arcosa Q2 2026; AEP Q2 2026; GEV Q2 2026",
+      "reason": "post-cutoff publications and actuals"
+    },
+    {
+      "lead": "Hitachi 2025-09-04 manufacturing announcement",
+      "reason": "post-cutoff publication despite same calendar year"
+    },
+    {
+      "lead": "Valmont 2025 Q2 transcript issuer URL",
+      "url": "https://investors.valmont.com/static-files/5d92dcf4-849d-43cf-8bc9-74f9d2657646",
+      "reason": "full text access failed; lead only, no claim admitted"
+    },
+    {
+      "lead": "later comparative columns for 2025 GEV",
+      "reason": "later source vintage not used"
+    },
+    {
+      "lead": "post-August29 persistence counts",
+      "reason": "future observations not initial selection evidence"
+    }
+  ],
+  "unresolved": [
+    "remaining four trigger constituents causal attribution",
+    "daily signal onset",
+    "national product-level deficit",
+    "company product cash flows",
+    "historical price and market expectations",
+    "nine numerical scenarios"
+  ],
+  "calculations": [
+    {
+      "label": "Valmont Utility YoY sales growth",
+      "formula": "350416 / 332395 - 1",
+      "value": 0.05421561696174737,
+      "source": "V"
+    },
+    {
+      "label": "Siemens observed incremental profit ratio",
+      "formula": "(448 - 237) / (2819 - 2299)",
+      "value": 0.40576923076923077,
+      "source": "S",
+      "forecast_unit_margin": false
+    }
+  ],
+  "actual_tokens": null,
+  "token_measurement_note": "complete billable counts unavailable; do not invent",
+  "historical_registry_write": false,
+  "db_publication": false,
+  "report_status": "historical_hypothesis_report_investment_valuation_not_evaluable"
+}

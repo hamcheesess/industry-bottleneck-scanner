@@ -4,6 +4,15 @@ Status: **active design source of truth** for Repo A. Architecture consolidation
 
 ## Objective
 
+Report direction clarified with the user on 2026-09-07:
+[`adaptive-investment-report-contract.md`](adaptive-investment-report-contract.md)
+defines role-based, flexible chapters and the LLM/code boundary. The fixed
+transformer exercise is reconstructed using only information available by
+2025-08-29 20:00 UTC. The 2026-09-06 current-research comparison is retained as a
+different information set, not evidence for that initial historical hypothesis.
+Missing financial inputs are not failed investment thresholds; no production
+thresholds or frozen registries are changed by this clarification.
+
 Repo A should discover economically important second- and third-order beneficiaries without requiring real-time news speed or complete transcript coverage.
 
 The operating idea is:
