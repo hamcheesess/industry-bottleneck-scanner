@@ -5,6 +5,17 @@
   "case_selection": "user_fixed_retrospective_exercise_not_blind_backtest",
   "sources": [
     {
+      "source_id": "Q",
+      "source_entity": "GE Vernova",
+      "source_class": "issuer_primary",
+      "url": "https://www.gevernova.com/sites/default/files/gev_webcast_10q_07232025.pdf",
+      "available_from": "2025-07-23T00:00:00+00:00",
+      "available_no_later_than": "2025-07-24T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Original dated Q2 10-Q; quarter-end share count p1, not same-day diluted count",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
       "source_id": "A",
       "source_entity": "Arcosa",
       "source_class": "issuer_primary",
@@ -91,9 +102,47 @@
       "retrieved_at": "2026-09-07T00:00:00+00:00",
       "availability_basis": "Dated CERAWeek press announcement",
       "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "P",
+      "source_entity": "Yahoo Finance historical quote",
+      "source_class": "market_data",
+      "url": "https://query1.finance.yahoo.com/v8/finance/chart/GEV?period1=1756425600&period2=1756512000&interval=1d",
+      "available_from": "2025-08-29T20:00:00+00:00",
+      "available_no_later_than": "2025-08-29T20:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Historical daily unadjusted NYSE close; market observation at close, not certified original delivery timestamp; current metadata excluded",
+      "availability_precision": "retrospective market observation; historical delivery not certified"
     }
   ],
   "claims": [
+    {
+      "claim_id": "gev_share_count",
+      "source_ids": [
+        "Q"
+      ],
+      "kind": "observed",
+      "observation_end": "2025-06-30T00:00:00+00:00",
+      "text_ko": "6월 말 발행주식 수; 당일 희석 주식 수와 다름"
+    },
+    {
+      "claim_id": "gev_close",
+      "source_ids": [
+        "P"
+      ],
+      "kind": "observed",
+      "observation_end": "2025-08-29T20:00:00+00:00",
+      "text_ko": "2025년 8월 29일 비수정 종가; 현재 조회된 과거 기록"
+    },
+    {
+      "claim_id": "gev_fcf_guide",
+      "source_ids": [
+        "G"
+      ],
+      "kind": "forecast",
+      "observation_end": "2025-12-31T00:00:00+00:00",
+      "text_ko": "당시 회사의 연간 FCF 전망; 컨센서스와 다름"
+    },
     {
       "claim_id": "structure_demand",
       "source_ids": [

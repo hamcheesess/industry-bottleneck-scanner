@@ -11,6 +11,7 @@ from industry_bottleneck_scanner.research_information_set import validate_inform
 
 ROOT=Path(__file__).resolve().parent
 SOURCES=[
+ ('Q','2025-07-23','GE Vernova','issuer_primary','https://www.gevernova.com/sites/default/files/gev_webcast_10q_07232025.pdf','Original dated Q2 10-Q; quarter-end share count p1, not same-day diluted count'),
  ('A','2025-08-07','Arcosa','issuer_primary','https://s2.q4cdn.com/158938184/files/doc_financials/2025/q2/Arcosa-Inc-Announces-Second-Quarter-2025-Results.pdf','Dated original earnings release; PDF p1 publication, p3 claims'),
  ('V','2025-07-22','Valmont','issuer_primary','https://investors.valmont.com/news-releases/news-release-details/valmont-reports-second-quarter-2025-results-and-raises-full-year','Dated original earnings release and product-line table'),
  ('C','2025-07-30','AEP','customer_primary','https://www.aep.com/news/stories/view/10354/','Dated original customer earnings release'),
@@ -36,8 +37,17 @@ def build(market_dir):
           'availability_precision':'conservative date bound; not original ingest timestamp'})
     # DOE date is a conservative range from document month through hosting month.
     next(s for s in sources if s['source_id']=='D')['available_from']='2024-07-01T00:00:00+00:00'
+    sources.append({'source_id':'P','source_entity':'Yahoo Finance historical quote',
+      'source_class':'market_data','url':'https://query1.finance.yahoo.com/v8/finance/chart/GEV?period1=1756425600&period2=1756512000&interval=1d',
+      'available_from':'2025-08-29T20:00:00+00:00','available_no_later_than':'2025-08-29T20:00:00+00:00',
+      'retrieved_at':'2026-09-07T00:00:00+00:00',
+      'availability_basis':'Historical daily unadjusted NYSE close; market observation at close, not certified original delivery timestamp; current metadata excluded',
+      'availability_precision':'retrospective market observation; historical delivery not certified'})
     claims=[]
     for cid,sids,kind,end,text in [
+      ('gev_share_count',['Q'],'observed','2025-06-30','6월 말 발행주식 수; 당일 희석 주식 수와 다름'),
+      ('gev_close',['P'],'observed','2025-08-29','2025년 8월 29일 비수정 종가; 현재 조회된 과거 기록'),
+      ('gev_fcf_guide',['G'],'forecast','2025-12-31','당시 회사의 연간 FCF 전망; 컨센서스와 다름'),
       ('structure_demand',['A','V'],'observed','2025-06-30','최초 바스켓 두 기업에서 전력망 수요 지지; 다른 네 기업 원인 미확정'),
       ('customer_load',['C'],'forecast','2030-12-31','당시 발표한 고객 약정 기반 신규 부하; 장비 발주와 다름'),
       ('dc_energy',['L'],'forecast','2028-12-31','당시 연구의 데이터센터 전력 사용 시나리오'),
@@ -47,6 +57,7 @@ def build(market_dir):
       ('component_hypothesis',['H','D'],'inference','2025-08-29','부품 경로 조사 필요; 독립 병목·가치 격차 승인 아님'),
     ]:
         claims.append({'claim_id':cid,'source_ids':sids,'kind':kind,'observation_end':end+'T00:00:00+00:00','text_ko':text})
+    next(c for c in claims if c['claim_id']=='gev_close')['observation_end']='2025-08-29T20:00:00+00:00'
     packet={'schema_version':'research-information-set-v1','information_cutoff':'2025-08-29T20:00:00+00:00',
        'cutoff_timezone':'America/New_York','case_selection':'user_fixed_retrospective_exercise_not_blind_backtest',
        'sources':sources,'claims':claims}

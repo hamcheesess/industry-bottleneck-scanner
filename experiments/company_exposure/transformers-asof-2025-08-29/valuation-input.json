@@ -1,0 +1,75 @@
+{
+  "schema_version": "valuation-diagnostic-input-v1",
+  "information_cutoff": "2025-08-29T20:00:00Z",
+  "price": {
+    "ticker": "GEV",
+    "value_usd": 612.97,
+    "basis": "unadjusted_close",
+    "date": "2025-08-29",
+    "retrieved_at": "2026-09-07",
+    "source_url": "https://query1.finance.yahoo.com/v8/finance/chart/GEV?period1=1756425600&period2=1756512000&interval=1d",
+    "raw_response_sha256": "f59bf930337c86e63f9f81f93739ecd14fad50661d2ea3d7adc3f5d6a555c5c9",
+    "historical_snapshot_certified": false
+  },
+  "shares": {
+    "value_millions": 272.22394,
+    "period_end": "2025-06-30",
+    "available_no_later_than": "2025-07-24T00:00:00Z",
+    "basis": "quarter_end_outstanding_not_diluted",
+    "source_url": "https://www.gevernova.com/sites/default/files/gev_webcast_10q_07232025.pdf",
+    "page": 1
+  },
+  "company_fcf_guidance_usd_millions": {
+    "low": 3000,
+    "high": 3500,
+    "midpoint": 3250,
+    "period": "FY2025",
+    "published": "2025-07-23",
+    "source_url": "https://www.gevernova.com/sites/default/files/gev_webcast_pressrelease_07232025.pdf",
+    "posture": "management_guidance_not_consensus"
+  },
+  "incremental_product_sensitivities": [
+    {
+      "case": "reinvestment_heavy",
+      "posture": "analyst_assumption_not_product_forecast",
+      "scope": "incremental_transformer_sales_normalized_per_100m_USD",
+      "period": "one_forward_year",
+      "inputs": {
+        "revenue": 100,
+        "ebitda_margin": 0.18,
+        "depreciation": 3,
+        "tax_rate": 0.25,
+        "capex": 8,
+        "working_capital_increase": 12
+      }
+    },
+    {
+      "case": "balanced",
+      "posture": "analyst_assumption_not_product_forecast",
+      "scope": "incremental_transformer_sales_normalized_per_100m_USD",
+      "period": "one_forward_year",
+      "inputs": {
+        "revenue": 100,
+        "ebitda_margin": 0.22,
+        "depreciation": 3,
+        "tax_rate": 0.25,
+        "capex": 5,
+        "working_capital_increase": 8
+      }
+    },
+    {
+      "case": "conversion_improves",
+      "posture": "analyst_assumption_not_product_forecast",
+      "scope": "incremental_transformer_sales_normalized_per_100m_USD",
+      "period": "one_forward_year",
+      "inputs": {
+        "revenue": 100,
+        "ebitda_margin": 0.26,
+        "depreciation": 3,
+        "tax_rate": 0.25,
+        "capex": 3,
+        "working_capital_increase": 5
+      }
+    }
+  ]
+}

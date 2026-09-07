@@ -4,6 +4,13 @@ Status: **active design source of truth** for Repo A. Architecture consolidation
 
 ## Objective
 
+The final product is repeatable report production, not a single report. Reports
+are user evaluation instruments for the research system. The implementation
+audit and remaining production boundaries are recorded in
+[`research-production-audit.md`](research-production-audit.md). Every report
+iteration should leave reusable inputs, calculations and process improvements.
+
+
 Report direction clarified with the user on 2026-09-07:
 [`adaptive-investment-report-contract.md`](adaptive-investment-report-contract.md)
 defines role-based, flexible chapters and the LLM/code boundary. The fixed

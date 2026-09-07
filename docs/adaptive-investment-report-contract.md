@@ -114,3 +114,16 @@ Prefer quality over token savings. Do not regenerate full prose after every read
 Only final eligible reports and concise status rows enter the product DB. This
 research package and process notes remain repository artifacts. No unqualified
 investment report is manufactured to satisfy the weekly cadence.
+
+## Product objective and implementation audit (2026-09-07)
+
+The final objective is a repeatable industry-to-investment research system, not
+one handcrafted report. Reports are user evaluation artifacts for that system.
+Every substantive report iteration must preserve reusable structured inputs,
+calculation code, source/version checks and a specific process improvement.
+Quality and diverse primary evidence take priority over token reduction.
+
+See `docs/research-production-audit.md` for the distinction between executed
+production stages, implemented but unconnected components, written policy and
+LLM work. A passing test or a PDF does not certify a working weekly publishing
+service. No report with unresolved investment inputs becomes a final DB report.
