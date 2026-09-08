@@ -11,6 +11,72 @@
     47.675745286228576,
     55.62170283393334
   ],
+  "baseline_sensitivity": [
+    {
+      "initial_cash_assumption": 2500,
+      "equity_value_proxy": 166865.10850180007,
+      "year_end_cash": [
+        3579.049046886242,
+        5123.8368320069285,
+        7335.385331998008,
+        10501.481552412317,
+        15034.127016421904
+      ],
+      "terminal_value_share": 0.8231679233558569,
+      "publication_eligible": false,
+      "posture": "proxy_not_consensus",
+      "required_growth": 0.43161961875449684,
+      "market_cap": 166865.10850180002
+    },
+    {
+      "initial_cash_assumption": 3250,
+      "equity_value_proxy": 166865.10850180016,
+      "year_end_cash": [
+        4401.087232885943,
+        5959.867332760507,
+        8070.737239355775,
+        10929.236499724875,
+        14800.160992040064
+      ],
+      "terminal_value_share": 0.8103575136649013,
+      "publication_eligible": false,
+      "posture": "proxy_not_consensus",
+      "required_growth": 0.3541806870418286,
+      "market_cap": 166865.10850180002
+    },
+    {
+      "initial_cash_assumption": 4500,
+      "equity_value_proxy": 166865.10850179987,
+      "year_end_cash": [
+        5683.665649586775,
+        7178.678936953924,
+        9066.935751861582,
+        11451.87361774798,
+        14464.137934356273
+      ],
+      "terminal_value_share": 0.7919591455859901,
+      "publication_eligible": false,
+      "posture": "proxy_not_consensus",
+      "required_growth": 0.26303681101928345,
+      "market_cap": 166865.10850180002
+    },
+    {
+      "initial_cash_assumption": 6000,
+      "equity_value_proxy": 166865.10850180004,
+      "year_end_cash": [
+        7119.902303625822,
+        8448.834802196048,
+        10025.81306185161,
+        11897.134919133188,
+        14117.739719547266
+      ],
+      "terminal_value_share": 0.7729927035154227,
+      "publication_eligible": false,
+      "posture": "proxy_not_consensus",
+      "required_growth": 0.1866503839376369,
+      "market_cap": 166865.10850180002
+    }
+  ],
   "reverse_dcf": [
     {
       "discount_rate": 0.08,

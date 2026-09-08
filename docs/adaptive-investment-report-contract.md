@@ -127,3 +127,16 @@ See `docs/research-production-audit.md` for the distinction between executed
 production stages, implemented but unconnected components, written policy and
 LLM work. A passing test or a PDF does not certify a working weekly publishing
 service. No report with unresolved investment inputs becomes a final DB report.
+
+## Review correction: reverse valuation (2026-09-08)
+
+A reverse-DCF result is conditional math, not observed consensus. Require the
+starting cash-flow definition, normalization status, period and ownership scope.
+When the starting cash proxy is not independently normalized, present starting
+cash sensitivity and do not infer that a single product cannot explain the stock.
+An issuer's current-year CFO-minus-capex guidance is not automatically forward
+normalized FCFE. Conditional product examples cannot be labeled product forecasts.
+The historical case now includes a starting-cash sensitivity and an explicit
+product/segment/group/ownership bridge checklist. Future investigation stops or
+waits when the missing information prevents a robust decision; it does not invent
+precision or downgrade missing data to a failed investment hurdle.

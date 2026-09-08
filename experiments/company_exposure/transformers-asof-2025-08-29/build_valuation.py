@@ -22,6 +22,9 @@ def build():
         for terminal in [.02, .03]:
             reverse.append(dict(discount_rate=rate, terminal_growth=terminal,
                 **reverse_equity_dcf(market_cap=market_cap, initial_cash=proxy, discount_rate=rate, terminal_growth=terminal)))
+    baseline_sensitivity = []
+    for cash in [2500, 3250, 4500, 6000]:
+        baseline_sensitivity.append(dict(initial_cash_assumption=cash, **reverse_equity_dcf(market_cap=market_cap, initial_cash=cash, discount_rate=.10, terminal_growth=.03)))
     scenarios = []
     for growth in [.10, .20, .30]:
         r = equity_dcf(initial_cash=proxy, growth=growth, discount_rate=.10, terminal_growth=.03)
@@ -34,7 +37,7 @@ def build():
               'market_cap_proxy_usd_millions':market_cap, 'share_count_lag_days':60,
               'guidance_fcf_yield_range':[3000/market_cap,3500/market_cap],
               'price_to_guidance_fcf_range':[market_cap/3500,market_cap/3000],
-              'reverse_dcf':reverse, 'growth_sensitivities':scenarios, 'product_incremental_fcff':bridges,
+              'baseline_sensitivity':baseline_sensitivity, 'reverse_dcf':reverse, 'growth_sensitivities':scenarios, 'product_incremental_fcff':bridges,
               'required_annual_equity_cash_at_multiples':{str(m):market_cap/m for m in [20,25,30,40]},
               'investment_status':'not_evaluable_missing_data', 'publication_eligible':False,
               'limitations':['Product-level FCF is not disclosed; product cases are normalized sensitivities, not forecasts.',
@@ -48,6 +51,7 @@ def build():
     tables['MULTIPLE_ROWS'] = '\n'.join(f"| {m}배 가정 | {v/100:.1f}억 달러 | 회사 전망과 구분한 역산 |" for m,v in output['required_annual_equity_cash_at_multiples'].items())
     tables['REVERSE_ROWS'] = '\n'.join(f"| {r['discount_rate']:.0%} / {r['terminal_growth']:.0%} | {r['required_growth']:.1%} | {r['year_end_cash'][-1]/100:.1f}억 달러 |" for r in reverse)
     tables['GROWTH_ROWS'] = '\n'.join(f"| {r['growth']:.0%} 가정 | {r['value_per_share']:.2f}달러 | {r['price_gap']:.1%} |" for r in scenarios)
+    tables['BASELINE_ROWS'] = '\n'.join(f"| {r['initial_cash_assumption']/100:.1f}억 달러 | {r['required_growth']:.1%} | {r['year_end_cash'][-1]/100:.1f}억 달러 |" for r in baseline_sensitivity)
     fields = [('매출','revenue'),('EBITDA 마진','ebitda_margin'),('EBITDA','ebitda'),('감가상각','depreciation'),('영업이익','ebit'),('현금세금 / 세율 25%','cash_tax'),('설비투자','capex'),('운전자본 증가','working_capital_increase'),('증분 FCFF','fcff')]
     tables['BRIDGE_ROWS'] = '\n'.join('| '+label+' | '+' | '.join(f"{r[key]:.0%}" if key=='ebitda_margin' else f"{r[key]:.2f}" for r in bridges)+' |' for label,key in fields)
     for key, value in tables.items():
