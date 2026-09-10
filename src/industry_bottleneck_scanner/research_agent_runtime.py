@@ -40,6 +40,15 @@ def call_api(payload):
     except HTTPError as exc:
         # Never log response bodies or headers: they may contain sensitive data.
         category = {401:'authentication',403:'permission',404:'model_or_endpoint',429:'quota_or_rate_limit'}.get(exc.code,'provider_http')
+        try:
+            body = json.loads(exc.read(65536))
+            code = body.get('error', {}).get('code')
+            safe_codes = {'insufficient_quota', 'rate_limit_exceeded', 'billing_hard_limit_reached',
+                          'invalid_api_key', 'model_not_found', 'unsupported_parameter', 'invalid_value'}
+            if isinstance(code, str) and code in safe_codes:
+                category = code
+        except (ValueError, TypeError, AttributeError):
+            pass
         raise RuntimeError(f'{category}:{exc.code}') from None
     except (URLError, TimeoutError):
         raise RuntimeError('transport_outcome_unknown') from None

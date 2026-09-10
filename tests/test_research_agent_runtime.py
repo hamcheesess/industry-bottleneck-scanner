@@ -46,3 +46,16 @@ def test_incomplete_or_invalid_json_is_blocked():
     assert inspect_response(r,CUTOFF)['status']=='blocked'
     r['output'][1]['content'][0]['text']='not json'
     assert inspect_response(r,CUTOFF)['status']=='blocked'
+
+@pytest.mark.parametrize('code,expected', [('insufficient_quota','insufficient_quota:429'),('rate_limit_exceeded','rate_limit_exceeded:429'),('secret-value','quota_or_rate_limit:429')])
+def test_safe_http_classification(monkeypatch,code,expected):
+    import io
+    from urllib.error import HTTPError
+    from industry_bottleneck_scanner import research_agent_runtime as runtime
+    monkeypatch.setenv('OPENAI_API_KEY','test-key')
+    def fail(*args,**kwargs):
+        raise HTTPError('https://api.openai.com/v1/responses',429,'redacted',{},io.BytesIO(json.dumps({'error':{'code':code,'message':'never print this'}}).encode()))
+    monkeypatch.setattr(runtime,'urlopen',fail)
+    with pytest.raises(RuntimeError) as exc:
+        runtime.call_api({})
+    assert str(exc.value)==expected
