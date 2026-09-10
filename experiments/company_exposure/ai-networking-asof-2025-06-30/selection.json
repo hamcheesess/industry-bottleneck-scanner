@@ -1,0 +1,61 @@
+{
+  "topic": "AI data-center networking equipment",
+  "information_cutoff": "2025-06-30T20:00:00Z",
+  "selection_basis": "First passing stored month-end SIC 3576 observation; sector narrowed to AI networking as a research hypothesis, not proof that all basket stocks rose because of AI.",
+  "market_observations": [
+    {
+      "as_of": "2025-05-30",
+      "input_sha256": "dda193ff288a648fd6be0b87d3e0336e2bb9c56ee84c482ae23e5a066a0a4ea2",
+      "trigger": {
+        "abnormal_volume_breadth": 0.0,
+        "bucket": "SIC 3576 — COMPUTER COMMUNICATIONS EQUIPMENT",
+        "company_count": 10,
+        "market_outperform_breadth": 0.3,
+        "median_market_relative_3m": -0.013322,
+        "median_sector_relative_3m": 0.073022,
+        "near_high_breadth": 0.4,
+        "reasons": [
+          "weak_market_relative_breadth"
+        ],
+        "score": 40.0,
+        "sector_outperform_breadth": 0.8,
+        "triggered": false
+      }
+    },
+    {
+      "as_of": "2025-06-30",
+      "input_sha256": "28b3be3c199e4a87cfd24a995327de4f77a6cd8387419de034fa7341e223447f",
+      "trigger": {
+        "abnormal_volume_breadth": 0.3,
+        "bucket": "SIC 3576 — COMPUTER COMMUNICATIONS EQUIPMENT",
+        "company_count": 10,
+        "market_outperform_breadth": 0.9,
+        "median_market_relative_3m": 0.076516,
+        "median_sector_relative_3m": 0.173673,
+        "near_high_breadth": 0.5,
+        "reasons": [],
+        "score": 75.5,
+        "sector_outperform_breadth": 1.0,
+        "triggered": true
+      }
+    }
+  ],
+  "core_research_candidates": [
+    "ANET",
+    "CSCO"
+  ],
+  "downstream_research_candidates": [
+    "high-speed optical interconnects",
+    "optical modules and components",
+    "network connectors and cabling"
+  ],
+  "rules": [
+    "No post-cutoff publications or later actuals in evidence/scenarios",
+    "Do not equate broad computer communications equipment trigger with a verified pure AI networking signal",
+    "Do not call month-end first observation the daily first anomaly",
+    "Retrospective user-selected AI cycle case, not outcome-blind discovery",
+    "Preserve fixed report chapters including FCF, reverse DCF, downstream and prospective 6-18 month scenarios",
+    "API automation remains parked"
+  ],
+  "status": "topic_selected_research_pending"
+}
