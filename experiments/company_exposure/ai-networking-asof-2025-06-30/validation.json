@@ -1,0 +1,13 @@
+{
+  "cutoff": "2025-06-30T20:00:00Z",
+  "pdf_sha256": "7e0a50e10e7dfc89be913c75da6331bff43bba28260babd378e8585bd2b2d5ff",
+  "pages": 20,
+  "checks": [
+    "DCF ordering",
+    "reverse DCF price reproduction <1e-7",
+    "report/model per-share agreement",
+    "nonnegative equity floor",
+    "all 20 pages visually reviewed; changed pages rechecked"
+  ],
+  "limitations": "Publication cutoff manually reviewed; no independent point-in-time web archive proof; no full product/capital stack model"
+}
