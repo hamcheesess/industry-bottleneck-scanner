@@ -43,7 +43,7 @@ def call_api(payload):
         try:
             body = json.loads(exc.read(65536))
             code = body.get('error', {}).get('code')
-            safe_codes = {'insufficient_quota', 'rate_limit_exceeded', 'billing_hard_limit_reached',
+            safe_codes = {'credit_balance_exhausted', 'organization_spend_limit_exceeded', 'project_spend_limit_exceeded', 'organization_usage_limit_exceeded', 'slow_down', 'insufficient_quota', 'rate_limit_exceeded', 'billing_hard_limit_reached',
                           'invalid_api_key', 'model_not_found', 'unsupported_parameter', 'invalid_value'}
             if isinstance(code, str) and code in safe_codes:
                 category = code

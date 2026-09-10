@@ -47,7 +47,7 @@ def test_incomplete_or_invalid_json_is_blocked():
     r['output'][1]['content'][0]['text']='not json'
     assert inspect_response(r,CUTOFF)['status']=='blocked'
 
-@pytest.mark.parametrize('code,expected', [('insufficient_quota','insufficient_quota:429'),('rate_limit_exceeded','rate_limit_exceeded:429'),('secret-value','quota_or_rate_limit:429')])
+@pytest.mark.parametrize('code,expected', [('credit_balance_exhausted','credit_balance_exhausted:429'),('project_spend_limit_exceeded','project_spend_limit_exceeded:429'),('insufficient_quota','insufficient_quota:429'),('rate_limit_exceeded','rate_limit_exceeded:429'),('secret-value','quota_or_rate_limit:429')])
 def test_safe_http_classification(monkeypatch,code,expected):
     import io
     from urllib.error import HTTPError
