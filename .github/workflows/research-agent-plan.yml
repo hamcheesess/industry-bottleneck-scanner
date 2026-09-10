@@ -1,0 +1,42 @@
+name: Research agent plan
+on:
+  workflow_dispatch:
+    inputs:
+      topic:
+        required: true
+        default: transformers
+        type: string
+      cutoff:
+        required: true
+        default: '2025-08-29T20:00:00Z'
+        type: string
+permissions:
+  contents: read
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check configured credential presence only
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python - <<'PY'
+          import os
+          if not os.environ.get('OPENAI_API_KEY', '').strip():
+              raise SystemExit('OPENAI_API_KEY secret is missing or unavailable to this job')
+          print('Credential present; provider authentication not tested')
+          PY
+      - name: Build plan without model calls
+        env:
+          TOPIC: ${{ inputs.topic }}
+          CUTOFF: ${{ inputs.cutoff }}
+          PYTHONPATH: src
+        run: python -m industry_bottleneck_scanner.research_agent_plan --config research_agents/roles.json --topic "$TOPIC" --cutoff "$CUTOFF" --output agent-output/plan.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: research-agent-plan
+          path: agent-output/plan.json

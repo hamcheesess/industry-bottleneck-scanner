@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "max_parallel": 2,
+  "report_sections": ["purpose", "market_origin", "purchases", "bottleneck", "fcf_scenarios", "reverse_dcf", "downstream", "investment_6_18_months", "limitations_changes"],
+  "roles": [
+    {"id":"demand", "depends_on":[], "output_token_limit":5000, "instructions":"Investigate dated market attention and customer demand independently. Separate market narrative, contractual commitment, cancellable order, shipment and cash. Find original sources and contrary evidence. Return evidence records, not a report."},
+    {"id":"supply", "depends_on":[], "output_token_limit":5000, "instructions":"Investigate supply constraints and downstream value chains independently. Compare lead time, inventory, capacity and qualification with normal conditions. Follow selected routes to actual suppliers and beneficiary industries. Examine capacity expansion and substitution. Return evidence records, not a report."},
+    {"id":"synthesis", "depends_on":["demand","supply"], "output_token_limit":6000, "instructions":"Deduplicate original sources and distinguish independent evidence from repeated citations. Resolve conflicts or return unresolved questions. Build sourced downside/base/upside sales-to-FCF scenarios and reverse DCF using deterministic calculation tools. Explain scenario suitability and 6-18 month prospective catalysts; future actuals are not required. Do not invent missing assumptions."},
+    {"id":"review", "depends_on":["synthesis"], "output_token_limit":3000, "instructions":"Audit source vintage, economic causality, source independence, units, cash normalization, valuation and counterevidence. Challenge the strongest thesis. Return blocking issues and targeted rework requests. Agreement between agents is not independent corroboration."},
+    {"id":"report", "depends_on":["synthesis","review"], "output_token_limit":10000, "instructions":"Write one integrated Korean review report in every required section. Preserve FCF and reverse DCF analysis. Distinguish observed facts, forecasts and assumptions. Include provenance, unresolved limitations and changes. Never publish to the final-report database automatically."}
+  ]
+}
