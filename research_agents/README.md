@@ -21,3 +21,7 @@ The pilot writes identity, per-role state, original API response, evidence diagn
 Reproducible offline validation uses injected responses, including future source rejection, invalid JSON, uncertain transport and duplicate-charge prevention. Actual quality gain and currency cost require the live artifact and a comparable single-agent baseline; no savings claim is made.
 
 API implementation reference: https://developers.openai.com/api/docs/guides/tools-web-search . The first pilot explicitly selects gpt-6-astra; any account/model entitlement failure is retained rather than silently switching models.
+
+### First remote attempt (2026-09-10)
+
+Run 34433019412 executed the pilot at 9de7dd285f7b11c0a6b2595ae893ff298875176f. Checkout/setup succeeded and checkpoint upload succeeded. Both roles were blocked; job environment showed OPENAI_API_KEY empty. The adapter rejects an empty key before network calls, so this attempt made no model requests. Repository secret name and/or GitHub Environment scope must be confirmed; no secret value is needed. One-time push trigger was removed. Live authentication, research quality and token-cost comparison remain unverified.

@@ -150,7 +150,7 @@ def main():
         p.error('explicit model required')
     plan=build_plan(json.loads(a.config.read_text()),a.topic,a.cutoff)
     summary=run_pilot(plan,a.model,a.output)
-    print(json.dumps({'status':summary['status'],'roles':[{k:s[k] for k in ('role','status')} for s in summary['roles']]}))
+    print(json.dumps({'status':summary['status'],'roles':[{k:s[k] for k in ('role','status','error') if k in s} for s in summary['roles']]}))
     if any(s['status'] in ('blocked','inflight') for s in summary['roles']):
         raise SystemExit(1)
 
