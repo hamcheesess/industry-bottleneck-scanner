@@ -1,12 +1,12 @@
 # Research charter — 2026-09-12
 
-Status: agreed objectives and report requirements; discovery expansion below is a proposal awaiting discussion. This is a policy record, not a claim that production code already enforces it.
+Status: agreed objectives, flexible report requirements, discovery entry points and staged research stopping policy. This is a policy record, not a claim that production code already enforces it.
 
 ## Purpose agreed with the user
 
 Build analytical advantage from public information: broad discovery, deep investigation, causal explanation, company comparison, counter-hypotheses, and transparent prospective cash-flow scenarios. Help an initially unfamiliar reader understand customers, technologies, products, business models, competition, reinvestment and valuation. Report volume, source count, agent agreement and confident prose are not evidence of advantage.
 
-Produce a satisfactory Korean PDF benchmark FIRST, then codify repeatable quality. API automation remains parked. Preserve the 6–18 month prospective investment horizon and both axes: existing beneficiaries versus priced expectations, and downstream value-chain opportunities. Bottlenecks are one mechanism, not a mandatory condition for investment merit. Retain fixed nine report chapters while allowing sector-specific detail.
+Produce a satisfactory Korean PDF benchmark FIRST, then codify repeatable quality. API automation remains parked. Preserve the 6–18 month prospective investment horizon and both axes: existing beneficiaries versus priced expectations, and downstream value-chain opportunities. Bottlenecks are one mechanism, not a mandatory condition for investment merit. Do not fix chapter count, titles or order. Select a coherent narrative for each industry/company; enforce analytical coverage and reader comprehension instead. This supersedes earlier fixed-nine-chapter instructions and historical report-contract templates for future reports.
 
 ## Required report improvements from the attached feedback
 
@@ -38,7 +38,7 @@ The user supplied a final protocol in this conversation. This section is an oper
 
 ## Implementation sequence
 
-1. Agree discovery entry points with the user.
+1. Use the agreed discovery entry points and apply the staged research stopping policy below.
 2. Build question-led research packets for demand, competition/value chain, and company economics; use a synthesis/critical review role. Agents return evidence records and concise findings, not repeated full reports.
 3. Direct more research to uncertain questions that could change candidate selection or cash-flow assumptions.
 4. Produce an industry tutorial and business-model explanations, then evidence-linked scenarios, reverse valuation and prospective catalysts/falsifiers.
@@ -46,10 +46,39 @@ The user supplied a final protocol in this conversation. This section is an oper
 6. Codify stable steps: data normalization, provenance, deduplication, calculations, change tracking and publishing. Do not claim semantic truth from schema validation alone.
 7. Publish final reports only; retain short dated stage/reason records for deferred/rejected industries. Keep reusable evidence separate from the reader-facing final-report database.
 
-## Discovery expansion proposed, not yet accepted
+## Discovery expansion accepted
 
-Retain broad relative-price/breadth signals as one entry; supplement with operating-change discovery (orders, inventory, pricing, utilization, customer budgets), structural change (technology, regulation, substitution), and propagation from researched industries. A market trigger is a research lead, not a universal prerequisite or a buy signal. Short preliminary reconnaissance selects where deeper investigation has decision value. No new weights, thresholds or historical trigger dates are changed by this proposal.
+Retain broad relative-price/breadth signals as one entry; supplement with operating-change discovery (orders, inventory, pricing, utilization, customer budgets), structural change (technology, regulation, substitution), and propagation from researched industries. A market trigger is a research lead, not a universal prerequisite or a buy signal. Short preliminary reconnaissance selects where deeper investigation has decision value. No new weights, thresholds or historical trigger dates are changed by this policy record.
 
 ## Historical benchmark guard
 
 AI networking case remains 2025-06-30T20:00:00Z until explicitly changed. Later examples supplied for writing feedback are not admissible historical evidence. Distinguish first stored monthly pass from daily first anomaly and retrospective user-selected cases from outcome-blind discovery.
+
+## Flexible narrative, consistent analytical quality
+
+The reader must understand the change and selection rationale, customer problem, technology/products, business model, competition/moat, actual purchase evidence, relevant value-chain opportunities, reinvestment/cash conversion, valuation versus market expectations, prospective 6–18 month opportunity, counter-hypotheses and limitations. These are coverage requirements, not mandatory separate chapters. Combine, reorder or deepen them to fit the company; explain non-applicability rather than insert filler. Include an actual report-specific table of contents and readable source references. Judge continuity from customer problem to economics to valuation, not heading compliance.
+
+The two analytical axes are qualitative economic understanding and quantitative scenario/expectation valuation. Preserve the two opportunity routes (existing beneficiaries and downstream beneficiaries) without confusing them with the analytical axes. DCF estimates intrinsic value; reverse valuation diagnoses expectations; separate horizon price scenarios explain earnings/cash changes versus multiple changes. Model selection follows economics, not whichever yields the highest price.
+
+## Hard investment horizon
+
+The user's professional/proprietary-trading objective requires a credible observable earnings/cash-flow improvement or market-expectation revision within 6–18 months. Long-run promise without a supported near-term realization path is horizon-ineligible, not a bad company. Record milestones, timing evidence, delay risks and falsifiers. Do not require unavailable future actuals and do not promise share-price realization.
+
+## Staged research stopping policy
+
+Purpose: avoid spending deep-research resources on low-value leads without mistaking missing evidence for disproof. Apply incrementally to every discovery route. Never require a full DCF before a preliminary decision.
+
+1. Intake: establish source/time/entity and what actually changed. Deduplicate and reuse prior work. Archive duplicates; mark post-cutoff evidence inadmissible for that replay. One failed market trigger does not veto the operating/technology/value-chain routes.
+2. Preliminary economic relevance: seek a plausible material link from change to customer spending or supplier economics. Stop this route if evidence contradicts the proposed link or its effect is immaterial; defer if not yet assessable. Weak exploratory sources may generate verification leads but cannot support final investment approval.
+3. Horizon and investigability: assess credible 6–18 month milestones and accessible evidence routes. Mark horizon mismatch separately from access_limited/not_public/not_found. A material unknown can justify deeper investigation where a promising route exists; it does not mandate unlimited search.
+4. Targeted deepening: investigate the few uncertainties that could change selection or financial assumptions. At each research batch, note the question, new evidence and next useful source/action. Pause when results only repeat known material and no productive next route is identified; label research exhaustion/deferred, not negative_confirmed. No arbitrary token ceiling is a substitute for evidence adequacy. Additional effort remains justified for material, resolvable uncertainties.
+5. Company and valuation screening: assess profit capture, reinvestment and preliminary price expectations. Deprioritize value-insufficient candidates only with disclosed assumptions; otherwise defer valuation. Preserve viable downstream branches rather than rejecting the whole industry because one company fails.
+6. Full report: proceed only for candidates with sufficient substantive investigation to present connected analysis. Report completion and investment eligibility are separate. A completed investigation may conclude no attractive trade; do not manufacture one.
+
+Record each decision compactly: candidate_id, entity_scope, discovery_route, information_cutoff, assessed_at, stopped_stage, decision (continue/defer/reject_route/reject_candidate/archive_duplicate), reason_code, short Korean reason, evidence_fact_ids, search_status, searched_scope, unresolved_question, resume_condition and next_review_or_event. Use null with explanation for unavailable evidence IDs; never fabricate them. Keep investment rejection distinct from an evidence verification status.
+
+Illustrative reason codes: duplicate, economically_immaterial, mechanism_contradicted, horizon_mismatch, evidence_access_limited, evidence_not_found, conflicting_evidence, research_yield_exhausted, profit_capture_weak, valuation_insufficient. They are labels, not automatic factual judgments or calibrated thresholds.
+
+Reader-facing status example (illustrative, not an actual industry conclusion): “기술 변화 경로 / 시간 적합성 단계에서 보류: 확인된 상용화 일정이 투자 기간 밖에 있음. 양산 일정 단축 또는 기간 내 유상 계약 확인 시 재검토.” Display stage, dated reason and material reopening condition; do not generate a full rejected-sector report.
+
+Reuse source records across candidates and routes; investigate only new or changed material where appropriate. Review deferred candidates when reopening evidence appears rather than repeating identical searches every week. Production enforcement, schema migration and calibrated budgets remain implementation work; this update records the operative research instructions only.
