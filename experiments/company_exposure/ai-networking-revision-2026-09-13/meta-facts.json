@@ -1,0 +1,150 @@
+{
+  "cutoff": "2025-06-30T20:00:00Z",
+  "facts": [
+    {
+      "entity": "Meta",
+      "source_authority": "tier_3",
+      "evidence_directness": "direct_document",
+      "source_class": "customer_and_supplier",
+      "verification_status": "verified",
+      "citation_relation": "direct",
+      "retrieved_at": "2026-09-13",
+      "valid_as_of": "2025-06-30",
+      "caveats": [
+        "고객 기술팀의 직접 설명이며 독립 감사 또는 시장 전체 통계가 아니다.",
+        "하드웨어 공급 관계의 근거이지 Arista EOS의 고객 잠금 또는 소프트웨어 수익 근거가 아니다."
+      ],
+      "fact_id": "META-DSF-01",
+      "source_date": "2024-10-15",
+      "source_url_or_terminal_reference": "https://engineering.fb.com/2024/10/15/data-infrastructure/open-future-networking-hardware-ai-ocp-2024-meta/",
+      "information_type": "actual",
+      "claim": "Meta는 OCP-SAI와 자체 FBOSS를 사용하는 DSF를 개발했다고 설명하고, Arista 7700R4를 DSF 플랫폼으로 제시했다.",
+      "independence_group": "Meta-engineering"
+    },
+    {
+      "entity": "Meta",
+      "source_authority": "tier_3",
+      "evidence_directness": "direct_document",
+      "source_class": "customer_and_supplier",
+      "verification_status": "verified",
+      "citation_relation": "direct",
+      "retrieved_at": "2026-09-13",
+      "valid_as_of": "2025-06-30",
+      "caveats": [
+        "고객 기술팀의 직접 설명이며 독립 감사 또는 시장 전체 통계가 아니다.",
+        "will deploy/run은 계획이며 이미 발생한 출하·매출로 바꾸지 않는다."
+      ],
+      "fact_id": "META-FBOSS-02",
+      "source_date": "2024-10-15",
+      "source_url_or_terminal_reference": "https://engineering.fb.com/2024/10/15/data-infrastructure/open-future-networking-hardware-ai-ocp-2024-meta/",
+      "information_type": "forecast",
+      "claim": "Meta는 Minipack3와 Cisco 8501을 배치하고 두 제품 모두 FBOSS로 운영할 계획이라고 밝혔다.",
+      "independence_group": "Meta-engineering"
+    },
+    {
+      "entity": "Meta",
+      "source_authority": "tier_3",
+      "evidence_directness": "direct_document",
+      "source_class": "customer_and_supplier",
+      "verification_status": "verified",
+      "citation_relation": "direct",
+      "retrieved_at": "2026-09-13",
+      "valid_as_of": "2025-06-30",
+      "caveats": [
+        "고객 기술팀의 직접 설명이며 독립 감사 또는 시장 전체 통계가 아니다.",
+        "특정 광모듈 공급사, 구매금액 또는 공급 부족은 제시하지 않는다."
+      ],
+      "fact_id": "META-OPTICS-03",
+      "source_date": "2024-10-15",
+      "source_url_or_terminal_reference": "https://engineering.fb.com/2024/10/15/data-infrastructure/open-future-networking-hardware-ai-ocp-2024-meta/",
+      "information_type": "actual",
+      "claim": "Meta는 데이터센터에 2×400G 광모듈을 이미 배치했다고 밝혔다.",
+      "independence_group": "Meta-engineering"
+    },
+    {
+      "entity": "Meta",
+      "source_authority": "tier_3",
+      "evidence_directness": "direct_document",
+      "source_class": "customer_and_supplier",
+      "verification_status": "verified",
+      "citation_relation": "direct",
+      "retrieved_at": "2026-09-13",
+      "valid_as_of": "2025-06-30",
+      "caveats": [
+        "고객 기술팀의 직접 설명이며 독립 감사 또는 시장 전체 통계가 아니다.",
+        "모든 연결이 광으로 대체된다는 주장에 반한다."
+      ],
+      "fact_id": "META-ROCE-04",
+      "source_date": "2024-08-05",
+      "source_url_or_terminal_reference": "https://engineering.fb.com/2024/08/05/data-center-engineering/roce-network-distributed-ai-training-at-scale/",
+      "information_type": "actual",
+      "claim": "Meta는 랙 내부 구리 DAC와 랙 간 단일모드 광섬유·400G 플러거블 광모듈을 사용하는 AI Zone 구조를 설명했다.",
+      "independence_group": "Meta-engineering"
+    },
+    {
+      "entity": "Meta",
+      "source_authority": "tier_3",
+      "evidence_directness": "direct_document",
+      "source_class": "customer_and_supplier",
+      "verification_status": "verified",
+      "citation_relation": "direct",
+      "retrieved_at": "2026-09-13",
+      "valid_as_of": "2025-06-30",
+      "caveats": [
+        "고객 기술팀의 직접 설명이며 독립 감사 또는 시장 전체 통계가 아니다.",
+        "특정 비교 조건의 최대값으로 전체 학습 속도·절감률·매출 감소율로 일반화할 수 없다."
+      ],
+      "fact_id": "META-OPTIM-05",
+      "source_date": "2024-08-05",
+      "source_url_or_terminal_reference": "https://engineering.fb.com/2024/08/05/data-center-engineering/roce-network-distributed-ai-training-at-scale/",
+      "information_type": "actual",
+      "claim": "Meta는 혼잡 대응으로 uplink 용량을 두 배 늘린 단기 해법 이후 E-ECMP와 QP scaling을 적용했으며, baseline ECMP 대비 AllReduce 성능이 최대 40% 개선됐다고 설명했다.",
+      "independence_group": "Meta-engineering"
+    },
+    {
+      "entity": "Meta",
+      "source_authority": "tier_3",
+      "evidence_directness": "direct_document",
+      "source_class": "customer_and_supplier",
+      "verification_status": "verified",
+      "citation_relation": "direct",
+      "retrieved_at": "2026-09-13",
+      "valid_as_of": "2025-06-30",
+      "caveats": [
+        "고객 기술팀의 직접 설명이며 독립 감사 또는 시장 전체 통계가 아니다.",
+        "네트워크 수요가 연산량에 고정 비율로 증가한다는 가설의 반증 경로다."
+      ],
+      "fact_id": "META-SCHED-06",
+      "source_date": "2024-08-05",
+      "source_url_or_terminal_reference": "https://engineering.fb.com/2024/08/05/data-center-engineering/roce-network-distributed-ai-training-at-scale/",
+      "information_type": "actual",
+      "claim": "Meta는 AI Zone 사이의 트래픽을 줄이도록 학습 스케줄러를 개선했다고 밝혔다.",
+      "independence_group": "Meta-engineering"
+    },
+    {
+      "entity": "Meta",
+      "source_authority": "tier_3",
+      "evidence_directness": "direct_document",
+      "source_class": "customer_and_supplier",
+      "verification_status": "verified",
+      "citation_relation": "direct",
+      "retrieved_at": "2026-09-13",
+      "valid_as_of": "2025-06-30",
+      "caveats": [
+        "고객 기술팀의 직접 설명이며 독립 감사 또는 시장 전체 통계가 아니다.",
+        "장기 기술 전망이며 6~18개월 구매 약정이나 매출은 아니다."
+      ],
+      "fact_id": "META-VISION-07",
+      "source_date": "2024-10-15",
+      "source_url_or_terminal_reference": "https://engineering.fb.com/2024/10/15/data-infrastructure/metas-open-ai-hardware-vision/",
+      "information_type": "forecast",
+      "claim": "Meta는 향후 수년 가속기당 주입 대역폭이 초당 테라바이트 수준으로 증가할 것으로 예상했다.",
+      "independence_group": "Meta-engineering"
+    }
+  ],
+  "reporting_notes": [
+    "각 URL의 최종 보고서 전체 파생 서술은 웹 도구 기본 wordlim 200 words 이내로 유지할 것. 원문 직접 인용은 URL당 25 words 이내.",
+    "2025-10-13 OCP 및 2026 MetaRoCE 자료는 검색에 노출됐지만 배제했다.",
+    "FBOSS가 Arista 하드웨어에서 사용된다고 해서 Arista 전체 소프트웨어 해자가 부재하다고 확대할 수 없다. 고객 세그먼트별로 조사해야 한다."
+  ]
+}
