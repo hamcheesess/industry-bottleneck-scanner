@@ -1,0 +1,75 @@
+{
+  "schema_name": "report_review_record_v1",
+  "report_date": "2026-09-13",
+  "information_cutoff": "2025-06-30T20:00:00Z",
+  "status": "reviewed_report_delivered_screen_grade_not_trade_approval",
+  "research_coverage": {
+    "full_scenario_comparison": [
+      "ANET",
+      "CSCO",
+      "COHR"
+    ],
+    "operating_corroboration_only": [
+      "LITE"
+    ],
+    "not_claimed": [
+      "daily_first_anomaly",
+      "pure_AI_basket_causality",
+      "product_level_observed_FCFF",
+      "measured_consensus_expectations",
+      "industry_wide_shortage_ratio",
+      "production_automation_completed"
+    ]
+  },
+  "research_stops": [
+    {
+      "path": "CPO",
+      "stage": "economic_materiality",
+      "reason": "Shipment/capability evidence exists; company-level 6-18 month cash contribution not established.",
+      "resume_on": "disclosed commercial scale and production economics",
+      "status": "partially_verified"
+    },
+    {
+      "path": "optical_circuit_switching",
+      "stage": "economic_materiality",
+      "reason": "Initial revenue/orders disclosed, dollar scale not established.",
+      "resume_on": "material revenue and cash conversion data",
+      "status": "partially_verified"
+    },
+    {
+      "path": "broad_connectors_copper",
+      "stage": "scope",
+      "reason": "No claim of pure AI exposure for broad sector; not fully investigated in this report.",
+      "resume_on": "narrow product exposure and plausible incremental earnings",
+      "status": "not_applicable"
+    },
+    {
+      "path": "LITE valuation",
+      "stage": "valuation_scope",
+      "reason": "Operating comparison completed; independent capital/DCF model not completed. Not an investment rejection.",
+      "resume_on": "full consolidated cash conversion and capital claims model",
+      "status": "partially_verified"
+    }
+  ],
+  "validation": {
+    "model_arithmetic": "cash identities and reverse root checks passed",
+    "independent_model_review": "completed; no material arithmetic error; multiple diagnostic interpretation narrowed to base only",
+    "pdf_pages": 21,
+    "all_pages_visual_review": true,
+    "unicode_minus_font_issue": "fixed to ASCII minus and verified",
+    "price_input_reconciliation": "three historical price inputs match source closes to cents",
+    "core_fact_unique_ids": true,
+    "core_source_dates_before_cutoff": true,
+    "assumption_validity": "not established by arithmetic checks",
+    "full_production_test_suite": "not run; report experiment only"
+  },
+  "limitations": [
+    "COHR preferred conversion and cash/PIK terms not fully modeled",
+    "Consolidated EBITA/capex/NWC forecasts are assumptions, not observed product economics",
+    "Latest-quarter annualization and share count proxies",
+    "No precise token usage measurement",
+    "Core evidence ledger is not full narrative atomization"
+  ],
+  "api_calls": 0,
+  "pdf_sha256": "8df137828b596b75bdfd8c4b58bd57e52579f5ceec7a3ad7fdefc4b0a5032b97"
+}

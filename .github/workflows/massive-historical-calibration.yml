@@ -1,0 +1,21 @@
+name: Massive Historical Calibration Bootstrap
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [phase1-scanner-foundation]
+    paths:
+      - '.github/workflows/massive-historical-calibration.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  historical-bootstrap:
+    uses: ./.github/workflows/massive-free-bootstrap.yml
+    with:
+      universe_as_of: '2025-05-30'
+      market_as_of: '2026-08-21'
+      max_overview_requests: '800'
+      run_backfill_when_complete: true
+    secrets: inherit

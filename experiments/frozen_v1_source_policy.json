@@ -1,0 +1,11 @@
+{
+  "policy_id": "frozen-v1-alpha-vantage-only",
+  "provider": "alpha_vantage",
+  "fallback_provider_allowed": false,
+  "blind_cohort_mutation_allowed": false,
+  "third_party_transcript_injection_allowed": false,
+  "provider_missing_policy": "close_as_source_coverage_limitation",
+  "explicit_retry_policy": "manual_diagnostic_only",
+  "phase2_allowed_when_source_coverage_limited": false,
+  "notes": "Frozen v1 preserves its original single-provider source contract. Provider-missing ticker-quarters remain unresolved source-coverage findings; they are not silently replaced, dropped, or backfilled from another provider."
+}

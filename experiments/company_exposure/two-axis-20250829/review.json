@@ -1,0 +1,33 @@
+{
+  "schema_version": "two-axis-review-v1",
+  "gaps": [
+    "Y:source_availability_unverified",
+    "Hubbell:expectation_gap_unresolved",
+    "HPS:expectation_gap_unresolved",
+    "GEV:expectation_gap_unresolved",
+    "Siemens Energy:expectation_gap_unresolved",
+    "Arcosa:expectation_gap_unresolved",
+    "Valmont:expectation_gap_unresolved",
+    "Yash Highvoltage:expectation_gap_unresolved",
+    "bushings_insulation:downstream_validation_open",
+    "protection_control:downstream_validation_open",
+    "electrical_steel:downstream_validation_open"
+  ],
+  "research_complete": false,
+  "publication_eligible": false,
+  "meaning": "Checks supplied research completeness; does not certify claims or approve investments.",
+  "calculations": {
+    "HPS_cfo_minus_capex_CADm": -22.648,
+    "HPS_max_working_capital_use_for_cfo_capex_breakeven_CADm": 30.711,
+    "HUBB_capex_USDm": 40,
+    "HUBB_guidance_fcf_per_diluted_share_proxy": [
+      15.885,
+      16.335
+    ],
+    "HUBB_guidance_fcf_yield_proxy": [
+      0.036857003642775936,
+      0.03790111139469594
+    ]
+  },
+  "calculation_posture": "Historical arithmetic and management-guidance proxy; not normalized FCFE or consensus."
+}

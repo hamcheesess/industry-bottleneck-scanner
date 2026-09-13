@@ -1,0 +1,253 @@
+{
+  "information_cutoff": "2025-08-29T20:00:00Z",
+  "sources": [
+    {
+      "id": "Q",
+      "url": "https://www.gevernova.com/sites/default/files/gev_webcast_10q_07232025.pdf",
+      "available_no_later_than": "2025-07-24T00:00:00+00:00"
+    },
+    {
+      "id": "A",
+      "url": "https://s2.q4cdn.com/158938184/files/doc_financials/2025/q2/Arcosa-Inc-Announces-Second-Quarter-2025-Results.pdf",
+      "available_no_later_than": "2025-08-08T00:00:00+00:00"
+    },
+    {
+      "id": "V",
+      "url": "https://investors.valmont.com/news-releases/news-release-details/valmont-reports-second-quarter-2025-results-and-raises-full-year",
+      "available_no_later_than": "2025-07-23T00:00:00+00:00"
+    },
+    {
+      "id": "C",
+      "url": "https://www.aep.com/news/stories/view/10354/",
+      "available_no_later_than": "2025-07-31T00:00:00+00:00"
+    },
+    {
+      "id": "L",
+      "url": "https://www.energy.gov/articles/doe-releases-new-report-evaluating-increase-electricity-demand-data-centers",
+      "available_no_later_than": "2024-12-21T00:00:00+00:00"
+    },
+    {
+      "id": "D",
+      "url": "https://www.energy.gov/sites/default/files/2024-10/EXEC-2022-001242%20-%20Large%20Power%20Transformer%20Resilience%20Report%207-10-24.pdf",
+      "available_no_later_than": "2024-11-01T00:00:00+00:00"
+    },
+    {
+      "id": "G",
+      "url": "https://www.gevernova.com/sites/default/files/gev_webcast_pressrelease_07232025.pdf",
+      "available_no_later_than": "2025-07-24T00:00:00+00:00"
+    },
+    {
+      "id": "S",
+      "url": "https://assets.siemens-energy.com/dam/a181bfed-4213-4a9e-8d6a-b331004a9a73/2025-08-06_ER_E_final-pdf_Original%20file.pdf",
+      "available_no_later_than": "2025-08-07T00:00:00+00:00"
+    },
+    {
+      "id": "H",
+      "url": "https://www.hitachienergy.com/us/en/news-and-events/press-releases/2025/03/hitachi-energy-invests-additional-250-million-usd-to-address-global-transformer-shortage",
+      "available_no_later_than": "2025-03-11T00:00:00+00:00"
+    },
+    {
+      "id": "P",
+      "url": "https://query1.finance.yahoo.com/v8/finance/chart/GEV?period1=1756425600&period2=1756512000&interval=1d",
+      "available_no_later_than": "2025-08-29T20:00:00+00:00"
+    },
+    {
+      "id": "U",
+      "url": "https://hubbell.gcs-web.com/news-releases/news-release-details/hubbell-reports-second-quarter-2025-results",
+      "available_no_later_than": "2025-07-30T00:00:00Z"
+    },
+    {
+      "id": "T",
+      "url": "https://emea.hammondpowersolutions.com/-/media/Project/HPS/shared/Investor-Relations/2025-HPS-Q2-Report.pdf",
+      "available_no_later_than": "2025-07-25T00:00:00Z"
+    },
+    {
+      "id": "Y",
+      "url": "https://www.yashhv.com/_files/ugd/38b00a_46dbe77423024b3f90acfdfc06640248.pdf",
+      "available_no_later_than": "2025-05-29T00:00:00Z",
+      "availability_basis": "Dated public earnings call on 2025-05-28; transcript upload timestamp not independently verified",
+      "availability_verified": false
+    }
+  ],
+  "companies": [
+    {
+      "issuer": "Hubbell",
+      "source_ids": [
+        "U"
+      ],
+      "purchase_evidence": "Grid Infrastructure realized sales +7%; automation -13%",
+      "cash_flow_mechanism": "CFO 261 minus capex 40 = FCF 221 USDm",
+      "scenario_rationale": "Existing operations conversion; exclude FIFO accounting uplift",
+      "catalyst_window": "6-12 months",
+      "falsifier": "Core volume weakens or accounting-excluded profitability falls",
+      "expectation_gap_supported": false
+    },
+    {
+      "issuer": "HPS",
+      "source_ids": [
+        "T"
+      ],
+      "purchase_evidence": "Record shipment, backlog down sequentially; cancellation terms matter",
+      "cash_flow_mechanism": "H1 CFO-capex -22.648 CADm",
+      "scenario_rationale": "Ramp and working capital burden before conversion",
+      "catalyst_window": "6-18 months",
+      "falsifier": "Sales rise but operating debt and cash outflow persist",
+      "expectation_gap_supported": false
+    },
+    {
+      "issuer": "GEV",
+      "source_ids": [
+        "G"
+      ],
+      "purchase_evidence": "Electrification sales and profit conversion",
+      "cash_flow_mechanism": "Normalize group cash and remove double counting",
+      "scenario_rationale": "Mixed group reinvestment and conversion",
+      "catalyst_window": "6-18 months",
+      "falsifier": "Cash assumptions unsupported",
+      "expectation_gap_supported": false
+    },
+    {
+      "issuer": "Siemens Energy",
+      "source_ids": [
+        "S"
+      ],
+      "purchase_evidence": "Higher margin backlog recognized",
+      "cash_flow_mechanism": "Bridge segment profit to cash and advances",
+      "scenario_rationale": "Backlog conversion",
+      "catalyst_window": "6-18 months",
+      "falsifier": "Advance-funded cash fails to persist",
+      "expectation_gap_supported": false
+    },
+    {
+      "issuer": "Arcosa",
+      "source_ids": [
+        "A"
+      ],
+      "purchase_evidence": "Utility backlog and shipment/mix commentary",
+      "cash_flow_mechanism": "Separate steel-price pass-through",
+      "scenario_rationale": "Structure demand corroboration",
+      "catalyst_window": "6-18 months",
+      "falsifier": "Other businesses explain equity move",
+      "expectation_gap_supported": false
+    },
+    {
+      "issuer": "Valmont",
+      "source_ids": [
+        "V"
+      ],
+      "purchase_evidence": "Utility product sales realized",
+      "cash_flow_mechanism": "Separate utility from other businesses",
+      "scenario_rationale": "Utility demand corroboration",
+      "catalyst_window": "6-18 months",
+      "falsifier": "Utility contribution insufficient",
+      "expectation_gap_supported": false
+    },
+    {
+      "issuer": "Yash Highvoltage",
+      "source_ids": [
+        "Y"
+      ],
+      "purchase_evidence": "Management reports customer multi-year booking interest, not signed quantities; FY25 sales realized",
+      "cash_flow_mechanism": "Local RIP core manufacturing could lower imported input costs; investment and approval costs precede cash",
+      "scenario_rationale": "Reinvestment and qualification before localized margin gains",
+      "catalyst_window": "6-18 month milestones, cash catalyst may fall beyond window",
+      "falsifier": "Plant approval slips or new capacity erodes price premium",
+      "expectation_gap_supported": false
+    }
+  ],
+  "paths": [
+    {
+      "id": "bushings_insulation",
+      "source_ids": [
+        "H",
+        "D",
+        "Y"
+      ],
+      "beneficiary_industry": "Transformer bushings and insulation",
+      "purchase_dependency": "Components supplied to external transformer manufacturers",
+      "supply_response": "Announced component capacity investment by 2027",
+      "status": "candidate",
+      "next_action": "Verify transcript publication vintage, independent customer constraint, plant approval and normalized cash versus historical price",
+      "falsifier": "Alternative qualified supply covers demand",
+      "independent_constraint_evidence": null,
+      "issuer_capture_evidence": "Yash existing bushing sales and planned imported-core localization; investment cash not quantified"
+    },
+    {
+      "id": "protection_control",
+      "source_ids": [
+        "U"
+      ],
+      "beneficiary_industry": "Substation protection/control and connections",
+      "purchase_dependency": "Parallel project procurement, not a transformer component chain",
+      "supply_response": "Product capacity and lead time unverified",
+      "status": "candidate",
+      "next_action": "Verify product constraints and cash contribution",
+      "falsifier": "Competitive capacity absorbs demand without excess margin",
+      "independent_constraint_evidence": null,
+      "issuer_capture_evidence": null
+    },
+    {
+      "id": "electrical_steel",
+      "source_ids": [
+        "D"
+      ],
+      "beneficiary_industry": "Transformer electrical steel",
+      "purchase_dependency": "Core input, grade-specific",
+      "supply_response": "Current grade-specific shortage not verified",
+      "status": "researching",
+      "next_action": "Original-vintage grade supply and commercial contracts",
+      "falsifier": "Required grades readily available",
+      "independent_constraint_evidence": null,
+      "issuer_capture_evidence": null
+    }
+  ],
+  "prices": {
+    "HUBB": {
+      "ticker": "HUBB",
+      "url": "https://query1.finance.yahoo.com/v8/finance/chart/HUBB?period1=1756425600&period2=1756512000&interval=1d",
+      "date": "2025-08-29",
+      "retrieved_date": "2026-09-09",
+      "basis": "unadjusted_close",
+      "value": 430.99,
+      "currency": "USD"
+    },
+    "HPS-A.TO": {
+      "ticker": "HPS-A.TO",
+      "url": "https://query1.finance.yahoo.com/v8/finance/chart/HPS-A.TO?period1=1756425600&period2=1756512000&interval=1d",
+      "date": "2025-08-29",
+      "retrieved_date": "2026-09-09",
+      "basis": "unadjusted_close",
+      "value": 118.32,
+      "currency": "CAD"
+    }
+  },
+  "financial_facts": {
+    "HPS": {
+      "currency": "CAD",
+      "unit": "million",
+      "period": "2025H1",
+      "cfo": -2.966,
+      "capex": 19.682,
+      "working_capital_use": 53.359,
+      "source_id": "T"
+    },
+    "HUBB": {
+      "currency": "USD",
+      "unit": "million",
+      "period": "2025Q2",
+      "cfo": 261,
+      "fcf": 221,
+      "source_id": "U",
+      "annual_guidance_eps": [
+        17.65,
+        18.15
+      ],
+      "annual_guidance_conversion": 0.9
+    }
+  },
+  "excluded_leads": [
+    "Weidmann September 2025 facility: post-cutoff",
+    "Powell original release: not retrieved; no business inference",
+    "HPS current homepage and later quarters excluded"
+  ]
+}

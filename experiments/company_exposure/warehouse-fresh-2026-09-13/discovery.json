@@ -1,0 +1,49 @@
+{
+  "mode": "current_industry_understanding",
+  "research_started_at": "2026-09-13",
+  "discovery_routes": [
+    "market_price_breadth",
+    "operating_change",
+    "technology_regulation_substitution",
+    "value_chain_propagation"
+  ],
+  "requires_market_trigger": false,
+  "requires_bottleneck": false,
+  "anchor_date": "2026-09-13",
+  "evidence_as_of": "2026-09-13",
+  "quarter_rollback_performed": false,
+  "quarter_rollback_reason": "Research-worthy current operating changes found; no need to search earlier anchors.",
+  "post_anchor_sources_permitted": true,
+  "post_anchor_source_rule": "Label later context separately; never call it contemporaneous discovery evidence or backtest success.",
+  "search_scope": "Targeted reconnaissance, not exhaustive market screen",
+  "candidates": [
+    {
+      "industry": "warehouse automation",
+      "decision": "advance",
+      "route": "operating_change",
+      "source_ids": [
+        "SYM-Q3",
+        "AUTO-Q2"
+      ],
+      "reason_ko": "현재 실적·주문 변화와 고객·기술 자료가 연결되어 산업 이해 조사 가치 확인"
+    },
+    {
+      "industry": "robotic surgery",
+      "decision": "defer",
+      "stage": "reconnaissance",
+      "reason_ko": "초기 후보; 이번 심화 범위를 물류에 집중. 투자 탈락 아님"
+    },
+    {
+      "industry": "industrial automation equipment",
+      "decision": "defer",
+      "stage": "reconnaissance",
+      "reason_ko": "탐색 수준. 산업 실패나 신호 부재 판정 아님"
+    },
+    {
+      "industry": "generic robot components",
+      "decision": "defer",
+      "stage": "exposure_attribution",
+      "reason_ko": "회사별 물류 자동화 매출 노출 미확인; 테마만으로 가치평가 확장 중단"
+    }
+  ]
+}

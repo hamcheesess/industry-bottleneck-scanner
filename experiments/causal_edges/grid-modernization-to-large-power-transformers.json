@@ -1,0 +1,43 @@
+{
+  "schema_version": "causal-edge-input-v1",
+  "edge_id": "grid-modernization-requires-large-power-transformers",
+  "as_of": "2026-08-21T23:59:59+00:00",
+  "edge": {
+    "upstream_node": "grid-modernization-and-resilience-investment",
+    "downstream_node": "large-power-transformers",
+    "relation": "requires_input",
+    "mechanism": "Transmission-station replacement, substation expansion, congestion relief, and resilience projects require high-voltage transformation equipment; sustained grid-modernization capital spending therefore consumes large-power-transformer production slots independently of new AI data-center connections.",
+    "demand_sensitivity": 4,
+    "lag_months_min": null,
+    "lag_months_max": null,
+    "evidence": [
+      {
+        "evidence_id": "eia-grid-infrastructure-investment-2024",
+        "evidence_class": "physical_industry_data",
+        "source_id": "https://www.eia.gov/todayinenergy/detail.php?id=63724",
+        "observed_at": "2024-11-18T00:00:00+00:00",
+        "summary": "EIA reported 2023 utility transmission investment of $27.7 billion and distribution investment of $50.9 billion, with spending driven by aging-equipment replacement, resilience, renewable integration, and substation and transformer upgrades.",
+        "beneficiary_company_id": null,
+        "source_company_id": null
+      },
+      {
+        "evidence_id": "doe-transmission-project-investment-2024",
+        "evidence_class": "regulatory_or_permitting",
+        "source_id": "https://www.energy.gov/articles/biden-harris-administration-invests-15-billion-bolster-nations-electricity-grid-and-0",
+        "observed_at": "2024-10-02T00:00:00+00:00",
+        "summary": "DOE announced $1.5 billion for four transmission projects intended to improve reliability and resilience, relieve congestion, and expand access to electricity supply.",
+        "beneficiary_company_id": null,
+        "source_company_id": null
+      },
+      {
+        "evidence_id": "doe-lpt-grid-expansion-demand-2024",
+        "evidence_class": "physical_industry_data",
+        "source_id": "https://www.energy.gov/sites/default/files/2024-10/EXEC-2022-001242%20-%20Large%20Power%20Transformer%20Resilience%20Report%20signed%20by%20Secretary%20Granholm%20on%207-10-24.pdf",
+        "observed_at": "2024-07-10T00:00:00+00:00",
+        "summary": "DOE identified the addition of large power transformers to accommodate transmission expansion and economic growth as a primary demand driver, and described LPT supply-chain constraints as potential bottlenecks to rapid grid expansion.",
+        "beneficiary_company_id": null,
+        "source_company_id": null
+      }
+    ]
+  }
+}

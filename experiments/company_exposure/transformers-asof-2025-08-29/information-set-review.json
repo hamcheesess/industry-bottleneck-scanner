@@ -1,0 +1,10 @@
+{
+  "schema_version": "research-information-set-review-v1",
+  "information_cutoff": "2025-08-29T20:00:00+00:00",
+  "source_count": 10,
+  "claim_count": 10,
+  "temporal_metadata_passed": true,
+  "historical_availability_independently_certified": false,
+  "publication_eligible": false,
+  "investment_status": "not_evaluable_missing_data"
+}

@@ -1,0 +1,88 @@
+{
+  "source_run": 32717734277,
+  "information_cutoff": "2025-08-29T20:00:00+00:00",
+  "rows": [
+    {
+      "as_of": "2025-05-30",
+      "trigger": {
+        "abnormal_volume_breadth": 0.3333,
+        "bucket": "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS",
+        "company_count": 6,
+        "market_outperform_breadth": 0.3333,
+        "median_market_relative_3m": -0.035436,
+        "median_sector_relative_3m": 0.050908,
+        "near_high_breadth": 0.0,
+        "reasons": [
+          "weak_market_relative_breadth",
+          "weak_attention_confirmation"
+        ],
+        "score": 39.17,
+        "sector_outperform_breadth": 0.8333,
+        "triggered": false
+      },
+      "original_relative_path": "as_of=2025-05-30/industry_market_triggers.json",
+      "original_sha256": "dda193ff288a648fd6be0b87d3e0336e2bb9c56ee84c482ae23e5a066a0a4ea2"
+    },
+    {
+      "as_of": "2025-06-30",
+      "trigger": {
+        "abnormal_volume_breadth": 0.1667,
+        "bucket": "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS",
+        "company_count": 6,
+        "market_outperform_breadth": 0.5,
+        "median_market_relative_3m": -0.011251,
+        "median_sector_relative_3m": 0.085907,
+        "near_high_breadth": 0.1667,
+        "reasons": [
+          "weak_market_relative_breadth",
+          "weak_attention_confirmation"
+        ],
+        "score": 46.67,
+        "sector_outperform_breadth": 0.8333,
+        "triggered": false
+      },
+      "original_relative_path": "as_of=2025-06-30/industry_market_triggers.json",
+      "original_sha256": "28b3be3c199e4a87cfd24a995327de4f77a6cd8387419de034fa7341e223447f"
+    },
+    {
+      "as_of": "2025-07-31",
+      "trigger": {
+        "abnormal_volume_breadth": 0.1667,
+        "bucket": "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS",
+        "company_count": 6,
+        "market_outperform_breadth": 0.5,
+        "median_market_relative_3m": 0.009359,
+        "median_sector_relative_3m": 0.062045,
+        "near_high_breadth": 0.6667,
+        "reasons": [
+          "weak_market_relative_breadth"
+        ],
+        "score": 48.33,
+        "sector_outperform_breadth": 0.5,
+        "triggered": false
+      },
+      "original_relative_path": "as_of=2025-07-31/industry_market_triggers.json",
+      "original_sha256": "5ee60b49c779b3b6b59805451485ca1ea0e2b2796f12f9140e1ed3ed498443bb"
+    },
+    {
+      "as_of": "2025-08-29",
+      "trigger": {
+        "abnormal_volume_breadth": 0.1667,
+        "bucket": "SIC 3440 — FABRICATED STRUCTURAL METAL PRODUCTS",
+        "company_count": 6,
+        "market_outperform_breadth": 0.6667,
+        "median_market_relative_3m": 0.056137,
+        "median_sector_relative_3m": 0.037466,
+        "near_high_breadth": 0.6667,
+        "reasons": [],
+        "score": 59.17,
+        "sector_outperform_breadth": 0.6667,
+        "triggered": true
+      },
+      "original_relative_path": "as_of=2025-08-29/industry_market_triggers.json",
+      "original_sha256": "c79431370e4cc494bd024b32d11e21eba1501a1eaa8fe3c969446db4c96722ab"
+    }
+  ],
+  "later_quality_or_persistence_used": false,
+  "first_daily_detection_established": false
+}

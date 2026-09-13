@@ -1,0 +1,83 @@
+{
+  "ANET": {
+    "ticker": "ANET",
+    "url": "https://query1.finance.yahoo.com/v8/finance/chart/ANET?period1=1751241600&period2=1751328000&interval=1d",
+    "timestamps": [
+      1751290200
+    ],
+    "quote": [
+      {
+        "high": [
+          103.13200378417969
+        ],
+        "open": [
+          102.0
+        ],
+        "close": [
+          102.30999755859375
+        ],
+        "low": [
+          101.0
+        ],
+        "volume": [
+          12519500
+        ]
+      }
+    ],
+    "currency": "USD"
+  },
+  "CSCO": {
+    "ticker": "CSCO",
+    "url": "https://query1.finance.yahoo.com/v8/finance/chart/CSCO?period1=1751241600&period2=1751328000&interval=1d",
+    "timestamps": [
+      1751290200
+    ],
+    "quote": [
+      {
+        "open": [
+          68.83000183105469
+        ],
+        "low": [
+          68.75
+        ],
+        "close": [
+          69.37999725341797
+        ],
+        "high": [
+          69.77999877929688
+        ],
+        "volume": [
+          32561200
+        ]
+      }
+    ],
+    "currency": "USD"
+  },
+  "COHR": {
+    "ticker": "COHR",
+    "url": "https://query1.finance.yahoo.com/v8/finance/chart/COHR?period1=1751241600&period2=1751328000&interval=1d",
+    "timestamps": [
+      1751290200
+    ],
+    "quote": [
+      {
+        "open": [
+          88.16999816894531
+        ],
+        "close": [
+          89.20999908447266
+        ],
+        "volume": [
+          3203300
+        ],
+        "low": [
+          88.02999877929688
+        ],
+        "high": [
+          90.12000274658203
+        ]
+      }
+    ],
+    "currency": "USD"
+  }
+}

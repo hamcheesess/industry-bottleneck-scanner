@@ -1,0 +1,65 @@
+name: Research agent pilot
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Explicit API model
+        required: true
+        default: gpt-6-astra
+        type: string
+      resume_run_id:
+        description: Optional previous pilot run artifact
+        required: false
+        type: string
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: research-agent-pilot
+  cancel-in-progress: false
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Restore explicitly selected pilot checkpoint
+        if: ${{ inputs.resume_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: research-agent-pilot
+          path: agent-output
+          run-id: ${{ inputs.resume_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run two bounded researchers
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MODEL: ${{ inputs.model }}
+          PYTHONPATH: src
+        run: >-
+          python -m industry_bottleneck_scanner.research_agent_runtime
+          --config research_agents/roles.json
+          --topic 'US transformer demand: customer purchase commitments and bushing supply constraints; original sources only'
+          --cutoff '2025-08-29T20:00:00Z'
+          --model "$MODEL"
+          --output agent-output
+      - name: Summarize pilot diagnostics
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for p in sorted(Path('agent-output').rglob('*.json')):
+              if p.name in ('summary.json', 'review.json'):
+                  print(p.as_posix())
+                  print(p.read_text()[:24000])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-agent-pilot
+          path: agent-output
+          if-no-files-found: error
+          retention-days: 30

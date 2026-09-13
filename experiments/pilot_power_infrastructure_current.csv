@@ -1,0 +1,6 @@
+ticker,company_id,quarter,published_at,sector,industry,subindustry,published_at_source_url
+ETN,ticker-ETN,2026Q2,2026-07-31T15:00:00+00:00,Industrials,Electrical Equipment,Power Management,https://www.eaton.com/us/en-us/company/news-insights/news-releases/2026/eaton-to-announce-second-quarter-2026-earnings-on-july-31--2026.html
+NVT,ticker-NVT,2026Q2,2026-07-31T13:00:00+00:00,Industrials,Electrical Equipment,Electrical Connection & Protection,https://investors.nvent.com/press-releases/press-release-details/2026/nVent-Electric-plc-to-Report-Second-Quarter-2026-Financial-Results-on-July-31/default.aspx
+VRT,ticker-VRT,2026Q2,2026-07-29T15:00:00+00:00,Industrials,Electrical Equipment,Data Center Power & Thermal,https://investors.vertiv.com/news/news-details/2026/Vertiv-Announces-Date-of-Second-Quarter-2026-Earnings-Release-and-Conference-Call/default.aspx
+HUBB,ticker-HUBB,2026Q2,2026-07-28T14:00:00+00:00,Industrials,Electrical Equipment,Utility & Electrical Solutions,https://www.globenewswire.com/news-release/2026/07/13/3326459/0/en/Hubbell-to-Announce-Second-Quarter-2026-Results-on-July-28-2026.html
+APH,ticker-APH,2026Q2,2026-07-29T17:00:00+00:00,Information Technology,Electronic Components,Connectors & Interconnect,https://investor.amphenol.com/news-and-events/events/event-details/2026/2nd-Quarter-2026-Earnings-2026-vSdZ9Zxy8Q/default.aspx

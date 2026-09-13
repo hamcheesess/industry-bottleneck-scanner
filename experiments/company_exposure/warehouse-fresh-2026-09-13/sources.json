@@ -1,0 +1,295 @@
+{
+  "sources": [
+    {
+      "source_id": "SYM-Q3",
+      "source_date": "2026-08-05",
+      "title": "Symbotic Q3 FY2026 earnings",
+      "url": "https://ir.symbotic.com/news-releases/news-release-details/symbotic-reports-third-quarter-fiscal-year-2026-results",
+      "source_authority": "tier_1a",
+      "source_class": "regulatory_and_financial",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740235+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "quarterly",
+      "stale_after": null,
+      "independence_group": "SYM",
+      "caveats": []
+    },
+    {
+      "source_id": "SYM-Q",
+      "source_date": "2026-08-05",
+      "title": "Symbotic Q3 FY2026 Form10-Q",
+      "url": "https://ir.symbotic.com/node/11261/html",
+      "source_authority": "tier_1a",
+      "source_class": "regulatory_and_financial",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740247+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "quarterly",
+      "stale_after": null,
+      "independence_group": "SYM",
+      "caveats": []
+    },
+    {
+      "source_id": "AUTO-Q2",
+      "source_date": "2026-08-13",
+      "title": "AutoStore Q2 2026 report",
+      "url": "https://www.autostoresystem.com/hubfs/02%20Website/Investor%20relations/2026%20Documents/Q2%202026/AutoStore%20Q2%202026%20Report_final.pdf?hsLang=en",
+      "source_authority": "tier_1a",
+      "source_class": "regulatory_and_financial",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740255+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "quarterly",
+      "stale_after": null,
+      "independence_group": "AUTO",
+      "caveats": []
+    },
+    {
+      "source_id": "WMT",
+      "source_date": "2021-07-14",
+      "title": "Walmart customer workflow (updated note May23 2022)",
+      "url": "https://corporate.walmart.com/news/2021/07/14/chain-reaction-were-partnering-with-symbotic-to-bring-high-tech-automation-to-our-supply-chain",
+      "source_authority": "tier_3",
+      "source_class": "customer_and_supplier",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740259+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "quarterly",
+      "stale_after": null,
+      "independence_group": "WMT",
+      "caveats": []
+    },
+    {
+      "source_id": "SYM-ROBOT",
+      "source_date": null,
+      "title": "Symbotic robot roles",
+      "url": "https://www.symbotic.com/solutions/robots/",
+      "source_authority": "tier_3",
+      "source_class": "technical_and_academic",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740262+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "static",
+      "stale_after": null,
+      "independence_group": "SYM",
+      "caveats": [
+        "Undated product page used only as current description, not historical availability proof."
+      ]
+    },
+    {
+      "source_id": "SYM-SOFTWARE",
+      "source_date": null,
+      "title": "Symbotic software",
+      "url": "https://www.symbotic.com/solutions/ai-and-software/",
+      "source_authority": "tier_3",
+      "source_class": "technical_and_academic",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740443+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "static",
+      "stale_after": null,
+      "independence_group": "SYM",
+      "caveats": [
+        "Undated product page used only as current description, not historical availability proof."
+      ]
+    },
+    {
+      "source_id": "AUTO-SYSTEM",
+      "source_date": null,
+      "title": "AutoStore system",
+      "url": "https://www.autostoresystem.com/system",
+      "source_authority": "tier_3",
+      "source_class": "technical_and_academic",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740448+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "static",
+      "stale_after": null,
+      "independence_group": "AUTO",
+      "caveats": [
+        "Undated product page used only as current description, not historical availability proof."
+      ]
+    },
+    {
+      "source_id": "AUTO-PARTNER",
+      "source_date": null,
+      "title": "AutoStore partners",
+      "url": "https://www.autostoresystem.com/partners",
+      "source_authority": "tier_3",
+      "source_class": "company_and_management",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740450+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "static",
+      "stale_after": null,
+      "independence_group": "AUTO",
+      "caveats": [
+        "Undated product page used only as current description, not historical availability proof."
+      ]
+    },
+    {
+      "source_id": "LOCUS",
+      "source_date": null,
+      "title": "Locus Origin",
+      "url": "https://locusrobotics.com/locusone/fleet/locus-origin-collaborative-robot",
+      "source_authority": "tier_3",
+      "source_class": "technical_and_academic",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740452+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "static",
+      "stale_after": null,
+      "independence_group": "LOCUS",
+      "caveats": [
+        "Undated product page used only as current description, not historical availability proof."
+      ]
+    },
+    {
+      "source_id": "AUTO-PICK",
+      "source_date": null,
+      "title": "AutoStore CarouselAI",
+      "url": "https://www.autostoresystem.com/system/robotic-picking-carousel-ai",
+      "source_authority": "tier_3",
+      "source_class": "technical_and_academic",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740453+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "static",
+      "stale_after": null,
+      "independence_group": "AUTO",
+      "caveats": [
+        "Undated product page used only as current description, not historical availability proof."
+      ]
+    },
+    {
+      "source_id": "EXOL",
+      "source_date": null,
+      "title": "Symbotic warehouse-as-a-service",
+      "url": "https://www.symbotic.com/solutions/warehouse-as-a-service/",
+      "source_authority": "tier_3",
+      "source_class": "company_and_management",
+      "evidence_directness": "direct_document",
+      "retrieved_at": "2026-09-13T07:11:37.740455+00:00",
+      "valid_as_of": "2026-09-13",
+      "freshness_class": "static",
+      "stale_after": null,
+      "independence_group": "EXOL",
+      "caveats": [
+        "Undated product page used only as current description, not historical availability proof."
+      ]
+    }
+  ],
+  "core_facts": [
+    {
+      "fact_id": "F-SYM-REV",
+      "source_id": "SYM-Q3",
+      "metric": "revenue",
+      "value": 720.838,
+      "unit": "USD million",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-SYM-OP",
+      "source_id": "SYM-Q3",
+      "metric": "GAAP operating income",
+      "value": 32.895,
+      "unit": "USD million",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-SYM-CFO",
+      "source_id": "SYM-Q3",
+      "metric": "operating cash flow",
+      "value": -147.297,
+      "unit": "USD million",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-SYM-CAPEX",
+      "source_id": "SYM-Q3",
+      "metric": "PPE and internal software capitalization",
+      "value": 17.333,
+      "unit": "USD million",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-SYM-SHARE",
+      "source_id": "SYM-Q3",
+      "metric": "disclosed A+V1+V3 share count",
+      "value": 603.863978,
+      "unit": "million shares",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-SYM-CASH",
+      "source_id": "SYM-Q3",
+      "metric": "cash",
+      "value": 1746.446,
+      "unit": "USD million",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-SYM-CUST",
+      "source_id": "SYM-Q",
+      "metric": "Customer A revenue concentration",
+      "value": 90.5,
+      "unit": "percent",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-AUTO-REV",
+      "source_id": "AUTO-Q2",
+      "metric": "revenue",
+      "value": 192.1,
+      "unit": "USD million",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-AUTO-ORD",
+      "source_id": "AUTO-Q2",
+      "metric": "order intake incl partner verbal confirmations",
+      "value": 217.6,
+      "unit": "USD million",
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    },
+    {
+      "fact_id": "F-AUTO-AMZN",
+      "source_id": "AUTO-Q2",
+      "metric": "strategic framework agreement no purchasing commitments",
+      "value": "no purchasing commitment",
+      "unit": null,
+      "information_type": "actual",
+      "citation_relation": "direct",
+      "verification_status": "verified"
+    }
+  ],
+  "scope": "Core fact register; not full sentence-level atomization. Scenario assumptions in economics.py and economics.json.",
+  "pricing": {
+    "ticker": "SYM",
+    "price": 42.13,
+    "currency": "USD",
+    "last_trade_time": "2026-09-12T00:15:00Z",
+    "provider": "web finance quote",
+    "not_used_for_selection": true,
+    "market_cap_denominator_warning": "Provider market cap not used against whole-company cash flows."
+  }
+}

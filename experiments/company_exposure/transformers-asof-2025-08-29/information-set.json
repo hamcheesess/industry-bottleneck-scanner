@@ -1,0 +1,213 @@
+{
+  "schema_version": "research-information-set-v1",
+  "information_cutoff": "2025-08-29T20:00:00+00:00",
+  "cutoff_timezone": "America/New_York",
+  "case_selection": "user_fixed_retrospective_exercise_not_blind_backtest",
+  "sources": [
+    {
+      "source_id": "Q",
+      "source_entity": "GE Vernova",
+      "source_class": "issuer_primary",
+      "url": "https://www.gevernova.com/sites/default/files/gev_webcast_10q_07232025.pdf",
+      "available_from": "2025-07-23T00:00:00+00:00",
+      "available_no_later_than": "2025-07-24T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Original dated Q2 10-Q; quarter-end share count p1, not same-day diluted count",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "A",
+      "source_entity": "Arcosa",
+      "source_class": "issuer_primary",
+      "url": "https://s2.q4cdn.com/158938184/files/doc_financials/2025/q2/Arcosa-Inc-Announces-Second-Quarter-2025-Results.pdf",
+      "available_from": "2025-08-07T00:00:00+00:00",
+      "available_no_later_than": "2025-08-08T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Dated original earnings release; PDF p1 publication, p3 claims",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "V",
+      "source_entity": "Valmont",
+      "source_class": "issuer_primary",
+      "url": "https://investors.valmont.com/news-releases/news-release-details/valmont-reports-second-quarter-2025-results-and-raises-full-year",
+      "available_from": "2025-07-22T00:00:00+00:00",
+      "available_no_later_than": "2025-07-23T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Dated original earnings release and product-line table",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "C",
+      "source_entity": "AEP",
+      "source_class": "customer_primary",
+      "url": "https://www.aep.com/news/stories/view/10354/",
+      "available_from": "2025-07-30T00:00:00+00:00",
+      "available_no_later_than": "2025-07-31T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Dated original customer earnings release",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "L",
+      "source_entity": "DOE / underlying LBNL study",
+      "source_class": "government_research",
+      "url": "https://www.energy.gov/articles/doe-releases-new-report-evaluating-increase-electricity-demand-data-centers",
+      "available_from": "2024-12-20T00:00:00+00:00",
+      "available_no_later_than": "2024-12-21T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Dated DOE announcement; same underlying study as LBNL report, counted once",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "D",
+      "source_entity": "US DOE",
+      "source_class": "government_technical",
+      "url": "https://www.energy.gov/sites/default/files/2024-10/EXEC-2022-001242%20-%20Large%20Power%20Transformer%20Resilience%20Report%207-10-24.pdf",
+      "available_from": "2024-07-01T00:00:00+00:00",
+      "available_no_later_than": "2024-11-01T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "July 2024 report, October 2024 hosting path; conservative month-end bound, not exact publication day",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "G",
+      "source_entity": "GE Vernova",
+      "source_class": "issuer_primary",
+      "url": "https://www.gevernova.com/sites/default/files/gev_webcast_pressrelease_07232025.pdf",
+      "available_from": "2025-07-23T00:00:00+00:00",
+      "available_no_later_than": "2025-07-24T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Dated original release PDF; use original segment presentation, not later restatement",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "S",
+      "source_entity": "Siemens Energy",
+      "source_class": "issuer_primary",
+      "url": "https://assets.siemens-energy.com/dam/a181bfed-4213-4a9e-8d6a-b331004a9a73/2025-08-06_ER_E_final-pdf_Original%20file.pdf",
+      "available_from": "2025-08-06T00:00:00+00:00",
+      "available_no_later_than": "2025-08-07T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Dated original release PDF p3",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "H",
+      "source_entity": "Hitachi Energy",
+      "source_class": "supplier_primary",
+      "url": "https://www.hitachienergy.com/us/en/news-and-events/press-releases/2025/03/hitachi-energy-invests-additional-250-million-usd-to-address-global-transformer-shortage",
+      "available_from": "2025-03-10T00:00:00+00:00",
+      "available_no_later_than": "2025-03-11T00:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Dated CERAWeek press announcement",
+      "availability_precision": "conservative date bound; not original ingest timestamp"
+    },
+    {
+      "source_id": "P",
+      "source_entity": "Yahoo Finance historical quote",
+      "source_class": "market_data",
+      "url": "https://query1.finance.yahoo.com/v8/finance/chart/GEV?period1=1756425600&period2=1756512000&interval=1d",
+      "available_from": "2025-08-29T20:00:00+00:00",
+      "available_no_later_than": "2025-08-29T20:00:00+00:00",
+      "retrieved_at": "2026-09-07T00:00:00+00:00",
+      "availability_basis": "Historical daily unadjusted NYSE close; market observation at close, not certified original delivery timestamp; current metadata excluded",
+      "availability_precision": "retrospective market observation; historical delivery not certified"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "gev_share_count",
+      "source_ids": [
+        "Q"
+      ],
+      "kind": "observed",
+      "observation_end": "2025-06-30T00:00:00+00:00",
+      "text_ko": "6월 말 발행주식 수; 당일 희석 주식 수와 다름"
+    },
+    {
+      "claim_id": "gev_close",
+      "source_ids": [
+        "P"
+      ],
+      "kind": "observed",
+      "observation_end": "2025-08-29T20:00:00+00:00",
+      "text_ko": "2025년 8월 29일 비수정 종가; 현재 조회된 과거 기록"
+    },
+    {
+      "claim_id": "gev_fcf_guide",
+      "source_ids": [
+        "G"
+      ],
+      "kind": "forecast",
+      "observation_end": "2025-12-31T00:00:00+00:00",
+      "text_ko": "당시 회사의 연간 FCF 전망; 컨센서스와 다름"
+    },
+    {
+      "claim_id": "structure_demand",
+      "source_ids": [
+        "A",
+        "V"
+      ],
+      "kind": "observed",
+      "observation_end": "2025-06-30T00:00:00+00:00",
+      "text_ko": "최초 바스켓 두 기업에서 전력망 수요 지지; 다른 네 기업 원인 미확정"
+    },
+    {
+      "claim_id": "customer_load",
+      "source_ids": [
+        "C"
+      ],
+      "kind": "forecast",
+      "observation_end": "2030-12-31T00:00:00+00:00",
+      "text_ko": "당시 발표한 고객 약정 기반 신규 부하; 장비 발주와 다름"
+    },
+    {
+      "claim_id": "dc_energy",
+      "source_ids": [
+        "L"
+      ],
+      "kind": "forecast",
+      "observation_end": "2028-12-31T00:00:00+00:00",
+      "text_ko": "당시 연구의 데이터센터 전력 사용 시나리오"
+    },
+    {
+      "claim_id": "lpt_constraints",
+      "source_ids": [
+        "D"
+      ],
+      "kind": "observed",
+      "observation_end": "2024-07-31T00:00:00+00:00",
+      "text_ko": "제품별 설계·조달과 장기 납기 제약"
+    },
+    {
+      "claim_id": "earnings_conversion",
+      "source_ids": [
+        "G",
+        "S"
+      ],
+      "kind": "observed",
+      "observation_end": "2025-06-30T00:00:00+00:00",
+      "text_ko": "당시 전력망 부문에서 실적·마진 전환 관측"
+    },
+    {
+      "claim_id": "component_supply_response",
+      "source_ids": [
+        "H"
+      ],
+      "kind": "forecast",
+      "observation_end": "2027-12-31T00:00:00+00:00",
+      "text_ko": "핵심 부품 증산 투자 계획; 실제 가동량 미확정"
+    },
+    {
+      "claim_id": "component_hypothesis",
+      "source_ids": [
+        "H",
+        "D"
+      ],
+      "kind": "inference",
+      "observation_end": "2025-08-29T00:00:00+00:00",
+      "text_ko": "부품 경로 조사 필요; 독립 병목·가치 격차 승인 아님"
+    }
+  ]
+}

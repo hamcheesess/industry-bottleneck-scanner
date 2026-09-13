@@ -1,0 +1,90 @@
+name: Build Causal Diagnosis
+
+on:
+  workflow_call:
+    inputs:
+      market_calibration_run_id:
+        required: true
+        type: string
+      operating_evidence_run_id:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      market_calibration_run_id:
+        description: Frozen provider-free market calibration run
+        required: true
+        default: '32717805837'
+      operating_evidence_run_id:
+        description: Successful provider-free OperatingSupport run
+        required: true
+        default: '32923546556'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    env:
+      MARKET_RUN_ID: ${{ inputs.market_calibration_run_id || '32717805837' }}
+      OPERATING_RUN_ID: ${{ inputs.operating_evidence_run_id || '32923546556' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Download frozen market calibration
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.MARKET_RUN_ID }}
+          pattern: provider-free-market-calibration-*-1
+          path: artifacts/market
+          merge-multiple: true
+
+      - name: Download OperatingSupport artifacts
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.OPERATING_RUN_ID }}
+          pattern: operating-evidence-*-1
+          path: artifacts/operating
+          merge-multiple: true
+
+      - name: Build fail-closed causal diagnosis and root-shock research queue
+        run: |
+          ibs-causal-diagnosis-batch \
+            --market-triggers artifacts/market/as_of=2026-08-21/industry_market_triggers.json \
+            --operating-evidence-dir artifacts/operating \
+            --output-dir artifacts/causal-diagnosis
+
+      - name: Audit repeated and speculative operating signals
+        run: |
+          ibs-operating-signal-quality \
+            --causal-diagnosis-dir artifacts/causal-diagnosis \
+            --operating-evidence-dir artifacts/operating \
+            --output artifacts/causal-diagnosis/operating_signal_quality.json
+
+      - name: Build bounded root-shock research packets
+        run: |
+          ibs-root-shock-research-packets \
+            --causal-diagnosis-dir artifacts/causal-diagnosis \
+            --operating-evidence-dir artifacts/operating \
+            --quality-audit artifacts/causal-diagnosis/operating_signal_quality.json \
+            --output-dir artifacts/causal-diagnosis/root-shock-research
+
+      - name: Upload causal diagnosis artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: causal-diagnosis-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/causal-diagnosis
+          if-no-files-found: error
+          retention-days: 90

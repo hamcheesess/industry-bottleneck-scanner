@@ -1,0 +1,314 @@
+{
+  "reported_Q3_USD_m": {
+    "systems_revenue": 670.952,
+    "software_revenue": 12.765,
+    "operations_revenue": 37.121,
+    "systems_cost": 523.607,
+    "software_cost": 3.486,
+    "operations_cost": 32.835,
+    "revenue": 720.838,
+    "operating_income": 32.895,
+    "SBC": 50.519,
+    "CFO": -147.297,
+    "capex_internal_software": 17.333,
+    "nine_month_CFO": 305.584,
+    "nine_month_capex": 62.753,
+    "cash": 1746.446,
+    "economic_share_proxy_m": 603.863978,
+    "price": 42.13
+  },
+  "derived_margins": {
+    "systems": 0.21960587344549243,
+    "software": 0.726909518213866,
+    "operations": 0.11546025160960106
+  },
+  "market_EV_proxy": 23694.34339314,
+  "cases": {
+    "delay": {
+      "years": [
+        {
+          "year": 1,
+          "revenue": 3171.6872000000003,
+          "margin": 0.05448,
+          "NOPAT": 129.59513899200002,
+          "reinvestment": 96.11173333333348,
+          "FCFF": 33.48340565866654
+        },
+        {
+          "year": 2,
+          "revenue": 3488.8559200000004,
+          "margin": 0.06336,
+          "NOPAT": 165.79043331840003,
+          "reinvestment": 105.7229066666667,
+          "FCFF": 60.06752665173333
+        },
+        {
+          "year": 3,
+          "revenue": 3837.741512000001,
+          "margin": 0.07224,
+          "NOPAT": 207.92883512016004,
+          "reinvestment": 116.29519733333352,
+          "FCFF": 91.63363778682653
+        },
+        {
+          "year": 4,
+          "revenue": 4221.515663200002,
+          "margin": 0.08112,
+          "NOPAT": 256.8370129490881,
+          "reinvestment": 127.9247170666669,
+          "FCFF": 128.91229588242118
+        },
+        {
+          "year": 5,
+          "revenue": 4643.667229520002,
+          "margin": 0.09,
+          "NOPAT": 313.44753799260013,
+          "reinvestment": 140.71718877333356,
+          "FCFF": 172.73034921926657
+        },
+        {
+          "year": 6,
+          "revenue": 5015.160607881603,
+          "margin": 0.09,
+          "NOPAT": 338.5233410320082,
+          "reinvestment": 123.83112612053355,
+          "FCFF": 214.69221491147465
+        },
+        {
+          "year": 7,
+          "revenue": 5416.373456512131,
+          "margin": 0.09,
+          "NOPAT": 365.60520831456887,
+          "reinvestment": 133.73761621017607,
+          "FCFF": 231.8675921043928
+        },
+        {
+          "year": 8,
+          "revenue": 5849.683333033102,
+          "margin": 0.09,
+          "NOPAT": 394.8536249797344,
+          "reinvestment": 144.43662550699023,
+          "FCFF": 250.41699947274415
+        },
+        {
+          "year": 9,
+          "revenue": 6317.65799967575,
+          "margin": 0.09,
+          "NOPAT": 426.4419149781131,
+          "reinvestment": 155.99155554754938,
+          "FCFF": 270.4503594305637
+        },
+        {
+          "year": 10,
+          "revenue": 6823.070639649811,
+          "margin": 0.09,
+          "NOPAT": 460.55726817636224,
+          "reinvestment": 168.4708799913536,
+          "FCFF": 292.0863881850087
+        }
+      ],
+      "EV": 2547.7370466056104,
+      "terminal_weight": 0.6557472455967356
+    },
+    "base": {
+      "years": [
+        {
+          "year": 1,
+          "revenue": 3460.0224,
+          "margin": 0.06448000000000001,
+          "NOPAT": 167.326683264,
+          "reinvestment": 144.1676,
+          "FCFF": 23.159083264000003
+        },
+        {
+          "year": 2,
+          "revenue": 4152.026879999999,
+          "margin": 0.08336000000000002,
+          "NOPAT": 259.58472053760005,
+          "reinvestment": 173.0011199999999,
+          "FCFF": 86.58360053760015
+        },
+        {
+          "year": 3,
+          "revenue": 4982.432255999999,
+          "margin": 0.10224,
+          "NOPAT": 382.0529053900799,
+          "reinvestment": 207.60134399999993,
+          "FCFF": 174.45156139007997
+        },
+        {
+          "year": 4,
+          "revenue": 5978.918707199999,
+          "margin": 0.12112000000000002,
+          "NOPAT": 543.124975362048,
+          "reinvestment": 249.12161279999987,
+          "FCFF": 294.0033625620481
+        },
+        {
+          "year": 5,
+          "revenue": 7174.702448639998,
+          "margin": 0.14,
+          "NOPAT": 753.3437571071998,
+          "reinvestment": 298.9459353599998,
+          "FCFF": 454.39782174720006
+        },
+        {
+          "year": 6,
+          "revenue": 7748.678644531198,
+          "margin": 0.14,
+          "NOPAT": 813.611257675776,
+          "reinvestment": 143.4940489728001,
+          "FCFF": 670.1172087029759
+        },
+        {
+          "year": 7,
+          "revenue": 8368.572936093695,
+          "margin": 0.14,
+          "NOPAT": 878.7001582898381,
+          "reinvestment": 154.97357289062415,
+          "FCFF": 723.726585399214
+        },
+        {
+          "year": 8,
+          "revenue": 9038.058770981192,
+          "margin": 0.14,
+          "NOPAT": 948.9961709530253,
+          "reinvestment": 167.3714587218742,
+          "FCFF": 781.6247122311511
+        },
+        {
+          "year": 9,
+          "revenue": 9761.103472659688,
+          "margin": 0.14,
+          "NOPAT": 1024.9158646292674,
+          "reinvestment": 180.76117541962412,
+          "FCFF": 844.1546892096433
+        },
+        {
+          "year": 10,
+          "revenue": 10541.991750472464,
+          "margin": 0.14,
+          "NOPAT": 1106.9091337996088,
+          "reinvestment": 195.22206945319385,
+          "FCFF": 911.6870643464149
+        }
+      ],
+      "EV": 6394.451557233476,
+      "terminal_weight": 0.6279370470385885
+    },
+    "execution": {
+      "years": [
+        {
+          "year": 1,
+          "revenue": 3748.3576,
+          "margin": 0.07448,
+          "NOPAT": 209.38325553600004,
+          "reinvestment": 173.00112,
+          "FCFF": 36.38213553600005
+        },
+        {
+          "year": 2,
+          "revenue": 4872.86488,
+          "margin": 0.10336000000000001,
+          "NOPAT": 377.74448549760007,
+          "reinvestment": 224.90145600000005,
+          "FCFF": 152.8430294976
+        },
+        {
+          "year": 3,
+          "revenue": 6334.724344,
+          "margin": 0.13224,
+          "NOPAT": 628.27796043792,
+          "reinvestment": 292.3718928,
+          "FCFF": 335.90606763792
+        },
+        {
+          "year": 4,
+          "revenue": 8235.1416472,
+          "margin": 0.16112,
+          "NOPAT": 995.1345166476481,
+          "reinvestment": 380.08346064,
+          "FCFF": 615.0510560076481
+        },
+        {
+          "year": 5,
+          "revenue": 10705.684141360001,
+          "margin": 0.19,
+          "NOPAT": 1525.5599901438004,
+          "reinvestment": 494.10849883200024,
+          "FCFF": 1031.4514913118
+        },
+        {
+          "year": 6,
+          "revenue": 11562.138872668802,
+          "margin": 0.19,
+          "NOPAT": 1647.604789355304,
+          "reinvestment": 171.2909462617601,
+          "FCFF": 1476.313843093544
+        },
+        {
+          "year": 7,
+          "revenue": 12487.109982482307,
+          "margin": 0.19,
+          "NOPAT": 1779.4131725037287,
+          "reinvestment": 184.99422196270098,
+          "FCFF": 1594.4189505410277
+        },
+        {
+          "year": 8,
+          "revenue": 13486.078781080892,
+          "margin": 0.19,
+          "NOPAT": 1921.7662263040272,
+          "reinvestment": 199.79375971971712,
+          "FCFF": 1721.97246658431
+        },
+        {
+          "year": 9,
+          "revenue": 14564.965083567366,
+          "margin": 0.19,
+          "NOPAT": 2075.5075244083496,
+          "reinvestment": 215.77726049729463,
+          "FCFF": 1859.7302639110549
+        },
+        {
+          "year": 10,
+          "revenue": 15730.162290252756,
+          "margin": 0.19,
+          "NOPAT": 2241.5481263610177,
+          "reinvestment": 233.0394413370781,
+          "FCFF": 2008.5086850239395
+        }
+      ],
+      "EV": 13289.777370519481,
+      "terminal_weight": 0.6118399049257093
+    }
+  },
+  "reverse_growth_first_5_years": 0.59971206681468,
+  "customer_example_USD_m": {
+    "low": {
+      "annual_net_saving": 3,
+      "simple_payback_years": 6.666666666666667,
+      "NPV_8_year_10pct": -3.995221406292007
+    },
+    "base": {
+      "annual_net_saving": 4,
+      "simple_payback_years": 5.0,
+      "NPV_8_year_10pct": 1.3397047916106573
+    },
+    "high": {
+      "annual_net_saving": 5,
+      "simple_payback_years": 4.0,
+      "NPV_8_year_10pct": 6.674630989513322
+    }
+  },
+  "source": "https://ir.symbotic.com/news-releases/news-release-details/symbotic-reports-third-quarter-fiscal-year-2026-results",
+  "assumptions": [
+    "Latest quarter times four is starting scale, not annual forecast",
+    "SBC retained in operating margin; no blanket EBITDA-to-FCF conversion",
+    "Tax25%, years6-10 growth8%, terminalgrowth3%, terminalROIC15%, WACC11%",
+    "Incremental sales/capital includes net reinvestment; future Exol funding is NOT modeled",
+    "Economic share proxy sums disclosed A,V1,V3 paired units; NOT fully diluted legal valuation",
+    "Customer ROI numbers are hypothetical not vendor quote; no tax/salvage/inflation",
+    "No target price or trade approval"
+  ]
+}

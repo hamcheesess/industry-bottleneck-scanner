@@ -1,0 +1,99 @@
+import json
+from pathlib import Path
+
+from industry_bottleneck_scanner import validation_cycle_cli
+
+
+def test_cycle_consolidates_run_freshness_and_calibration(monkeypatch, tmp_path: Path, capsys) -> None:
+    run_status = tmp_path / "run.json"
+    ready_output = tmp_path / "ready.json"
+    calibration_output = tmp_path / "calibration.json"
+    cycle_output = tmp_path / "cycle.json"
+    calibration_calls: list[list[str]] = []
+
+    def fake_run(argv):
+        output = Path(argv[argv.index("--output") + 1])
+        output.write_text(json.dumps({"status": "partial", "completed_cases": 3}), encoding="utf-8")
+        print("noisy run output")
+        return 0
+
+    def fake_ready(argv):
+        output = Path(argv[argv.index("--output") + 1])
+        output.write_text(
+            json.dumps(
+                {
+                    "status": "partial_waiting_data",
+                    "full_validation_complete": False,
+                    "total_frozen_cases": 7,
+                    "ready_case_ids": ["a", "b", "control-a"],
+                    "missing_case_ids": [],
+                    "stale_case_ids": [],
+                    "blocked_input_case_ids": ["e", "f", "g"],
+                    "blocked_coverage_case_ids": ["d"],
+                    "summary": {
+                        "positive_recall": 0.5,
+                        "positive_stage_recall": 1.0,
+                        "expected_metric_recall": 0.8,
+                        "control_false_positive_rate": 1.0,
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        print("noisy ready output")
+        return 0
+
+    def fake_calibration(argv):
+        calibration_calls.append(list(argv))
+        output = Path(argv[argv.index("--output") + 1])
+        output.write_text(
+            json.dumps(
+                {
+                    "status": "diagnosed",
+                    "freshness_filtered": True,
+                    "cases": [
+                        {
+                            "case_id": "control-a",
+                            "role": "control",
+                            "triggered_clusters": [{"bucket": "Technology"}],
+                        },
+                        {
+                            "case_id": "a",
+                            "role": "positive",
+                            "triggered_clusters": [{"bucket": "Technology"}],
+                        },
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        print("noisy calibration output")
+        return 0
+
+    monkeypatch.setattr(validation_cycle_cli, "validation_run_main", fake_run)
+    monkeypatch.setattr(validation_cycle_cli, "ready_main", fake_ready)
+    monkeypatch.setattr(validation_cycle_cli, "calibration_main", fake_calibration)
+
+    assert validation_cycle_cli.main(
+        [
+            "--run-status", str(run_status),
+            "--ready-output", str(ready_output),
+            "--calibration-output", str(calibration_output),
+            "--output", str(cycle_output),
+        ]
+    ) == 0
+
+    payload = json.loads(cycle_output.read_text(encoding="utf-8"))
+    assert payload["status"] == "partial_waiting_data"
+    assert payload["next_gate"] == "data_completion"
+    assert payload["run"]["completed_cases"] == 3
+    assert payload["calibration"]["freshness_filtered"] is True
+    assert payload["false_positive_control_case_ids"] == ["control-a"]
+    assert calibration_calls
+    assert calibration_calls[0][calibration_calls[0].index("--ready-state") + 1] == str(ready_output)
+    stdout = capsys.readouterr().out
+    assert "status=partial_waiting_data next_gate=data_completion fresh=3/7" in stdout
+    assert "false_positive_controls=control-a" in stdout
+    assert "blocked_coverage=d" in stdout
+    assert "noisy run output" not in stdout
+    assert "noisy ready output" not in stdout

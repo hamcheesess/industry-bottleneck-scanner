@@ -1,0 +1,148 @@
+name: SEC Operating Evidence Bootstrap
+
+on:
+  workflow_call:
+    inputs:
+      research_queue_run_id:
+        required: true
+        type: string
+      batches_json:
+        required: false
+        type: string
+        default: '["001","002","003","004","005"]'
+      resume_run_id:
+        required: false
+        type: string
+        default: ''
+      resume_batch:
+        required: false
+        type: string
+        default: ''
+    secrets:
+      SEC_USER_AGENT:
+        required: true
+  workflow_dispatch:
+    inputs:
+      research_queue_run_id:
+        description: Successful provider-free calibration run containing the research queue
+        required: true
+        default: '32717805837'
+      batches_json:
+        description: JSON array of three-digit batch IDs
+        required: true
+        default: '["001","002","003","004","005"]'
+      resume_run_id:
+        description: Optional failed SEC workflow run containing a cache checkpoint
+        required: false
+        default: ''
+      resume_batch:
+        description: Batch ID whose checkpoint should be restored
+        required: false
+        default: ''
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        batch: ${{ fromJSON(inputs.batches_json || '["001","002","003","004","005"]') }}
+    env:
+      RESEARCH_QUEUE_RUN_ID: ${{ inputs.research_queue_run_id || '32717805837' }}
+      RESUME_RUN_ID: ${{ inputs.resume_run_id || '' }}
+      RESUME_BATCH: ${{ inputs.resume_batch || '' }}
+      SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+      SEC_SINCE: '2024-11-01'
+      SEC_AS_OF: '2026-08-21T23:59:59+00:00'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Verify declared SEC identity is configured
+        shell: bash
+        run: |
+          if [[ -z "$SEC_USER_AGENT" || "$SEC_USER_AGENT" != *" "* || "$SEC_USER_AGENT" != *"@"* ]]; then
+            echo "SEC_USER_AGENT is missing or does not contain an organization and contact email" >&2
+            exit 2
+          fi
+
+      - name: Download frozen trigger research queue
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.RESEARCH_QUEUE_RUN_ID }}
+          pattern: provider-free-market-calibration-*-1
+          path: artifacts/research
+          merge-multiple: true
+
+      - name: Restore SEC response cache
+        uses: actions/cache@v4
+        with:
+          path: var/cache/sec-edgar
+          key: sec-edgar-u2025-05-30-m2026-08-21-b${{ matrix.batch }}-${{ hashFiles(format('artifacts/research/research_queue/sec_issuers_batch_{0}.csv', matrix.batch)) }}
+          restore-keys: |
+            sec-edgar-u2025-05-30-m2026-08-21-b${{ matrix.batch }}-
+
+      - name: Download failed-run cache checkpoint
+        if: env.RESUME_RUN_ID != '' && matrix.batch == env.RESUME_BATCH
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.RESUME_RUN_ID }}
+          pattern: sec-operating-evidence-b${{ matrix.batch }}-*-*
+          path: artifacts/resume
+          merge-multiple: true
+
+      - name: Restore failed-run cache checkpoint
+        if: env.RESUME_RUN_ID != '' && matrix.batch == env.RESUME_BATCH
+        run: |
+          if [[ ! -d artifacts/resume/var/cache/sec-edgar ]]; then
+            echo "Requested SEC cache checkpoint is missing" >&2
+            exit 2
+          fi
+          mkdir -p var/cache/sec-edgar
+          cp -a artifacts/resume/var/cache/sec-edgar/. var/cache/sec-edgar/
+
+      - name: Collect strict-as-of SEC disclosures
+        run: |
+          mkdir -p "artifacts/sec/batch-${{ matrix.batch }}"
+          ibs-sec-disclosures \
+            --companies-csv "artifacts/research/research_queue/sec_issuers_batch_${{ matrix.batch }}.csv" \
+            --since "$SEC_SINCE" \
+            --as-of "$SEC_AS_OF" \
+            --cache-dir var/cache/sec-edgar \
+            --output-jsonl "artifacts/sec/batch-${{ matrix.batch }}/disclosures.jsonl" \
+            --diagnostics "artifacts/sec/batch-${{ matrix.batch }}/collection_diagnostics.json" \
+            --max-issuers 100 \
+            --request-interval-seconds 0.25
+
+      - name: Upload replayable SEC batch and cache checkpoint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-operating-evidence-b${{ matrix.batch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/sec/batch-${{ matrix.batch }}
+            var/cache/sec-edgar
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload normalized SEC batch
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-disclosures-b${{ matrix.batch }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/sec/batch-${{ matrix.batch }}
+          if-no-files-found: warn
+          retention-days: 90

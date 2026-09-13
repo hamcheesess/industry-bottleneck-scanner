@@ -1,0 +1,92 @@
+name: Adjudicate Causal Edge
+
+on:
+  workflow_call:
+    inputs:
+      edge_input_path:
+        required: true
+        type: string
+      prior_graph_run_id:
+        required: false
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      edge_input_path:
+        description: Committed provider-free causal-edge input
+        required: true
+        default: 'experiments/causal_edges/ai-data-center-load-to-grid-interconnection.json'
+      prior_graph_run_id:
+        description: Optional prior successful graph artifact run to extend
+        required: false
+        default: ''
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  adjudicate:
+    runs-on: ubuntu-latest
+    env:
+      EDGE_INPUT_PATH: ${{ inputs.edge_input_path || 'experiments/causal_edges/ai-data-center-load-to-grid-interconnection.json' }}
+      PRIOR_GRAPH_RUN_ID: ${{ inputs.prior_graph_run_id || '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Validate bounded input
+        shell: bash
+        run: |
+          input_path="$(realpath -- "$EDGE_INPUT_PATH")"
+          case "$input_path" in
+            "$GITHUB_WORKSPACE"/*) ;;
+            *) echo "edge_input_path must stay inside the checked-out repository" >&2; exit 2 ;;
+          esac
+          if [[ ! -f "$input_path" ]]; then
+            echo "Committed causal-edge input is missing: $EDGE_INPUT_PATH" >&2
+            exit 2
+          fi
+
+      - name: Download prior append-only graph
+        if: env.PRIOR_GRAPH_RUN_ID != ''
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.PRIOR_GRAPH_RUN_ID }}
+          pattern: causal-graph-registry-${{ env.PRIOR_GRAPH_RUN_ID }}-*
+          path: artifacts/prior-graph
+          merge-multiple: true
+
+      - name: Restore prior graph
+        if: env.PRIOR_GRAPH_RUN_ID != ''
+        shell: bash
+        run: |
+          prior="artifacts/prior-graph/graph.jsonl"
+          if [[ ! -f "$prior" ]]; then
+            echo "Requested prior graph is missing graph.jsonl" >&2
+            exit 2
+          fi
+          mkdir -p artifacts/causal
+          cp "$prior" artifacts/causal/graph.jsonl
+
+      - name: Evaluate and append only the dated edge revision
+        run: |
+          ibs-causal-edge-append \
+            --input "$EDGE_INPUT_PATH" \
+            --registry artifacts/causal/graph.jsonl
+
+      - name: Upload append-only graph registry
+        uses: actions/upload-artifact@v4
+        with:
+          name: causal-graph-registry-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/causal/graph.jsonl
+          if-no-files-found: error
+          retention-days: 90

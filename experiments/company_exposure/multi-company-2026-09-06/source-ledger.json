@@ -1,0 +1,141 @@
+{
+  "S1": {
+    "source_entity": "Arcosa",
+    "published_at": "2026-08-05T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.sec.gov/Archives/edgar/data/1739445/000173944526000124/exh991earningsrelease63020.htm",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S2": {
+    "source_entity": "US DOE",
+    "published_at": null,
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "government_primary",
+    "url": "https://www.energy.gov/sites/default/files/2024-10/EXEC-2022-001242%20-%20Large%20Power%20Transformer%20Resilience%20Report%207-10-24.pdf",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false,
+    "date_note": "Report dated July 2024; URL hosted October 2024. No exact publication instant asserted."
+  },
+  "S3": {
+    "source_entity": "AEP",
+    "published_at": "2026-07-30T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "customer_primary",
+    "url": "https://docs.aep.com/docs/newsroom/resources/earnings/2026-07/2Q26EarningsReleasePresentation.pdf",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S4": {
+    "source_entity": "Texas Governor",
+    "published_at": "2026-08-03T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "government_primary",
+    "url": "https://gov.texas.gov/news/post/governor-abbott-directs-comprehensive-data-center-audit",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S5": {
+    "source_entity": "GE Vernova",
+    "published_at": "2026-02-02T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.gevernova.com/news/press-releases/ge-vernova-completes-prolec-ge-acquisition",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S6": {
+    "source_entity": "GE Vernova",
+    "published_at": "2026-07-22T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.sec.gov/Archives/edgar/data/1996810/000199681026000147/gevpressrelease2q26.htm",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S7": {
+    "source_entity": "Siemens Energy",
+    "published_at": "2026-08-05T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.siemens-energy.com/us/en/home/press-releases/earnings-release-q3-fy-2026.html",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false,
+    "document_url": "https://assets.siemens-energy.com/dam/d0147174-31a9-4a78-b062-b49d00428fc4/earnings-release-q3-fy2026-en-pdf_Original%20file.pdf"
+  },
+  "S8": {
+    "source_entity": "Siemens Energy",
+    "published_at": "2024-02-15T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.siemens-energy.com/global/en/home/stories/transformer-manufacturing-and-service-expansion-in-us.html",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false,
+    "date_note": "Page displays 2024-02-15; current retrieved version not independently archived as of that date."
+  },
+  "S9": {
+    "source_entity": "Hyosung Heavy Industries",
+    "published_at": "2026-07-31T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.hyosungheavyindustries.com/download/5815",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S10": {
+    "source_entity": "HD Hyundai Electric",
+    "published_at": "2026-07-28T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.hd-hyundaielectric.com/elect/en/IR/IRdata1.jsp",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false,
+    "download": {
+      "url": "https://www.hd-hyundaielectric.com/elec/common/fileDown.jsp",
+      "method": "POST",
+      "form": {
+        "fileName": "2026_07_28_143006_1.pdf",
+        "filePath": "/home/app/hd_electric/upload/elec/presentation/",
+        "fileOrgName": "HD Hyundai Electric_2Q26 Earning Release.pdf"
+      },
+      "locator": "IR list, 2Q2026; PDF pages 4-6"
+    }
+  },
+  "S11": {
+    "source_entity": "Hitachi Energy",
+    "published_at": "2026-06-29T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.hitachienergy.com/news-and-events/press-releases/2026/06/hitachi-energy-breaks-ground-on-the-nation-s-largest-facility-for-the-production-of-large-power-transformers-in-south-boston-virginia",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S12": {
+    "source_entity": "GE Vernova",
+    "published_at": "2026-07-22T23:59:59+00:00",
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.gevernova.com/sites/default/files/gev_webcast_transcript_07222026.pdf",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S13": {
+    "source_entity": "Eaton",
+    "published_at": null,
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://www.eaton.com/us/en-us/company/news-insights/news-releases/2026/eaton-reports-record-second-quarter-2026-results.html",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  },
+  "S14": {
+    "source_entity": "Hammond Power Solutions",
+    "published_at": null,
+    "retrieved_at": "2026-09-06T00:00:00+00:00",
+    "source_class": "issuer_primary",
+    "url": "https://americas.hammondpowersolutions.com/products/medium-voltage-distribution/vpi-up-to-35kv-class",
+    "timestamp_precision": "date_only; retrieved_date_only",
+    "historical_replay_eligible": false
+  }
+}

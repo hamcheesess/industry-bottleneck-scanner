@@ -1,0 +1,116 @@
+{
+  "schema_version": "later-confirmation-plan-v1",
+  "plan_id": "large-power-transformers-2026-08-21-v1",
+  "replay_id": "early-ai-electrical-2026-08-21-two-root-v2",
+  "node_id": "large-power-transformers",
+  "replay_as_of": "2026-08-21T23:59:59+00:00",
+  "frozen_at": "2026-08-29T00:00:00+00:00",
+  "automatic_rerank": false,
+  "security_level_conclusion": false,
+  "slots": [
+    {
+      "slot_id": "lpt-demand-realization-90d",
+      "label": "90일 실수요 전환",
+      "thesis_dimension": "demand_realization",
+      "question": "AI 데이터센터와 계통 현대화 계획이 실제 송전·변압기 주문과 수주잔고로 전환되는가?",
+      "not_before": "2026-08-22T00:00:00+00:00",
+      "due_by": "2026-11-19T23:59:59+00:00",
+      "allowed_source_classes": [
+        "issuer_operating_disclosure",
+        "government_project_record",
+        "regulatory_record"
+      ],
+      "minimum_entity_count": 2,
+      "minimum_source_class_count": 2,
+      "confirm_definition": "두 개 이상의 독립 기관과 두 출처 유형에서 AI·계통 현대화가 실제 송전 또는 변압기 주문과 수주잔고로 전환되었다고 확인한다.",
+      "warning_definition": "프로젝트 일정이 지연되거나 발표된 부하 계획이 주문으로 전환되는 속도가 예상보다 약하지만 기존 수요가 취소되지는 않는다.",
+      "break_definition": "광범위한 프로젝트 취소나 수요 감축이 확인되고 이를 상쇄하는 독립적인 계통 현대화 주문 근거가 나타나지 않는다.",
+      "required_for_node_validation": true,
+      "prerequisite_status": "open",
+      "blocking_reason": ""
+    },
+    {
+      "slot_id": "lpt-bottleneck-persistence-180d",
+      "label": "180일 병목 지속성",
+      "thesis_dimension": "bottleneck_persistence",
+      "question": "긴 납기, 생산 슬롯, 자격 인증과 핵심 소재 제약이 수요 증가 이후에도 실제로 지속되는가?",
+      "not_before": "2026-08-22T00:00:00+00:00",
+      "due_by": "2027-02-17T23:59:59+00:00",
+      "allowed_source_classes": [
+        "government_physical_data",
+        "regulatory_record",
+        "issuer_operating_disclosure",
+        "industry_association_record"
+      ],
+      "minimum_entity_count": 2,
+      "minimum_source_class_count": 2,
+      "confirm_definition": "두 개 이상의 독립 기관과 출처 유형에서 긴 납기, 생산 슬롯 부족, 인증 장벽 또는 핵심 소재 제약이 계속 관측된다.",
+      "warning_definition": "일부 납기와 생산 슬롯은 개선되지만 높은 수주잔고 또는 자격 인증 제약이 남아 병목 해소가 부분적이다.",
+      "break_definition": "업계 전반의 납기가 정상화되고 충분한 생산 슬롯과 소재 공급이 확보되어 구조적 제약이라는 설명이 더는 성립하지 않는다.",
+      "required_for_node_validation": true,
+      "prerequisite_status": "open",
+      "blocking_reason": ""
+    },
+    {
+      "slot_id": "lpt-supply-response-365d",
+      "label": "365일 공급 반응",
+      "thesis_dimension": "supply_response",
+      "question": "발표된 공장 증설이 유효 생산능력으로 얼마나 빨리 전환되며 수요 증가를 따라잡는가?",
+      "not_before": "2026-08-22T00:00:00+00:00",
+      "due_by": "2027-08-21T23:59:59+00:00",
+      "allowed_source_classes": [
+        "issuer_facility_update",
+        "government_physical_data",
+        "regulatory_record",
+        "industry_association_record"
+      ],
+      "minimum_entity_count": 2,
+      "minimum_source_class_count": 2,
+      "confirm_definition": "두 개 이상의 독립 기관과 출처 유형에서 신규 공장의 인증·인력·장비 램프가 느려 유효 생산능력이 수요 증가보다 뒤처진다고 확인한다.",
+      "warning_definition": "증설 물량이 도착하지만 수요 증가를 완전히 흡수하지 못해 납기와 수주잔고가 일부만 완화된다.",
+      "break_definition": "유효 생산능력이 수요보다 빠르게 증가하고 납기와 수주잔고가 함께 정상화되어 희소성 지속 가설이 무너진다.",
+      "required_for_node_validation": true,
+      "prerequisite_status": "open",
+      "blocking_reason": ""
+    },
+    {
+      "slot_id": "lpt-economic-capture-180d",
+      "label": "180일 경제적 수익 포착",
+      "thesis_dimension": "economic_capture",
+      "question": "병목이 단순 매출 증가를 넘어 가격, 믹스, 마진, 계약조건과 현금수익 개선으로 공급사에 귀속되는가?",
+      "not_before": "2026-08-22T00:00:00+00:00",
+      "due_by": "2027-02-17T23:59:59+00:00",
+      "allowed_source_classes": [
+        "issuer_operating_disclosure",
+        "reported_financial_statement"
+      ],
+      "minimum_entity_count": 2,
+      "minimum_source_class_count": 1,
+      "confirm_definition": "두 개 이상의 독립 공급사에서 가격·믹스·마진·계약조건 또는 현금수익이 개선되어 병목의 경제적 가치가 실제로 귀속된다.",
+      "warning_definition": "물량과 수주잔고는 늘지만 원가와 증설비 부담으로 마진 또는 자본수익 개선이 뚜렷하지 않다.",
+      "break_definition": "원가 상승과 과도한 자본지출이 가격 효과를 흡수해 다수 공급사에서 지속 가능한 경제적 수익 포착이 나타나지 않는다.",
+      "required_for_node_validation": true,
+      "prerequisite_status": "open",
+      "blocking_reason": ""
+    },
+    {
+      "slot_id": "lpt-expectation-gap-security",
+      "label": "증권 기대 차이",
+      "thesis_dimension": "expectation_gap",
+      "question": "산업 병목의 지속성과 경제적 수익이 기준시점의 주가와 애널리스트 기대에 충분히 반영되지 않았는가?",
+      "not_before": "2026-08-22T00:00:00+00:00",
+      "due_by": "2026-09-21T23:59:59+00:00",
+      "allowed_source_classes": [
+        "frozen_market_and_estimate_snapshot"
+      ],
+      "minimum_entity_count": 1,
+      "minimum_source_class_count": 1,
+      "confirm_definition": "기준시점 이전에 봉인된 종목 바스켓, 가격·밸류에이션과 컨센서스가 산업 병목의 지속성과 수익 포착을 충분히 반영하지 않았음을 보여준다.",
+      "warning_definition": "봉인된 기대치가 일부 성장만 반영하지만 병목 지속 기간과 마진 전환에 대한 시장 기대 범위가 넓어 오판 가능성이 크다.",
+      "break_definition": "기준시점에 이미 높은 성장과 마진 개선이 가격과 컨센서스에 반영되어 산업 판단이 맞아도 증권 수준의 기대 차이가 존재하지 않는다.",
+      "required_for_node_validation": false,
+      "prerequisite_status": "blocked",
+      "blocking_reason": "2026-08-21 cutoff 이전 변압기 증권 바스켓, 가격·밸류에이션, 컨센서스 스냅샷을 봉인하지 않았으므로 결과를 본 뒤 기대 차이를 복원할 수 없다."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+ticker,quarter,published_at,published_at_source_url
+F,2019Q2,2019-07-24T17:30:00-04:00,https://shareholder.ford.com/events/event-details/2019/Ford-Motor-Company-Second-Quarter-Earnings/default.aspx
+F,2019Q1,2019-04-25T17:30:00-04:00,https://shareholder.ford.com/events/event-details/2019/Ford-Motor-Company-First-Quarter-Earnings/default.aspx
+GM,2019Q2,2019-08-01T10:00:00-04:00,https://investor.gm.com/events/event-details/general-motors-company-q2-2019-earnings-conference-call/
+GM,2019Q1,2019-04-30T10:00:00-04:00,https://investor.gm.com/news-releases/news-release-details/gm-reports-income-21-billion-and-ebit-adj-23-billion/
+TSLA,2019Q2,2019-07-24T15:30:00-07:00,https://ir.tesla.com/press-release/tesla-releases-second-quarter-2019-financial-results
+TSLA,2019Q1,2019-04-24T14:30:00-07:00,https://ir.tesla.com/press-release/tesla-releases-first-quarter-2019-financial-results
+LEA,2019Q2,2019-07-26T08:30:00-04:00,https://ir.lear.com/news-releases/news-release-details/lear-reports-second-quarter-2019-results
+LEA,2019Q1,2019-04-26T08:30:00-04:00,https://ir.lear.com/news-releases/news-release-details/lear-reports-first-quarter-2019-results/

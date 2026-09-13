@@ -1,0 +1,27 @@
+{
+  "schema_version": "historical-pre-news-replay-input-v1",
+  "replay_id": "early-ai-electrical-2026-08-21-two-root-v2",
+  "market_trigger_id": "market-trigger:2026-08-21:2fdadfbf3020f786",
+  "trigger_root_shock_id": "ai-data-center-electric-load-expansion-2026q3",
+  "as_of": "2026-08-21T23:59:59+00:00",
+  "held_out_evidence_ids": [],
+  "node_judgments": [
+    {
+      "node_id": "large-power-transformers",
+      "bottleneck_strength": 5,
+      "economic_capture": 2,
+      "reinvestment_runway": 4,
+      "triangulation": 5,
+      "expectation_gap": 1,
+      "score_rationale": {
+        "bottleneck_strength": "DOE documented lead times at and beyond 36 months, custom qualification, limited build slots, and slow factory/tooling expansion before the trigger.",
+        "economic_capture": "Supplier capacity additions corroborate demand, but the frozen evidence does not establish durable pricing power or margin capture at the economic node.",
+        "reinvestment_runway": "DOE projected U.S. LPT demand to more than double by 2030 while new factory and specialized-equipment lead times remained measured in years.",
+        "triangulation": "The frozen graph now contains two evidence-disjoint demand roots—AI data-center electric-load expansion and grid-modernization/resilience investment—converging on the same severely constrained transformer node, alongside government physical data, regulatory records, issuer operating evidence, customer architecture, and supplier expansions.",
+        "expectation_gap": "The frozen market trigger is for fabricated structural metal and contains no direct transformer valuation or priced-in-expectation measure, so expectation gap remains unproven."
+      },
+      "evidence": []
+    }
+  ]
+}
+

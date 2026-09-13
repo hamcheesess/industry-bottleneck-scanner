@@ -1,0 +1,117 @@
+name: Adjudicate Industry State
+
+on:
+  workflow_call:
+    inputs:
+      observations_path:
+        required: true
+        type: string
+      state_as_of:
+        required: true
+        type: string
+      prior_state_run_id:
+        required: false
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      observations_path:
+        description: Committed provider-free state observations
+        required: true
+        default: 'experiments/industry_state/large-load-grid-interconnection-capacity.jsonl'
+      state_as_of:
+        description: Snapshot cutoff strictly before the market trigger
+        required: true
+        default: '2026-08-20T23:59:59+00:00'
+      prior_state_run_id:
+        description: Optional prior successful state artifact run to extend
+        required: false
+        default: ''
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  adjudicate:
+    runs-on: ubuntu-latest
+    env:
+      OBSERVATIONS_PATH: ${{ inputs.observations_path || 'experiments/industry_state/large-load-grid-interconnection-capacity.jsonl' }}
+      STATE_AS_OF: ${{ inputs.state_as_of || '2026-08-20T23:59:59+00:00' }}
+      PRIOR_STATE_RUN_ID: ${{ inputs.prior_state_run_id || '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Validate bounded observations
+        shell: bash
+        run: |
+          observations="$(realpath -- "$OBSERVATIONS_PATH")"
+          case "$observations" in
+            "$GITHUB_WORKSPACE"/*) ;;
+            *) echo "observations_path must stay inside the checked-out repository" >&2; exit 2 ;;
+          esac
+          if [[ ! -f "$observations" ]]; then
+            echo "Committed state observations are missing: $OBSERVATIONS_PATH" >&2
+            exit 2
+          fi
+
+      - name: Download prior append-only state
+        if: env.PRIOR_STATE_RUN_ID != ''
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ env.PRIOR_STATE_RUN_ID }}
+          pattern: industry-state-registry-${{ env.PRIOR_STATE_RUN_ID }}-*
+          path: artifacts/prior-state
+          merge-multiple: true
+
+      - name: Restore prior state
+        if: env.PRIOR_STATE_RUN_ID != ''
+        shell: bash
+        run: |
+          prior="artifacts/prior-state/industry_state.jsonl"
+          if [[ ! -f "$prior" ]]; then
+            echo "Requested prior state is missing industry_state.jsonl" >&2
+            exit 2
+          fi
+          mkdir -p artifacts/industry
+          cp "$prior" artifacts/industry/industry_state.jsonl
+
+      - name: Evaluate strict pre-trigger state
+        run: |
+          ibs-industry-state-update \
+            --observations-jsonl "$OBSERVATIONS_PATH" \
+            --as-of "$STATE_AS_OF" \
+            --registry artifacts/industry/industry_state.jsonl \
+            --decisions artifacts/industry/state_update_decisions.json
+
+      - name: Require one approved pre-trigger node
+        shell: python
+        run: |
+          import json
+          from datetime import datetime
+          from pathlib import Path
+
+          payload = json.loads(Path("artifacts/industry/state_update_decisions.json").read_text())
+          if payload["node_count"] != 1 or payload["approved_count"] != 1:
+              raise SystemExit("industry-state batch must contain exactly one approved node")
+          cutoff = datetime.fromisoformat(payload["as_of"])
+          trigger = datetime.fromisoformat("2026-08-21T00:00:00+00:00")
+          if cutoff >= trigger:
+              raise SystemExit("industry-state cutoff must be strictly before trigger detection")
+
+      - name: Upload append-only state registry
+        uses: actions/upload-artifact@v4
+        with:
+          name: industry-state-registry-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/industry
+          if-no-files-found: error
+          retention-days: 90

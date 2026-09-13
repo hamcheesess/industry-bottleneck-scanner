@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "scope": "benchmark report, not production automation",
+  "cutoff": "2025-06-30T20:00:00Z",
+  "chapters": [
+    "selection and contemporaneous attention",
+    "actual purchases",
+    "bottleneck and counterevidence",
+    "downstream industry and companies",
+    "FCFF scenarios",
+    "DCF and reverse DCF",
+    "prospective 6-18 month thesis",
+    "decision and limitations",
+    "reproduction rules"
+  ],
+  "required_labels": [
+    "historical fact",
+    "contemporaneous issuer guidance",
+    "analyst assumption"
+  ],
+  "decision_states": [
+    "research_selected",
+    "shortage_unproven",
+    "valuation_insufficient",
+    "data_insufficient"
+  ],
+  "prohibited": [
+    "post-cutoff actuals as evidence",
+    "order equals revenue",
+    "growth equals shortage",
+    "unknown equals zero",
+    "adjusted profit equals FCF",
+    "route ranking without beneficiary research"
+  ],
+  "model_limitations": [
+    "aggregate company growth, no product FCF",
+    "latest disclosed financial balance and weighted shares proxies",
+    "preferred and NCI carrying-value proxies",
+    "capital expenditure and working capital revenue-ratio assumptions"
+  ],
+  "publishing": "final reports only; rejected sectors receive date,stage,reason",
+  "api": "parked"
+}

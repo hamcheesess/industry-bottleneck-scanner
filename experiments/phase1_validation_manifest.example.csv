@@ -1,0 +1,4 @@
+case_id,role,result_path,aggregation_level,expected_bucket,expected_metrics,label_sources,notes
+known-positive-01,positive,var/validation/known-positive-01.json,sector,REPLACE_WITH_FROZEN_BUCKET,REPLACE_METRIC_A|REPLACE_METRIC_B,https://example.com/source-a|https://example.com/source-b,freeze labels and source URLs before running scanner
+negative-control-01,control,var/validation/negative-control-01.json,sector,,,https://example.com/context-source,match source type and period coverage
+blind-01,blind,var/validation/blind-01.json,sector,,,,select without scanner outcomes

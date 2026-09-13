@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "industry-bottleneck-scanner"
+version = "0.1.0"
+description = "Phenomenon-first scanner for emerging industry bottlenecks"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+ibs-transcript-coverage = "industry_bottleneck_scanner.coverage_cli:main"
+ibs-transcript-collect = "industry_bottleneck_scanner.collection_cli:main"
+ibs-pilot-diagnostics = "industry_bottleneck_scanner.pilot_diagnostics_cli:main"
+ibs-phase1-batch = "industry_bottleneck_scanner.batch_cli:main"
+ibs-phase1-pilot = "industry_bottleneck_scanner.phase1_pilot_cli:main"
+ibs-phase1-validate = "industry_bottleneck_scanner.validation_cli:main"
+ibs-phase1-validation-ready = "industry_bottleneck_scanner.validation_ready_cli:main"
+ibs-phase1-validation-cycle = "industry_bottleneck_scanner.validation_cycle_cli:main"
+ibs-phase1-validation-resume = "industry_bottleneck_scanner.validation_resume_cli:main"
+ibs-phase1-validation-positive-audit = "industry_bottleneck_scanner.validation_positive_audit_cli:main"
+ibs-phase1-validation-collect = "industry_bottleneck_scanner.validation_collection_cli:main"
+ibs-phase1-validation-metadata-draft = "industry_bottleneck_scanner.validation_metadata_cli:main"
+ibs-phase1-validation-metadata-finalize = "industry_bottleneck_scanner.validation_metadata_finalize_cli:main"
+ibs-phase1-validation-progress = "industry_bottleneck_scanner.validation_progress_cli:main"
+ibs-phase1-validation-run = "industry_bottleneck_scanner.validation_run_cli:main"
+ibs-phase1-validation-advance = "industry_bottleneck_scanner.validation_advance_cli:main"
+ibs-phase1-validation-diagnose = "industry_bottleneck_scanner.validation_diagnose_cli:main"
+ibs-phase1-calibration-diagnose = "industry_bottleneck_scanner.validation_calibration_cli:main"
+ibs-phase1-calibration-rerun = "industry_bottleneck_scanner.validation_recalibrate_cli:main"
+ibs-phase1-evidence-audit = "industry_bottleneck_scanner.validation_evidence_audit_cli:main"
+ibs-phase1-control-evidence = "industry_bottleneck_scanner.validation_control_evidence_cli:main"
+ibs-neutral-cohort-plan = "industry_bottleneck_scanner.cohort_cli:main"
+ibs-neutral-proxy-iwv = "industry_bottleneck_scanner.iwv_proxy_cli:main"
+ibs-phase1-proxy-plan = "industry_bottleneck_scanner.proxy_plan_cli:main"
+ibs-review-language = "industry_bottleneck_scanner.novel_language_cli:main"
+ibs-market-trigger = "industry_bottleneck_scanner.market_trigger_cli:main"
+ibs-market-trigger-replay = "industry_bottleneck_scanner.market_trigger_replay_cli:main"
+ibs-market-trigger-calibrate = "industry_bottleneck_scanner.market_trigger_calibration_cli:main"
+ibs-market-trigger-quality = "industry_bottleneck_scanner.market_trigger_quality_cli:main"
+ibs-market-trigger-research-queue = "industry_bottleneck_scanner.market_trigger_research_queue_cli:main"
+ibs-massive-universe = "industry_bottleneck_scanner.massive_universe_cli:main"
+ibs-operating-evidence = "industry_bottleneck_scanner.operating_evidence_cli:main"
+ibs-operating-evidence-batch = "industry_bottleneck_scanner.operating_evidence_batch_cli:main"
+ibs-causal-diagnosis-batch = "industry_bottleneck_scanner.causal_diagnosis_batch_cli:main"
+ibs-operating-signal-quality = "industry_bottleneck_scanner.operating_signal_quality_cli:main"
+ibs-root-shock-research-packets = "industry_bottleneck_scanner.root_shock_research_packet_cli:main"
+ibs-root-shock-research-adjudicate = "industry_bottleneck_scanner.root_shock_research_adjudication_cli:main"
+ibs-sec-disclosures = "industry_bottleneck_scanner.sec_edgar_cli:main"
+ibs-industry-state-update = "industry_bottleneck_scanner.industry_state_update_cli:main"
+ibs-root-shock-append = "industry_bottleneck_scanner.root_shock_cli:main"
+ibs-causal-edge-append = "industry_bottleneck_scanner.causal_edge_cli:main"
+ibs-causal-convergence = "industry_bottleneck_scanner.causal_convergence_cli:main"
+ibs-pre-news-replay = "industry_bottleneck_scanner.pre_news_replay_cli:main"
+ibs-industry-analysis-report = "industry_bottleneck_scanner.industry_analysis_report_cli:main"
+ibs-later-confirmation = "industry_bottleneck_scanner.later_confirmation_cli:main"
+ibs-weekly-research-publish = "industry_bottleneck_scanner.weekly_research_publish_cli:main"
+ibs-bottleneck-financial-scenario = "industry_bottleneck_scanner.bottleneck_financial_scenario_cli:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
