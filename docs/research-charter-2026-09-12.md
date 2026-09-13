@@ -50,6 +50,10 @@ The user supplied a final protocol in this conversation. This section is an oper
 
 Retain broad relative-price/breadth signals as one entry; supplement with operating-change discovery (orders, inventory, pricing, utilization, customer budgets), structural change (technology, regulation, substitution), and propagation from researched industries. A market trigger is a research lead, not a universal prerequisite or a buy signal. Short preliminary reconnaissance selects where deeper investigation has decision value. No new weights, thresholds or historical trigger dates are changed by this policy record.
 
+## Current-first industry-understanding mode (September 13 update)
+
+The user explicitly changed the active task: start from current meaningful operating/structural/value-chain changes without requiring a price anomaly or bottleneck. If none are found, step back quarterly. Later sources may inform industry understanding, with original signal and subsequent context kept distinct. See `docs/industry-understanding-mode-2026-09-13.md`. The following historical guard applies only to the archived networking case, not the new report.
+
 ## Historical benchmark guard
 
 AI networking case remains 2025-06-30T20:00:00Z until explicitly changed. Later examples supplied for writing feedback are not admissible historical evidence. Distinguish first stored monthly pass from daily first anomaly and retrospective user-selected cases from outcome-blind discovery.

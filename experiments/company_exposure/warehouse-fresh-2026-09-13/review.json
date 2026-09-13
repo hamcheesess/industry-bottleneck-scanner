@@ -1,0 +1,19 @@
+{
+  "pages": 18,
+  "visual_review": "All 18 rendered pages reviewed; no clipping or missing diagram labels observed.",
+  "new_diagrams": 2,
+  "model_checks": [
+    "FCFF equals NOPAT minus reinvestment",
+    "reverse DCF reconciles to explicit operating EV proxy"
+  ],
+  "source_checks": [
+    "AutoStore Q2 original PDF confirmed; do not use site invitation typo as report period",
+    "Order-intake definition includes verbal partner confirmations",
+    "Amazon agreement does not contain current purchase commitments",
+    "SYM consolidated cash flow not compared to Class A-only capitalization"
+  ],
+  "completion_scope": "industry understanding report and illustrative operating economics; not completed company-by-company trade underwriting",
+  "pdf_sha256": "e6bebc7c98df295426948e2775282d9376eaeced553739666ad6d402607d352c",
+  "full_production_tests_run": false,
+  "api_automation_run": false
+}
